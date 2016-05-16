@@ -15,6 +15,10 @@ const registry-url = 'amar.io:5000'
 
 docker = new Docker!
 
+app = express!
+server = http.create-server app
+io = io server
+
 container-exists = (name, callback) !->
   err, containers <-! docker.list-containers  all: true
   for container in containers
@@ -36,9 +40,15 @@ get-broker = (callback) !->
   stream.pipe process.stdout
   callback broker
 
-app = express!
-server = http.create-server app
-io = io server
+err, driver-net <-! docker.create-network do
+  Name: \driver-net
+  Driver: \bridge
+  IPAM:
+    Config:
+      * Subnet: '172.20.0.0/16'
+        IP-range: '172.20.10.0/24'
+        Gateway: '172.20.10.11'
+      ...
 
 app.enable 'trust proxy'
 
@@ -128,8 +138,23 @@ app.post '/launch-app' (req, res) !->
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
   { name, port } |> JSON.stringify |> res.end
 
-app.post '/400' (req, res) !->
-  res.write-head 400
-  res.end!
+app.post '/launch-driver' (req, res) !->
+  # TODO: Handle potential namespace collisions
+  name = req.body.repo-tag.match /\/.+(?=:)/ .[0]
+  err, port <-! portfinder.get-port
+  err, container <-! docker.create-container Image: req.body.repo-tag, name: name
+  err, data <-! container.start do
+    PortBindings: '8080/tcp': [ HostPort: "#port" ]
+    NetworkMode: \driver-net
+    #Binds: [ "#__dirname/apps/#name:/./:rw" ]
+  app.use proxy name, do
+    target: "http://localhost:#port"
+    ws: true
+    path-rewrite:
+      "^#name": '/'
+    on-proxy-res: !->
+      it.headers['Access-Control-Allow-Origin'] = \*
+      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+  { name, port } |> JSON.stringify |> res.end
 
 server.listen (process.env.PORT or 8080)
