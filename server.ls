@@ -40,6 +40,25 @@ get-broker = (callback) !->
   stream.pipe process.stdout
   callback broker
 
+proxy-container = (name, port) !->
+  app.use proxy name, do
+    target: "http://localhost:#port"
+    ws: true
+    path-rewrite:
+      "^#name": '/'
+    on-proxy-res: !->
+      it.headers['Access-Control-Allow-Origin'] = \*
+      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+
+# Proxy already running apps and drivers
+err, containers <-! docker.list-containers  all: true
+containers.for-each (container) !->
+  return unless \databox.type of container.Labels
+  type = container.Labels[\databox.type]
+  return unless type is \driver or type is \app
+  # TODO: Error handling
+  proxy-container container.Names[0], container.Ports[0].PublicPort
+
 err, driver-net <-! docker.create-network do
   Name: \driver-net
   Driver: \bridge
@@ -122,39 +141,25 @@ app.post '/pull-app' (req, res) !->
   err, stream <-! docker.pull "#registry-url/#name:#tag"
   stream.pipe res
 
-app.post '/launch-app' (req, res) !->
-  # TODO: Handle potential namespace collisions
-  name = req.body.repo-tag.match /\/.+(?=:)/ .[0]
-  err, port <-! portfinder.get-port
-  err, container <-! docker.create-container Image: req.body.repo-tag, name: name
-  err, data <-! container.start Links: [ \broker ], PortBindings: '8080/tcp': [ HostPort: "#port" ] #Binds: [ "#__dirname/apps/#name:/./:rw" ]
-  app.use proxy name, do
-    target: "http://localhost:#port"
-    ws: true
-    path-rewrite:
-      "^#name": '/'
-    on-proxy-res: !->
-      it.headers['Access-Control-Allow-Origin'] = \*
-      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
-  { name, port } |> JSON.stringify |> res.end
+repo-tag-to-name = (.match /\/.+(?=:)/ .[0])
 
-app.post '/launch-driver' (req, res) !->
+launch-container = (repo-tag, callback) !->
   # TODO: Handle potential namespace collisions
-  name = req.body.repo-tag.match /\/.+(?=:)/ .[0]
+  name = repo-tag |> repo-tag-to-name
   err, port <-! portfinder.get-port
-  err, container <-! docker.create-container Image: req.body.repo-tag, name: name
+  err, container <-! docker.create-container Image: repo-tag, name: name
+  err, data <-! container.inspect
+  type = data.Config.Labels[\databox.type]
   err, data <-! container.start do
     PortBindings: '8080/tcp': [ HostPort: "#port" ]
-    NetworkMode: \driver-net
+    NetworkMode: if type is \driver then \driver-net else \app-net
     #Binds: [ "#__dirname/apps/#name:/./:rw" ]
-  app.use proxy name, do
-    target: "http://localhost:#port"
-    ws: true
-    path-rewrite:
-      "^#name": '/'
-    on-proxy-res: !->
-      it.headers['Access-Control-Allow-Origin'] = \*
-      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
-  { name, port } |> JSON.stringify |> res.end
+  proxy-container name, port
+  # TODO: Error handling
+  callback { name, port }
+
+app.post '/launch-container' (req, res) !->
+  info <-! launch-container req.body.repo-tag
+  info |> JSON.stringify |> res.send
 
 server.listen (process.env.PORT or 8080)
