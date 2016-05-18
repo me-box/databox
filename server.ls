@@ -13,11 +13,20 @@ require! {
 
 const registry-url = 'amar.io:5000'
 
-docker = new Docker!
-
 app = express!
 server = http.create-server app
-io = io server
+io := io server
+
+console.log 'Establishing communication with Docker daemon'
+
+docker = new Docker!
+
+# Quit if Docker daemon is not already running
+err, data <-! docker.ping!
+if err?
+  console.error 'Unable to connect to Docker daemon; check if running.'
+  console.error err
+  return
 
 container-exists = (name, callback) !->
   err, containers <-! docker.list-containers  all: true
@@ -40,6 +49,9 @@ get-broker = (callback) !->
   stream.pipe process.stdout
   callback broker
 
+# Proxy already running apps and drivers
+console.log 'Creating proxies to already running apps and drivers'
+
 proxy-container = (name, port) !->
   app.use proxy name, do
     target: "http://localhost:#port"
@@ -50,7 +62,6 @@ proxy-container = (name, port) !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
 
-# Proxy already running apps and drivers
 err, containers <-! docker.list-containers  all: true
 containers.for-each (container) !->
   return unless \databox.type of container.Labels
@@ -59,15 +70,54 @@ containers.for-each (container) !->
   # TODO: Error handling
   proxy-container container.Names[0], container.Ports[0].PublicPort
 
-err, driver-net <-! docker.create-network do
-  Name: \driver-net
-  Driver: \bridge
-  IPAM:
-    Config:
-      * Subnet: '172.20.0.0/16'
-        IP-range: '172.20.10.0/24'
-        Gateway: '172.20.10.11'
-      ...
+# Create networks if they do not already exist
+console.log 'Checking driver and app networks'
+
+err, networks <-! docker.list-networks {}
+driver-net = null
+app-net    = null
+
+networks.for-each (network) !->
+  if      network.Name is \driver-net then driver-net := network
+  else if network.Name is \app-net    then app-net    := network
+
+<-! (callback) !->
+  if driver-net?
+    console.log 'Driver network already exists'
+    callback!
+    return
+  console.log 'Creating driver network'
+  err, driver-net <-! docker.create-network do
+    Name: \driver-net
+    Driver: \bridge
+    #IPAM:
+    #  Config:
+    #    * Subnet: '172.20.0.0/16'
+    #      IP-range: '172.20.10.0/24'
+    #      Gateway: '172.20.10.11'
+    #    ...
+  callback!
+
+<-! (callback) !->
+  if app-net?
+    console.log 'App network already exists'
+    callback!
+    return
+  console.log 'Creating app network'
+  err, app-net <-! docker.create-network do
+    Name: \app-net
+    Driver: \bridge
+    #IPAM:
+    #  Config:
+    #    * Subnet: '172.20.0.0/16'
+    #      IP-range: '172.20.10.0/24'
+    #      Gateway: '172.20.10.11'
+    #    ...
+  callback!
+
+
+# Create server
+console.log 'Initializing server'
 
 app.enable 'trust proxy'
 
@@ -144,6 +194,9 @@ app.post '/pull-app' (req, res) !->
 repo-tag-to-name = (.match /\/.+(?=:)/ .[0])
 
 launch-container = (repo-tag, callback) !->
+  # Pull to install or for updates first
+  err, stream <-! docker.pull repo-tag
+  err, output <-! docker.modem.follow-progress stream
   # TODO: Handle potential namespace collisions
   name = repo-tag |> repo-tag-to-name
   err, port <-! portfinder.get-port
