@@ -1,0 +1,3 @@
+
+riot.tag2('app-list', '<div class="list-group-item" each="{opts.items}"> <button class="btn btn-default" type="button" __disabled="{hasUI ? false : true}" data-toggle="{hasUI ? \'modal\' : \'\'}" data-target="{hasUI ? \'#app-ui\' : \'\'}" onclick="$(\'#app-ui-title\').text(\'{image}\');$(\'#app-ui-iframe\').attr(\'src\', \'{name}/\');">UI</button> <div class="panel panel-default"> <div class="panel-heading"> <button class="btn btn-default info-trigger" type="button" data-toggle="collapse" onclick="$(this).parent().next().collapse(\'toggle\');">Full Info</button> </div> <div class="panel-collapse collapse out" id="#{opts.list}-item-{index + 1}"> <div class="panel-body"> <pre>{info}</pre> </div> </div> </div> </div>', '', 'class="list-group"', function(opts) {
+});

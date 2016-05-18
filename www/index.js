@@ -2,21 +2,16 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 	switch($(e.target).attr('href')) {
 		case '#running':
 			$.post('/list-containers', { all: false }, function(data) {
-				$('#running .list-group').empty();
-				JSON.parse(data).forEach(function(container) {
-					var hasUI = container.Ports.length > 0;
-					var li = $('<button type="button" class="list-group-item"' + (hasUI ? ' data-toggle="modal" data-target="#app-ui"' : '') + '></button>')
-					$('<pre></pre>').text(JSON.stringify(container, null, 2)).appendTo(li);
-					li.click(function(event) {
-						if (hasUI) {
-							$('#app-ui-title').text(container.Image);
-							$('#app-ui-iframe').attr('src', container.Names[0] + '/');
-						} else {
-							alert('This app has no UI');
-						}
-					});
-					li.appendTo('#running .list-group');
+				data = JSON.parse(data).map(function(container, index) {
+					return {
+						index: index,
+						image: container.Image,
+						name: container.Names[0],
+						info: JSON.stringify(container, null, 2),
+						hasUI: container.Ports.length > 0
+					};
 				});
+				riot.mount('#running-app-list', { list: 'running', items: data })
 			});
 			break;
 		case '#all':
@@ -59,24 +54,6 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 });
 
 $(function() {
-	function checkTwitterSignedIn() {
-		$.get('/broker/twitter/is-signed-in', {}, function(isSignedIn) {
-			if (isSignedIn === 'false')
-				$('#twitter-sign-in-button').show();
-		});
-	}
-	checkTwitterSignedIn();
-
-	$.post('/list-containers', { all: false }, function(data) {
-		$('#running .list-group').empty();
-		data = JSON.parse(data);
-		for (var i = 0, len = data.length; i < len; ++i) {
-			var li = $('<li class="list-group-item"></li>')
-			$('<code></code>').text(JSON.stringify(data[i], null, 2)).appendTo(li);
-			li.appendTo('#running .list-group');
-		}
-	});
-
 	function updateStatus() {
 		$.post('/get-broker-status', {}, function(status) {
 			$('#broker-status').text(status);
