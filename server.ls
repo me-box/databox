@@ -5,7 +5,6 @@ require! {
   'body-parser'
   request
   fs
-  portfinder
   \socket.io : io
   \docker-events : DockerEvents
   \http-proxy-middleware : proxy
@@ -199,20 +198,44 @@ launch-container = (repo-tag, callback) !->
   err, output <-! docker.modem.follow-progress stream
   # TODO: Handle potential namespace collisions
   name = repo-tag |> repo-tag-to-name
-  err, port <-! portfinder.get-port
   err, container <-! docker.create-container Image: repo-tag, name: name
   err, data <-! container.inspect
+
   type = data.Config.Labels[\databox.type]
-  err, data <-! container.start do
-    PortBindings: '8080/tcp': [ HostPort: "#port" ]
+
+  config =
     NetworkMode: if type is \driver then \driver-net else \app-net
     #Binds: [ "#__dirname/apps/#name:/./:rw" ]
+
+  # Abort if container tried to expose more than just port 8080
+  exposed-ports = data.Config.ExposedPorts
+  exposed-port-count = 0
+  for i of exposed-ports then ++exposed-port-count
+
+  if exposed-port-count > 1
+    container.remove !-> callback error: 'Container not launched due to attempts to expose multiple ports.'
+    return
+
+  if exposed-port-count is 0 and type is \driver
+    container.remove !-> callback error: 'Driver not launched due to not exposing any ports.'
+    return
+
+  if exposed-port-count is 1
+    if '8080/tcp' not of exposed-ports
+      container.remove !-> callback error: 'Container not launched due to attempting to expose a port other than port 8080.'
+      return
+    config.PublishAllPorts = true
+
+  err, data <-! container.start config
+  err, data <-! container.inspect
+  port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
+
   proxy-container name, port
   # TODO: Error handling
-  callback { name, port }
+  callback { name , port }
 
 app.post '/launch-container' (req, res) !->
-  info <-! launch-container req.body.repo-tag
-  info |> JSON.stringify |> res.send
+  response <-! launch-container req.body.repo-tag
+  response |> JSON.stringify |> res.send
 
 server.listen (process.env.PORT or 8080)
