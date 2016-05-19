@@ -140,6 +140,7 @@ io.on \connection (socket) !->
     ..on \stop       !-> socket.emit \docker-stop       it
     ..on \die        !-> socket.emit \docker-die        it
     ..on \destroy    !-> socket.emit \docker-destroy    it
+    # TODO: Inform of container status changes
     ..start!
 
   socket.on \disconnect !-> emitter.stop!

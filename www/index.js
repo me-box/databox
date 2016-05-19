@@ -6,7 +6,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 					return {
 						index: index,
 						image: container.Image,
-						name: container.Names[0],
+						name: container.Names[0].substring(1),
 						info: JSON.stringify(container, null, 2),
 						hasUI: container.Ports.length > 0
 					};
