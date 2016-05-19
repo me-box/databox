@@ -128,6 +128,9 @@ app.set 'view engine' \pug
 app.get \/ (req, res) !->
   res.render \index
 
+app.get \/close (req, res) !->
+  res.render \close
+
 app.use body-parser.urlencoded extended: false
 
 io.on \connection (socket) !->
