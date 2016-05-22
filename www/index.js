@@ -11,22 +11,20 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 						hasUI: container.Ports.length > 0
 					};
 				});
-				riot.mount('#running-app-list', { list: 'running', items: data })
+				riot.mount('running-list', { list: 'running', items: data })
 			});
 			break;
 		case '#all':
-			$.post('/list-images', {}, function(data) {
-				$('#all .list-group').empty();
-				JSON.parse(data).forEach(function(image) {
-					var li = $('<button type="button" class="list-group-item"></button>')
-					$('<pre></pre>').text(JSON.stringify(image, null, 2)).appendTo(li);
-					li.click(function(event) {
-						$.post('/launch-app', { repoTag: image.RepoTags[0] }, function(response) {
-							alert('App launched: ' + response);
-						});
-					});
-					li.appendTo('#all .list-group');
+			$.post('/list-images', { all: true }, function(data) {
+				data = JSON.parse(data).map(function(container, index) {
+					return {
+						index: index,
+						repoTag: container.RepoTags[0],
+						//name: container.Names[0].substring(1),
+						info: JSON.stringify(container, null, 2),
+					};
 				});
+				riot.mount('all-list', { list: 'all', items: data })
 			});
 			break;
 		case '#store':

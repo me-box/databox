@@ -206,7 +206,7 @@ app.post '/list-containers' (req, res) !->
   containers |> JSON.stringify |> res.end
 
 app.post '/list-images' (req, res) !->
-  err, images <-! docker.list-images
+  err, images <-! docker.list-images filters: '{ "label": [ "databox.type" ] }'
   images |> JSON.stringify |> res.end
 
 app.post '/list-store' (req, res) !->

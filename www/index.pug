@@ -11,7 +11,8 @@ html
 		script(src='/socket.io/socket.io.js')
 		script(src='https://cdn.jsdelivr.net/riot/2.4/riot.min.js')
 		//script(src='https://cdn.rawgit.com/pugjs/pug/1.11.0/runtime.js')
-		script(src='/templates/app-list.js')
+		script(src='/templates/running-list.js')
+		script(src='/templates/all-list.js')
 		script(src='/templates/store.js')
 		style.
 			body {
@@ -47,7 +48,7 @@ html
 				.container
 					.jumbotron
 						h4 Under Construction
-						p This tab is a remenant of the first iteration but still used for debug; please ignore.
+						p This tab is a remnant of the first iteration but still used for debug; please ignore.
 					.panel.panel-default
 						.panel-heading
 							h3.panel-title Broker Control Panel
@@ -60,22 +61,13 @@ html
 							//sandbox='allow-forms allow-scripts', 
 			#running.tab-pane.fade
 				.container
-					.alert.alert-info(role='alert')
-						strong Info:
-						|  Click an app for it&apos;s UI
-					.alert.alert-warning(role='alert')
-						strong Warning:
-						|  Non-app Docker containers (e.g. broker) are not yet filtered
-					app-list#running-app-list
+					running-list#running-app-list
 			#all.tab-pane.fade
 				.container
-					.alert.alert-info(role='alert')
-						strong Info:
-						|  Click an app to run
 					.alert.alert-warning(role='alert')
 						strong Warning:
-						|  Non-databox Docker containers are not yet filtered
-					app-list#all-app-list
+						|  This list may include apps that are already running
+					all-list#all-app-list
 			#store.tab-pane.fade
 				.container
 					h4

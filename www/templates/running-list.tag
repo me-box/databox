@@ -1,4 +1,4 @@
-app-list.list-group
+running-list.list-group
 	.list-group-item(each="{ opts.items }")
 		button.btn.btn-default.pull-right(type="button", disabled="{ hasUI ? false : true }", data-toggle="{ hasUI ? 'modal' : '' }", data-target="{hasUI ? '#app-ui' : '' }", onclick="$('#app-ui-title').text('{ image }');$('#app-ui-iframe').attr('src', '/{ name }/');") UI
 		h4.list-group-item-heading { name }
