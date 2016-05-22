@@ -35,18 +35,18 @@ container-exists = (name, callback) !->
       return
   callback!
 
-get-broker = (callback) !->
-  container <-! container-exists \/broker
+get-arbiter = (callback) !->
+  container <-! container-exists \/arbiter
   if container?
     callback container
     return
-  err, stream <-! docker.pull "#registry-url/databox-data-broker:latest"
+  err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
   stream.pipe process.stdout
   <-! stream.on \end
-  err, broker <-! docker.create-container Image: "#registry-url/databox-data-broker:latest" name: \broker Tty: true
-  err, stream <-! broker.attach stream: true stdout: true stderr: true
+  err, arbiter <-! docker.create-container Image: "#registry-url/databox-arbiter:latest" name: \arbiter Tty: true
+  err, stream <-! arbiter.attach stream: true stdout: true stderr: true
   stream.pipe process.stdout
-  callback broker
+  callback arbiter
 
 # Proxy already running apps and drivers
 console.log 'Creating proxies to already running apps and drivers'
@@ -150,27 +150,27 @@ io.on \connection (socket) !->
 
   socket.on \echo !-> socket.emit \echo it
 
-app.use proxy \/broker do
+app.use proxy \/arbiter do
   target: \http://localhost:7999
   ws: true
   path-rewrite:
-    '^/broker': '/'
+    '^/arbiter': '/'
 
-app.post '/get-broker-status' (req, res) !->
-  broker <-! get-broker
-  err, data <-! broker.inspect
+app.post '/get-arbiter-status' (req, res) !->
+  arbiter <-! get-arbiter
+  err, data <-! arbiter.inspect
   res.end data.State?.Status
 
-app.post '/toggle-broker-status' (req, res) !->
-  broker <-! get-broker
-  err, data <-! broker.inspect
+app.post '/toggle-arbiter-status' (req, res) !->
+  arbiter <-! get-arbiter
+  err, data <-! arbiter.inspect
   if data.State.Status is \created or data.State.Status is \exited
-    err, data <-! broker.start PortBindings: '7999/tcp': [ HostPort: \7999 ]
-    err, data <-! broker.inspect
+    err, data <-! arbiter.start PortBindings: '7999/tcp': [ HostPort: \7999 ]
+    err, data <-! arbiter.inspect
     res.end data.State.Status
   else
-    err, data <-! broker.stop
-    err, data <-! broker.inspect
+    err, data <-! arbiter.stop
+    err, data <-! arbiter.inspect
     res.end data.State.Status
 
 app.post '/list-containers' (req, res) !->
