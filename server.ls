@@ -28,7 +28,7 @@ if err?
   return
 
 container-exists = (name, callback) !->
-  err, containers <-! docker.list-containers  all: true
+  err, containers <-! docker.list-containers  all: true filter: \label=databox.type
   for container in containers
     if ~container.Names.index-of name
       container.Id |> docker.get-container |> callback
@@ -61,7 +61,7 @@ proxy-container = (name, port) !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
 
-err, containers <-! docker.list-containers  all: true
+err, containers <-! docker.list-containers all: true filter: \label=databox.type
 containers.for-each (container) !->
   return unless \databox.type of container.Labels
   type = container.Labels[\databox.type]
@@ -174,7 +174,7 @@ app.post '/toggle-broker-status' (req, res) !->
     res.end data.State.Status
 
 app.post '/list-containers' (req, res) !->
-  err, containers <-! docker.list-containers all: req.body.all
+  err, containers <-! docker.list-containers all: req.body.all, filter: \label=databox.type
   containers |> JSON.stringify |> res.end
 
 app.post '/list-images' (req, res) !->
