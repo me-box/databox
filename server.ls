@@ -27,26 +27,99 @@ if err?
   console.error err
   return
 
-container-exists = (name, callback) !->
-  err, containers <-! docker.list-containers  all: true filter: \label=databox.type
+# Create networks if they do not already exist
+console.log 'Checking driver and app networks'
+
+err, networks <-! docker.list-networks {}
+driver-net = null
+app-net    = null
+
+networks.for-each (network) !->
+  if      network.Name is \driver-net then driver-net := docker.get-network network.Id
+  else if network.Name is \app-net    then app-net    := docker.get-network network.Id
+
+<-! (callback) !->
+  if driver-net?
+    console.log 'Driver network already exists'
+    callback!
+    return
+  console.log 'Creating driver network'
+  err, network <-! docker.create-network do
+    Name: \driver-net
+    Driver: \bridge
+    #IPAM:
+    #  Config:
+    #    * Subnet: '172.20.0.0/16'
+    #      IP-range: '172.20.10.0/24'
+    #      Gateway: '172.20.10.11'
+    #    ...
+  driver-net := network
+  callback!
+
+<-! (callback) !->
+  if app-net?
+    console.log 'App network already exists'
+    callback!
+    return
+  console.log 'Creating app network'
+  err, network <-! docker.create-network do
+    Name: \app-net
+    Driver: \bridge
+    #IPAM:
+    #  Config:
+    #    * Subnet: '172.20.0.0/16'
+    #      IP-range: '172.20.10.0/24'
+    #      Gateway: '172.20.10.11'
+    #    ...
+  app-net := network
+  callback!
+
+# Get Arbiter
+get-container = (name, callback) !->
+  err, containers <-! docker.list-containers all: true
   for container in containers
     if ~container.Names.index-of name
       container.Id |> docker.get-container |> callback
       return
   callback!
 
-get-arbiter = (callback) !->
-  container <-! container-exists \/arbiter
+arbiter <-! (callback) !->
+  # Return container if it already exists
+  container <-! get-container \/arbiter
   if container?
+    console.log 'Arbiter container already exists'
     callback container
     return
+
+  # Pull if not in case not installed
+  console.log 'Pulling Arbiter container'
   err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
-  stream.pipe process.stdout
-  <-! stream.on \end
+  err, output <-! docker.modem.follow-progress stream
+
+  # Then create
+  console.log 'Creating Arbiter container'
   err, arbiter <-! docker.create-container Image: "#registry-url/databox-arbiter:latest" name: \arbiter Tty: true
-  err, stream <-! arbiter.attach stream: true stdout: true stderr: true
-  stream.pipe process.stdout
+  # TODO: Save all logs to files
+  #err, stream <-! arbiter.attach stream: true stdout: true stderr: true
+  #stream.pipe process.stdout
   callback arbiter
+
+# Start Arbiter container if not running
+<-! (callback) !->
+  err, data <-! arbiter.inspect
+  unless data.State.Status is \created or data.State.Status is \exited
+    console.log 'Arbiter container already running'
+    callback!
+    return
+
+  console.log 'Starting Arbiter container'
+  err, data <-! arbiter.start PortBindings: '7999/tcp': [ HostPort: \7999 ]
+  console.log 'Connecting Arbiter container to driver network'
+  err, data <-! driver-net.connect Container: arbiter.id
+  console.log 'Connecting Arbiter container to app network'
+  err, data <-! app-net.connect Container: arbiter.id
+
+  callback!
 
 # Proxy already running apps and drivers
 console.log 'Creating proxies to already running apps and drivers'
@@ -68,51 +141,6 @@ containers.for-each (container) !->
   return unless type is \driver or type is \app
   # TODO: Error handling
   proxy-container container.Names[0], container.Ports[0].PublicPort
-
-# Create networks if they do not already exist
-console.log 'Checking driver and app networks'
-
-err, networks <-! docker.list-networks {}
-driver-net = null
-app-net    = null
-
-networks.for-each (network) !->
-  if      network.Name is \driver-net then driver-net := network
-  else if network.Name is \app-net    then app-net    := network
-
-<-! (callback) !->
-  if driver-net?
-    console.log 'Driver network already exists'
-    callback!
-    return
-  console.log 'Creating driver network'
-  err, driver-net <-! docker.create-network do
-    Name: \driver-net
-    Driver: \bridge
-    #IPAM:
-    #  Config:
-    #    * Subnet: '172.20.0.0/16'
-    #      IP-range: '172.20.10.0/24'
-    #      Gateway: '172.20.10.11'
-    #    ...
-  callback!
-
-<-! (callback) !->
-  if app-net?
-    console.log 'App network already exists'
-    callback!
-    return
-  console.log 'Creating app network'
-  err, app-net <-! docker.create-network do
-    Name: \app-net
-    Driver: \bridge
-    #IPAM:
-    #  Config:
-    #    * Subnet: '172.20.0.0/16'
-    #      IP-range: '172.20.10.0/24'
-    #      Gateway: '172.20.10.11'
-    #    ...
-  callback!
 
 
 # Create server
@@ -154,7 +182,7 @@ app.use proxy \/arbiter do
   target: \http://localhost:7999
   ws: true
   path-rewrite:
-    '^/arbiter': '/'
+    '^/arbiter': ''
 
 app.post '/get-arbiter-status' (req, res) !->
   arbiter <-! get-arbiter
