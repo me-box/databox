@@ -31,21 +31,16 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 			break;
 		case '#store':
 			$.post('/list-store', {}, function(data) {
-				$('#store .list-group').empty();
-				JSON.parse(data).repositories.forEach(function(repository){
-					sanitizedText = $('<div/>')
-					var li = $('<li class="list-group-item"></li>');
-					$('<p style="display: inline-block; font-weight: bold;"></p>').text(repository).appendTo(li);
-					var btn = $('<button type="button" class="btn btn-default" data-loading-text="Pulling..." autocomplete="off" style="float: right;">Pull</button>').appendTo(li);
-					btn.click(function(event) {
-						var btn = $(this).button('loading');
-						$.post('/pull-app', { name: repository }, function(response) {
-							alert(response);
-							btn.button('reset');
-						});
-					});
-					li.appendTo('#store .list-group');
+				$('#store .list-group').remove();
+				data = JSON.parse(data).map(function(image, index) {
+					return {
+						index: index,
+						name: image.manifest.name,
+						poster: image.poster.username,
+						info: JSON.stringify(image, null, 2)
+					};
 				});
+				riot.mount('store', { items: data })
 			});
 			break;
 		default:

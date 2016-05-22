@@ -17,4 +17,3 @@ app-list.list-group
 		opts.items.for-each (item) !->
 		  item.status <-! $.get '/' + item.name + '/status/' {}
 		  self.update!
-

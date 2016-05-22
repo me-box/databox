@@ -214,7 +214,25 @@ app.post '/list-store' (req, res) !->
   if error
     error |> JSON.stringify |> res.end
     return
-  res.end body
+
+  repositories = body |> JSON.parse |> (.repositories)
+  repo-count = repositories.length
+
+  manifests = []
+
+  repositories.for-each (repository) !->
+    error, response, body <-! request.post do
+      url: "https://datashop.amar.io/app/get/"
+      form: name: repository
+
+    body = JSON.parse body
+
+    # Silently ignore if app not found (no manifest, or special)
+    unless body.error? and body.error is 23
+      manifests.push body
+
+    if --repo-count < 1
+      manifests |> JSON.stringify |> res.send
 
 app.post '/pull-app' (req, res) !->
   name = req.body.name

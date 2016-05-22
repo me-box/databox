@@ -12,6 +12,7 @@ html
 		script(src='https://cdn.jsdelivr.net/riot/2.4/riot.min.js')
 		//script(src='https://cdn.rawgit.com/pugjs/pug/1.11.0/runtime.js')
 		script(src='/templates/app-list.js')
+		script(src='/templates/store.js')
 		style.
 			body {
 				min-height: 2000px;
@@ -77,13 +78,13 @@ html
 					app-list#all-app-list
 			#store.tab-pane.fade
 				.container
-					h4 Repositories on Private Docker Registry
-					p
-						| Catalogue source: 
-						a(href='https://amar.io:5000/v2/_catalog') https://amar.io:5000/v2/_catalog
+					h4
+						| Repositories on 
+						a(href='https://amar.io:5000/v2/_catalog') Private Docker Registry
 					ul.list-group
 						img(src='spinner.gif', width="16px", height="16px" style='float: left;')
 						h4 Loading...
+					store
 		#app-ui.modal.fade(tabindex='-1', role='dialog', aria-labelledby='app-ui-label')
 			.modal-dialog(role='document')
 				.modal-content
