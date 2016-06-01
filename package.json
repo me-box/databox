@@ -28,11 +28,13 @@
   "homepage": "https://github.com/yousefamar/databox-container-manager#readme",
   "dependencies": {
     "body-parser": "^1.14.2",
+    "crypto": "0.0.3",
     "docker-events": "0.0.2",
     "dockerode": "^2.2.9",
     "express": "^4.13.4",
     "http-proxy-middleware": "^0.12.0",
     "livescript": "^1.4.0",
+    "macaroons.js": "^0.3.5",
     "pug": "^2.0.0-alpha7",
     "request": "^2.69.0",
     "socket.io": "^1.4.5"

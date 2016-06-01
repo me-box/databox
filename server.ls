@@ -8,7 +8,12 @@ require! {
   \socket.io : io
   \docker-events : DockerEvents
   \http-proxy-middleware : proxy
+  crypto
+  'macaroons.js'
 }
+
+# TODO: Remove when macaroons.js accepts my pull request
+const MACAROON_SUGGESTED_SECRET_LENGTH = macaroons.MacaroonsConstants?.MACAROON_SUGGESTED_SECRET_LENGTH or 32
 
 const registry-url = 'amar.io:5000'
 
@@ -83,37 +88,49 @@ get-container = (name, callback) !->
       return
   callback!
 
-arbiter <-! (callback) !->
+<-! (callback) !->
   # Return container if it already exists
   container <-! get-container \/arbiter
-  if container?
+
+  # Stop and remove container if it does
+  <-! (callback) !->
+    unless container?
+      console.log 'Arbiter container not running'
+      callback!
+      return
+
     console.log 'Arbiter container already exists'
-    callback container
-    return
+    console.log 'Stopping Arbiter container'
+    err, data <-! container.stop
+    console.log 'Removing Arbiter container'
+    err, data <-! container.remove
+    callback!
 
   # Pull if not in case not installed
   console.log 'Pulling Arbiter container'
   err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
   err, output <-! docker.modem.follow-progress stream
 
-  # Then create
+  # Generate Arbiter secret
+  console.log 'Generating secret for Arbiter control'
+  err, buffer <-! crypto.random-bytes MACAROON_SUGGESTED_SECRET_LENGTH
+  secret = buffer.to-string \hex
+
+  # Create Arbiter container
   console.log 'Creating Arbiter container'
-  err, arbiter <-! docker.create-container Image: "#registry-url/databox-arbiter:latest" name: \arbiter Tty: true
+  err, arbiter <-! docker.create-container do
+    name: \arbiter
+    Image: "#registry-url/databox-arbiter:latest"
+    PortBindings: '7999/tcp': [ HostPort: \7999 ]
+    Env: [ "CM_SECRET=#secret" ]
+    #Tty: true
   # TODO: Save all logs to files
   #err, stream <-! arbiter.attach stream: true stdout: true stderr: true
   #stream.pipe process.stdout
-  callback arbiter
 
-# Start Arbiter container if not running
-<-! (callback) !->
-  err, data <-! arbiter.inspect
-  unless data.State.Status is \created or data.State.Status is \exited
-    console.log 'Arbiter container already running'
-    callback!
-    return
-
+  # Start Arbiter container
   console.log 'Starting Arbiter container'
-  err, data <-! arbiter.start PortBindings: '7999/tcp': [ HostPort: \7999 ]
+  err, data <-! arbiter.start!
   console.log 'Connecting Arbiter container to driver network'
   err, data <-! driver-net.connect Container: arbiter.id
   console.log 'Connecting Arbiter container to app network'
