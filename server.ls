@@ -10,6 +10,7 @@ require! {
   \http-proxy-middleware : proxy
   crypto
   'macaroons.js'
+  promise
 }
 
 # TODO: Remove when macaroons.js accepts my pull request
@@ -31,6 +32,37 @@ if err?
   console.error 'Unable to connect to Docker daemon; check if running.'
   console.error err
   return
+
+# Kill any already running Databox containers
+console.log 'Killing any already running Databox containers'
+
+<-! kill-all = (callback) !->
+  err, containers <-! docker.list-containers all: true filters: '{ "label": [ "databox.type" ] }'
+  promises = containers.map (container) ->
+    id = container.Id
+    name = container.Names[0]
+    new Promise (resolve, reject) !->
+      container = docker.get-container id
+      console.log "Stopping #name"
+      err, data <-! container.stop
+      console.log "Removing #name"
+      err, data <-! container.remove
+      resolve!
+
+  Promise.all promises .then callback
+
+/*
+# Clean up on exit
+clean-up = !->
+  console.log 'Cleaning up'
+  # TODO: Find a way to do this
+  # kill-all ->
+
+process
+  ..on \exit clean-up
+  ..on \SIGINT clean-up
+  #..on \uncaughtException !->
+*/
 
 # Create networks if they do not already exist
 console.log 'Checking driver and app networks'
@@ -79,7 +111,8 @@ networks.for-each (network) !->
   app-net := network
   callback!
 
-# Get Arbiter
+# Define util functions
+# TODO: Unused now
 get-container = (name, callback) !->
   err, containers <-! docker.list-containers all: true
   for container in containers
@@ -88,25 +121,19 @@ get-container = (name, callback) !->
       return
   callback!
 
+proxy-container = (name, port) !->
+  app.use proxy name, do
+    target: "http://localhost:#port"
+    ws: true
+    path-rewrite:
+      "^#name": '/'
+    on-proxy-res: !->
+      it.headers['Access-Control-Allow-Origin'] = \*
+      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+
+# Launch Arbiter
 <-! (callback) !->
-  # Return container if it already exists
-  container <-! get-container \/arbiter
-
-  # Stop and remove container if it does
-  <-! (callback) !->
-    unless container?
-      console.log 'Arbiter container not running'
-      callback!
-      return
-
-    console.log 'Arbiter container already exists'
-    console.log 'Stopping Arbiter container'
-    err, data <-! container.stop
-    console.log 'Removing Arbiter container'
-    err, data <-! container.remove
-    callback!
-
-  # Pull if not in case not installed
+  # Pull latest Arbiter image
   console.log 'Pulling Arbiter container'
   err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
   err, output <-! docker.modem.follow-progress stream
@@ -121,7 +148,8 @@ get-container = (name, callback) !->
   err, arbiter <-! docker.create-container do
     name: \arbiter
     Image: "#registry-url/databox-arbiter:latest"
-    PortBindings: '7999/tcp': [ HostPort: \7999 ]
+    #PortBindings: '/tcp': [ HostPort: \7999 ]
+    PublishAllPorts: true
     Env: [ "CM_SECRET=#secret" ]
     #Tty: true
   # TODO: Save all logs to files
@@ -131,33 +159,18 @@ get-container = (name, callback) !->
   # Start Arbiter container
   console.log 'Starting Arbiter container'
   err, data <-! arbiter.start!
+
   console.log 'Connecting Arbiter container to driver network'
   err, data <-! driver-net.connect Container: arbiter.id
+
   console.log 'Connecting Arbiter container to app network'
   err, data <-! app-net.connect Container: arbiter.id
 
+  console.log 'Setting up proxy to Arbiter'
+  err, data <-! arbiter.inspect
+  proxy-container \/arbiter parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
+
   callback!
-
-# Proxy already running apps and drivers
-console.log 'Creating proxies to already running apps and drivers'
-
-proxy-container = (name, port) !->
-  app.use proxy name, do
-    target: "http://localhost:#port"
-    ws: true
-    path-rewrite:
-      "^#name": '/'
-    on-proxy-res: !->
-      it.headers['Access-Control-Allow-Origin'] = \*
-      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
-
-err, containers <-! docker.list-containers all: true filters: '{ "label": [ "databox.type" ] }'
-containers.for-each (container) !->
-  return unless \databox.type of container.Labels
-  type = container.Labels[\databox.type]
-  return unless type is \driver or type is \app
-  # TODO: Error handling
-  proxy-container container.Names[0], container.Ports[0].PublicPort
 
 
 # Create server
@@ -195,28 +208,10 @@ io.on \connection (socket) !->
 
   socket.on \echo !-> socket.emit \echo it
 
-app.use proxy \/arbiter do
-  target: \http://localhost:7999
-  ws: true
-  path-rewrite:
-    '^/arbiter': ''
-
 app.post '/get-arbiter-status' (req, res) !->
   arbiter <-! get-arbiter
   err, data <-! arbiter.inspect
   res.end data.State?.Status
-
-app.post '/toggle-arbiter-status' (req, res) !->
-  arbiter <-! get-arbiter
-  err, data <-! arbiter.inspect
-  if data.State.Status is \created or data.State.Status is \exited
-    err, data <-! arbiter.start PortBindings: '7999/tcp': [ HostPort: \7999 ]
-    err, data <-! arbiter.inspect
-    res.end data.State.Status
-  else
-    err, data <-! arbiter.stop
-    err, data <-! arbiter.inspect
-    res.end data.State.Status
 
 app.post '/list-containers' (req, res) !->
   err, containers <-! docker.list-containers all: req.body.all, filters: '{ "label": [ "databox.type" ] }'
