@@ -28,7 +28,6 @@
   "homepage": "https://github.com/yousefamar/databox-container-manager#readme",
   "dependencies": {
     "body-parser": "^1.14.2",
-    "crypto": "0.0.3",
     "docker-events": "0.0.2",
     "dockerode": "^2.2.9",
     "express": "^4.13.4",
