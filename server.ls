@@ -9,12 +9,8 @@ require! {
   \docker-events : DockerEvents
   \http-proxy-middleware : proxy
   crypto
-  'macaroons.js'
   promise
 }
-
-# TODO: Remove when macaroons.js accepts my pull request
-const MACAROON_SUGGESTED_SECRET_LENGTH = macaroons.MacaroonsConstants?.MACAROON_SUGGESTED_SECRET_LENGTH or 32
 
 const registry-url = 'amar.io:5000'
 
@@ -132,16 +128,21 @@ proxy-container = (name, port) !->
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
 
 # Launch Arbiter
+var cm-pub-key
+var cm-priv-key
+
 <-! (callback) !->
   # Pull latest Arbiter image
   console.log 'Pulling Arbiter container'
   err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
   err, output <-! docker.modem.follow-progress stream
 
-  # Generate Arbiter secret
-  console.log 'Generating secret for Arbiter control'
-  err, buffer <-! crypto.random-bytes MACAROON_SUGGESTED_SECRET_LENGTH
-  secret = buffer.to-string \hex
+  # Generating CM Key Pair
+  console.log 'Generating CM key pair'
+  crypto.create-ECDH \prime256v1
+    ..generate-keys \base64
+    cm-pub-key  := ..get-public-key  \base64
+    cm-priv-key := ..get-private-key \base64
 
   # Create Arbiter container
   console.log 'Creating Arbiter container'
@@ -150,7 +151,7 @@ proxy-container = (name, port) !->
     Image: "#registry-url/databox-arbiter:latest"
     #PortBindings: '/tcp': [ HostPort: \7999 ]
     PublishAllPorts: true
-    Env: [ "CM_SECRET=#secret" ]
+    Env: [ "CM_PUB_KEY=#cm-pub-key" ]
     #Tty: true
   # TODO: Save all logs to files
   #err, stream <-! arbiter.attach stream: true stdout: true stderr: true
