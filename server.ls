@@ -10,6 +10,7 @@ require! {
   \http-proxy-middleware : proxy
   crypto
   promise
+  ursa
 }
 
 const server-port  = process.env.PORT or 8080
@@ -129,8 +130,7 @@ proxy-container = (name, port) !->
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
 
 # Launch Arbiter
-var cm-pub-key
-var cm-priv-key
+var key-pair
 
 <-! (callback) !->
   # Pull latest Arbiter image
@@ -140,10 +140,8 @@ var cm-priv-key
 
   # Generating CM Key Pair
   console.log 'Generating CM key pair'
-  crypto.create-ECDH \prime256v1
-    ..generate-keys \base64
-    cm-pub-key  := ..get-public-key  \base64
-    cm-priv-key := ..get-private-key \base64
+  key-pair := generate-private-key!
+  public-key = key-pair.to-public-pem \base64
 
   # Create Arbiter container
   console.log 'Creating Arbiter container'
@@ -152,7 +150,7 @@ var cm-priv-key
     Image: "#registry-url/databox-arbiter:latest"
     #PortBindings: '/tcp': [ HostPort: \7999 ]
     PublishAllPorts: true
-    Env: [ "CM_PUB_KEY=#cm-pub-key" ]
+    Env: [ "CM_PUB_KEY=#public-key" ]
     #Tty: true
   # TODO: Save all logs to files
   #err, stream <-! arbiter.attach stream: true stdout: true stderr: true
@@ -283,6 +281,11 @@ app.post '/launch-container' do ->
     token = buffer.to-string \hex
 
     console.log "Passing #name token to Arbiter"
+    data = JSON.stringify { type, token }
+
+    sig = key-pair.hash-and-sign \md5 new Buffer data
+
+    res <-! update-arbiter { data, sig }
 
     config =
       NetworkMode: if type is \driver then \driver-net else \app-net
