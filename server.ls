@@ -38,13 +38,13 @@ console.log 'Killing any already running Databox containers'
   promises = containers.map (container) ->
     id = container.Id
     name = container.Names[0]
-    new Promise (resolve, reject) !->
-      container = docker.get-container id
-      console.log "Stopping #name"
-      err, data <-! container.stop
-      console.log "Removing #name"
-      err, data <-! container.remove
-      resolve!
+    resolve, reject <-! new Promise!
+    container = docker.get-container id
+    console.log "Stopping #name"
+    err, data <-! container.stop
+    console.log "Removing #name"
+    err, data <-! container.remove
+    resolve!
 
   Promise.all promises .then callback
 
@@ -123,7 +123,7 @@ proxy-container = (name, port) !->
     target: "http://localhost:#port"
     ws: true
     path-rewrite:
-      "^#name": '/'
+      "^#name": ''
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
@@ -139,7 +139,7 @@ var key-pair
 
   # Generating CM Key Pair
   console.log 'Generating CM key pair'
-  key-pair := generate-private-key!
+  key-pair := ursa.generate-private-key!
   public-key = key-pair.to-public-pem \base64
 
   # Create Arbiter container
