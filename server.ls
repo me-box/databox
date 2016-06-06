@@ -9,7 +9,6 @@ require! {
   \docker-events : DockerEvents
   \http-proxy-middleware : proxy
   crypto
-  promise
   ursa
 }
 

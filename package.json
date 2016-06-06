@@ -33,7 +33,6 @@
     "express": "^4.13.4",
     "http-proxy-middleware": "^0.12.0",
     "livescript": "^1.4.0",
-    "promise": "^7.1.1",
     "pug": "^2.0.0-alpha7",
     "request": "^2.69.0",
     "socket.io": "^1.4.5",
