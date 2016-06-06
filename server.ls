@@ -12,6 +12,7 @@ require! {
   promise
 }
 
+const server-port  = process.env.PORT or 8080
 const registry-url = 'amar.io:5000'
 
 app = express!
@@ -253,52 +254,72 @@ app.post '/pull-app' (req, res) !->
   err, stream <-! docker.pull "#registry-url/#name:#tag"
   stream.pipe res
 
-repo-tag-to-name = (.match /\/.+(?=:)/ .[0])
+app.post '/launch-container' do ->
+  repo-tag-to-name = (.match /\/.+(?=:)/ .[0])
 
-launch-container = (repo-tag, callback) !->
-  # Pull to install or for updates first
-  err, stream <-! docker.pull repo-tag
-  err, output <-! docker.modem.follow-progress stream
-  # TODO: Handle potential namespace collisions
-  name = repo-tag |> repo-tag-to-name
-  err, container <-! docker.create-container Image: repo-tag, name: name
-  err, data <-! container.inspect
+  update-arbiter = (params, callback) !->
+    error, response, body <-! request.post do
+      url: "http://localhost:#server-port/arbiter/update"
+      form: params
 
-  type = data.Config.Labels[\databox.type]
+    # TODO: Error handling
+    body |> JSON.parse |> callback
 
-  config =
-    NetworkMode: if type is \driver then \driver-net else \app-net
-    #Binds: [ "#__dirname/apps/#name:/./:rw" ]
+  launch-container = (repo-tag, callback) !->
+    # Pull to install or for updates first
+    console.log "Pulling image from #repo-tag"
+    err, stream <-! docker.pull repo-tag
+    err, output <-! docker.modem.follow-progress stream
+    # TODO: Handle potential namespace collisions
+    name = repo-tag |> repo-tag-to-name
+    console.log "Creating #name container"
+    err, container <-! docker.create-container Image: repo-tag, name: name
+    err, data <-! container.inspect
 
-  # Abort if container tried to expose more than just port 8080
-  exposed-ports = data.Config.ExposedPorts
-  exposed-port-count = 0
-  for i of exposed-ports then ++exposed-port-count
+    type = data.Config.Labels[\databox.type]
 
-  if exposed-port-count > 1
-    container.remove !-> callback error: 'Container not launched due to attempts to expose multiple ports.'
-    return
+    console.log "Generating Arbiter token for #name container"
+    err, buffer <-! crypto.random-bytes 32
+    token = buffer.to-string \hex
 
-  if exposed-port-count is 0 and type is \driver
-    container.remove !-> callback error: 'Driver not launched due to not exposing any ports.'
-    return
+    console.log "Passing #name token to Arbiter"
 
-  if exposed-port-count is 1
-    if '8080/tcp' not of exposed-ports
-      container.remove !-> callback error: 'Container not launched due to attempting to expose a port other than port 8080.'
+    config =
+      NetworkMode: if type is \driver then \driver-net else \app-net
+      Env: [ "ARBITER_TOKEN=#token" ]
+      #Binds: [ "#__dirname/apps/#name:/./:rw" ]
+
+    # Abort if container tried to expose more than just port 8080
+    console.log "Checking ports exposed by #name container"
+    exposed-ports = data.Config.ExposedPorts
+    exposed-port-count = 0
+    for i of exposed-ports then ++exposed-port-count
+
+    if exposed-port-count > 1
+      container.remove !-> callback error: 'Container not launched due to attempts to expose multiple ports.'
       return
-    config.PublishAllPorts = true
 
-  err, data <-! container.start config
-  err, data <-! container.inspect
-  port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
+    if exposed-port-count is 0 and type is \driver
+      container.remove !-> callback error: 'Driver not launched due to not exposing any ports.'
+      return
 
-  proxy-container name, port
-  # TODO: Error handling
-  callback { name , port }
+    if exposed-port-count is 1
+      if '8080/tcp' not of exposed-ports
+        container.remove !-> callback error: 'Container not launched due to attempting to expose a port other than port 8080.'
+        return
+      config.PublishAllPorts = true
 
-app.post '/launch-container' (req, res) !->
-  response <-! launch-container req.body.repo-tag
-  response |> JSON.stringify |> res.send
+    console.log "Starting #name container"
+    err, data <-! container.start config
+    err, data <-! container.inspect
+    port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
 
-server.listen (process.env.PORT or 8080)
+    proxy-container name, port
+    # TODO: Error handling
+    callback { name , port }
+
+  (req, res) !->
+    response <-! launch-container req.body.repo-tag
+    response |> JSON.stringify |> res.send
+
+server.listen server-port
