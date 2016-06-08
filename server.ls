@@ -79,8 +79,9 @@ networks.for-each (network) !->
     return
   console.log 'Creating driver network'
   err, network <-! docker.create-network do
-    Name: \driver-net
+    Name: \databox-driver-net
     Driver: \bridge
+    #Internal: true
     #IPAM:
     #  Config:
     #    * Subnet: '172.20.0.0/16'
@@ -97,8 +98,9 @@ networks.for-each (network) !->
     return
   console.log 'Creating app network'
   err, network <-! docker.create-network do
-    Name: \app-net
+    Name: \databox-app-net
     Driver: \bridge
+    #Internal: true
     #IPAM:
     #  Config:
     #    * Subnet: '172.20.0.0/16'
@@ -123,7 +125,7 @@ proxy-container = (name, port) !->
     target: "http://localhost:#port"
     ws: true
     path-rewrite:
-      "^#name": ''
+      "^#name": '/'
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
@@ -147,7 +149,7 @@ var key-pair
   err, arbiter <-! docker.create-container do
     name: \arbiter
     Image: "#registry-url/databox-arbiter:latest"
-    #PortBindings: '/tcp': [ HostPort: \7999 ]
+    #PortBindings: '8080/tcp': [ HostPort: \8081 ]
     PublishAllPorts: true
     Env: [ "CM_PUB_KEY=#public-key" ]
     #Tty: true
@@ -259,6 +261,8 @@ app.post '/launch-container' do ->
       url: "http://localhost:#server-port/arbiter/update"
       form: params
 
+    console.log body
+
     # TODO: Error handling
     body |> JSON.parse |> callback
 
@@ -280,14 +284,14 @@ app.post '/launch-container' do ->
     token = buffer.to-string \hex
 
     console.log "Passing #name token to Arbiter"
-    data = JSON.stringify { type, token }
+    update = JSON.stringify { type, token }
 
-    sig = key-pair.hash-and-sign \md5 new Buffer data
+    sig = key-pair.hash-and-sign \md5 new Buffer update
 
-    res <-! update-arbiter { data, sig }
+    #res <-! update-arbiter { update, sig }
 
     config =
-      NetworkMode: if type is \driver then \driver-net else \app-net
+      NetworkMode: if type is \driver then \databox-driver-net else \databox-app-net
       Env: [ "ARBITER_TOKEN=#token" ]
       #Binds: [ "#__dirname/apps/#name:/./:rw" ]
 
