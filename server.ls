@@ -69,8 +69,8 @@ driver-net = null
 app-net    = null
 
 networks.for-each (network) !->
-  if      network.Name is \driver-net then driver-net := docker.get-network network.Id
-  else if network.Name is \app-net    then app-net    := docker.get-network network.Id
+  if      network.Name is \databox-driver-net then driver-net := docker.get-network network.Id
+  else if network.Name is \databox-app-net    then app-net    := docker.get-network network.Id
 
 <-! (callback) !->
   if driver-net?
@@ -284,11 +284,12 @@ app.post '/launch-container' do ->
     token = buffer.to-string \hex
 
     console.log "Passing #name token to Arbiter"
-    update = JSON.stringify { type, token }
+    update = JSON.stringify { name, token, type }
 
-    sig = key-pair.hash-and-sign \md5 new Buffer update
+    sig = key-pair.hash-and-sign \md5 new Buffer update .to-string \base64
 
-    #res <-! update-arbiter { update, sig }
+    res <-! update-arbiter { data: update, sig }
+    # TODO: Error handling
 
     config =
       NetworkMode: if type is \driver then \databox-driver-net else \databox-app-net
