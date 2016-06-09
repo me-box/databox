@@ -179,9 +179,9 @@ console.log 'Initializing server'
 
 app.enable 'trust proxy'
 
-app.use express.static \www
+app.use express.static \src/www
 
-app.set \views \www
+app.set \views \src/www
 app.set 'view engine' \pug
 
 app.get \/ (req, res) !->

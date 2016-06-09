@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
-    "build": "riot --template pug www/templates",
-    "watch": "riot --watch --template pug www/templates",
-    "start": "lsc server.ls"
+    "build": "riot --template pug src/www/templates",
+    "watch": "riot --watch --template pug src/www/templates",
+    "start": "lsc src/server.ls"
   },
   "repository": {
     "type": "git",
