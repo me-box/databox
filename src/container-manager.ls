@@ -225,7 +225,6 @@ export launch-container = do ->
     if err? then reject err; return
 
     config =
-      NetworkMode: if type is \driver then \databox-driver-net else \databox-app-net
       Env: [ "ARBITER_TOKEN=#token" ]
       #Binds: [ "#__dirname/apps/#name:/./:rw" ]
 
@@ -249,9 +248,28 @@ export launch-container = do ->
         return
       config.PublishAllPorts = true
 
+    <-! (callback) !->
+      if type is \app
+        callback!
+        return
+      console.log "Connecting #name to driver network"
+      err, data <-! networks[\databox-driver-net].connect Container: container.id
+      # TODO: Error handling
+      callback!
+
+    <-! (callback) !->
+      if type is \driver
+        callback!
+        return
+      console.log "Connecting #name to app network"
+      err, data <-! networks[\databox-app-net].connect Container: container.id
+      # TODO: Error handling
+      callback!
+
     console.log "Starting #name container"
     err, data <-! container.start config
     if err? then reject err; return
+
     err, data <-! container.inspect
     if err? then reject err; return
 

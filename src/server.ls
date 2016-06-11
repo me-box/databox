@@ -14,7 +14,7 @@ export proxy-container = (name, port) !->
     target: "http://localhost:#port"
     ws: true
     path-rewrite:
-      "^#name": '/'
+      "^#name": ''
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
