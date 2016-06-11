@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
-    "build": "riot --template pug www/templates",
-    "watch": "riot --watch --template pug www/templates",
-    "start": "lsc server.ls"
+    "build": "riot --template pug src/www/templates",
+    "watch": "riot --watch --template pug src/www/templates",
+    "start": "lsc src/main.ls"
   },
   "repository": {
     "type": "git",
@@ -33,11 +33,10 @@
     "express": "^4.13.4",
     "http-proxy-middleware": "^0.12.0",
     "livescript": "^1.4.0",
-    "macaroons.js": "^0.3.5",
-    "promise": "^7.1.1",
     "pug": "^2.0.0-alpha7",
     "request": "^2.69.0",
-    "socket.io": "^1.4.5"
+    "socket.io": "^1.4.5",
+    "ursa": "^0.9.4"
   },
   "devDependencies": {
     "riot": "^2.4.0"
