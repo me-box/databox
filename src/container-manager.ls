@@ -53,7 +53,7 @@ export kill-all = ->
   err, containers <-! docker.list-containers all: true filters: '{ "label": [ "databox.type" ] }'
   promises = containers.map (container) ->
     id = container.Id
-    name = container.Names[0]
+    name = container.Names[0].substring 1
     resolve, reject <-! new Promise!
     container = docker.get-container id
     console.log "Stopping #name"
@@ -166,11 +166,11 @@ export launch-arbiter = ->
   err, data <-! arbiter.inspect
   if err? then reject err; return
 
-  resolve name: \/arbiter port: parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
+  resolve name: \arbiter port: parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
 
 
 export launch-container = do ->
-  repo-tag-to-name = (.match /\/.+(?=:)/ .[0])
+  repo-tag-to-name = (.match /(?:.*\/)?([^/:\s]+)(?::.*|$)/ .[1])
 
   update-arbiter = (params, callback) !->
     err, arbiter <-! get-container \/arbiter
@@ -186,13 +186,12 @@ export launch-container = do ->
 
     if error? then callback error; return
 
-    console.log body
-
     # TODO: Error handling
     body |> JSON.parse |> callback null _
 
   # NOTE: Name is optional and will override default
-  (repo-tag, name) ->
+  # NOTE: Env is optional and additive
+  (repo-tag, name, env = []) ->
     resolve, reject <-! new Promise!
 
     # Pull to install or for updates first
@@ -202,19 +201,38 @@ export launch-container = do ->
     err, output <-! docker.modem.follow-progress stream
     if err? then reject err; return
     # TODO: Handle potential namespace collisions
-    name = name or repo-tag |> repo-tag-to-name
-    console.log "Creating #name container"
-    err, container <-! docker.create-container Image: repo-tag, name: name
+    name := name or repo-tag-to-name repo-tag
+
+    console.log "Generating Arbiter token for #name container"
+    err, buffer <-! crypto.random-bytes 32
     if err? then reject err; return
+    token = buffer.to-string \base64
+
+    console.log "Creating #name container"
+    err, container <-! docker.create-container do
+      name: name
+      Image: repo-tag
+      Env: [ "ARBITER_TOKEN=#token" ] ++ env
+    if err? then reject err; return
+
     err, data <-! container.inspect
     if err? then reject err; return
 
     type = data.Config.Labels[\databox.type]
 
-    console.log "Generating Arbiter token for #name container"
-    err, buffer <-! crypto.random-bytes 32
-    if err? then reject err; return
-    token = buffer.to-string \hex
+    result <-! (callback) !->
+      unless type is \driver
+        callback {}
+        return
+      # TODO: Don't hardcode store type
+      console.log "Launching passthrough store for #name driver"
+      # TODO: Is launching store before driver a security risk (driver hostname getting hijacked)?
+      launch-container 'amar.io:5000/databox-store-passthrough:latest' "#name.store" [ "DRIVER_HOSTNAME=#name" ]
+        .then callback
+
+    if result.error?
+      container.remove !-> resolve result.error
+      return
 
     console.log "Passing #name token to Arbiter"
     update = JSON.stringify { name, token, type }
@@ -225,9 +243,7 @@ export launch-container = do ->
     # TODO: Error handling
     if err? then reject err; return
 
-    config =
-      Env: [ "ARBITER_TOKEN=#token" ]
-      #Binds: [ "#__dirname/apps/#name:/./:rw" ]
+    config = {}
 
     # Abort if container tried to expose more than just port 8080
     console.log "Checking ports exposed by #name container"
@@ -249,12 +265,18 @@ export launch-container = do ->
         return
       config.PublishAllPorts = true
 
+    console.log "Starting #name container"
+    err, data <-! container.start config
+    if err? then reject err; return
+
+    # FIXME: Very weird race condition when connecting to networks after starting
     <-! (callback) !->
       if type is \app
         callback!
         return
       console.log "Connecting #name to driver network"
       err, data <-! networks[\databox-driver-net].connect Container: container.id
+      if err? then console.log err
       # TODO: Error handling
       callback!
 
@@ -264,12 +286,9 @@ export launch-container = do ->
         return
       console.log "Connecting #name to app network"
       err, data <-! networks[\databox-app-net].connect Container: container.id
+      if err? then console.log err
       # TODO: Error handling
       callback!
-
-    console.log "Starting #name container"
-    err, data <-! container.start config
-    if err? then reject err; return
 
     err, data <-! container.inspect
     if err? then reject err; return

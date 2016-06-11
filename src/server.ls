@@ -10,11 +10,11 @@ require! {
 app = express!
 
 export proxy-container = (name, port) !->
-  app.use proxy name, do
+  app.use proxy "/#name" do
     target: "http://localhost:#port"
     ws: true
     path-rewrite:
-      "^#name": ''
+      "^/#name": '/'
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
       it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
