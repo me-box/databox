@@ -191,7 +191,8 @@ export launch-container = do ->
     # TODO: Error handling
     body |> JSON.parse |> callback null _
 
-  (repo-tag) ->
+  # NOTE: Name is optional and will override default
+  (repo-tag, name) ->
     resolve, reject <-! new Promise!
 
     # Pull to install or for updates first
@@ -201,7 +202,7 @@ export launch-container = do ->
     err, output <-! docker.modem.follow-progress stream
     if err? then reject err; return
     # TODO: Handle potential namespace collisions
-    name = repo-tag |> repo-tag-to-name
+    name = name or repo-tag |> repo-tag-to-name
     console.log "Creating #name container"
     err, container <-! docker.create-container Image: repo-tag, name: name
     if err? then reject err; return
