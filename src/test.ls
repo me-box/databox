@@ -23,6 +23,9 @@ con-man.connect!
     console.log 'Setting up proxy to Arbiter'
     server.proxy-container info.name, info.port
   .then ->
+    # Launch mock containers
+
+  .then ->
     # Launch server
     console.log 'Launching server'
     server.launch server-port, con-man
