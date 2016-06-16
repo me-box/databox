@@ -5,7 +5,8 @@
   "scripts": {
     "build": "riot --template pug src/www/templates",
     "watch": "riot --watch --template pug src/www/templates",
-    "start": "lsc src/main.ls"
+    "start": "lsc src/main.ls",
+    "test1": "lsc src/test-1.ls"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "ursa": "^0.9.4"
   },
   "devDependencies": {
-    "riot": "^2.4.0"
+    "riot": "^2.4.0",
+    "stats-lite": "^2.0.1"
   }
 }
