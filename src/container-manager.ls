@@ -15,12 +15,12 @@ var key-pair
 networks = {}
 
 # Define util functions
-# TODO: Unused now
+# TODO: Promise
 get-container = (name, callback) !->
-  err, containers <-! docker.list-containers all: true
+  err, containers <-! docker.list-containers
   if err? then callback err; return
   for container in containers
-    if ~container.Names.index-of name
+    if ~container.Names.index-of "/#name"
       container.Id |> docker.get-container |> callback null _
       return
   callback new Error "Container #name does not exist locally"
@@ -173,7 +173,7 @@ export launch-container = do ->
   repo-tag-to-name = (.match /(?:.*\/)?([^/:\s]+)(?::.*|$)/ .[1])
 
   update-arbiter = (params, callback) !->
-    err, arbiter <-! get-container \/arbiter
+    err, arbiter <-! get-container \arbiter
     if err? then callback err; return
     err, data <-! arbiter.inspect
     if err? then callback err; return
@@ -219,7 +219,7 @@ export launch-container = do ->
     if err? then reject err; return
 
     type = data.Config.Labels[\databox.type]
-
+    /*
     result <-! (callback) !->
       unless type is \driver
         callback {}
@@ -233,7 +233,7 @@ export launch-container = do ->
     if result.error?
       container.remove !-> resolve result.error
       return
-
+    */
     console.log "Passing #name token to Arbiter"
     update = JSON.stringify { name, token, type }
 
@@ -297,3 +297,13 @@ export launch-container = do ->
 
     # TODO: Error handling
     resolve { name , port }
+
+export get-container-stats-stream = (name) ->
+  resolve, reject <-! new Promise!
+  err, container <-! get-container name
+  if err?
+    reject err
+    return
+  # TODO: Error handling
+  err, stream <-! container.stats
+  resolve { name, err, stream }
