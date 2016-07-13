@@ -31,6 +31,7 @@ aggregate-stats = do
 
         row =
           time: it.read
+          name: info.name
           type: info.type
           rx:   rx-sum
           tx:   tx-sum
@@ -61,38 +62,38 @@ aggregate-stats = do
       .then resolve
       .catch reject
 
-trigger-scan = (driver-port) ->
-  resolve, reject <-! new Promise!
-  console.log 'Triggering mock driver store scan'
-  # TODO: Remove dirty hack to wait for the store to set up
-  <-! set-timeout _, 2000
-  err, res, body <-! request "http://localhost:#driver-port/scan"
-  if err?
-    reject err
-    return
-  resolve body
-
 run-test = do ->
-  out = fs.create-write-stream 'data/test-1.csv'
-    ..write 'stores,type,rx,tx,mem,cpu\n'
+  out = fs.create-write-stream 'data/triplets.csv'
+    ..write 'triplets,name,type,rx,tx,mem,cpu\n'
 
-  (store-count, store-count-max, driver-port) ->
+  (triplet-count, triplet-count-max) ->
     resolve, reject <-! new Promise!
-    if store-count >= store-count-max
+    if triplet-count >= triplet-count-max
       resolve!
       return
 
-    running-containers.push name: "databox-store-mock-#store-count" type: \store
-    launch-store = "databox-store-mock-#store-count"
-      |> -> con-man.launch-container 'amar.io:5000/databox-store-mock:latest', it, [ "HOSTNAME=#it" ]
+    running-containers
+      ..push name: "databox-store-mock-#triplet-count"  type: \store
+      ..push name: "databox-driver-mock-#triplet-count" type: \driver
+      ..push name: "databox-app-mock-#triplet-count"    type: \app
 
-    launch-store
-      .then -> trigger-scan driver-port
+    launch-store  = "databox-store-mock-#triplet-count"
+      |> -> con-man.launch-container 'amar.io:5000/databox-store-mock:latest',  it, [ "HOSTNAME=#it" ]
+
+    <-! launch-store.then
+
+    launch-driver = "databox-driver-mock-#triplet-count"
+      |> -> con-man.launch-container 'amar.io:5000/databox-driver-mock:latest', it, [ "HOSTNAME=#it" ]
+
+    launch-app    = "databox-app-mock-#triplet-count"
+      |> -> con-man.launch-container 'amar.io:5000/databox-app-mock:latest',    it, [ "HOSTNAME=#it" ]
+
+    Promise.all [ launch-driver, launch-app ]
       .then -> aggregate-stats!
       .then (stats) ->
         for stat in stats
-          out.write "#{store-count + 1},#{stat.type},#{stat.rx},#{stat.tx},#{stat.mem},#{stat.cpu}\n"
-      .then -> run-test ++store-count, store-count-max, driver-port
+          out.write "#{triplet-count + 1},#{stat.name},#{stat.type},#{stat.rx},#{stat.tx},#{stat.mem},#{stat.cpu}\n"
+      .then -> run-test ++triplet-count, triplet-count-max
       .then resolve
       .catch reject
 
@@ -111,15 +112,10 @@ con-man.connect!
     console.log 'Launching Arbiter container'
     running-containers.push name: \arbiter type: \arbiter
     con-man.launch-arbiter!
-  .then ->
-    # Launch mock driver
-    console.log 'Launching mock driver'
-    running-containers.push name: \databox-driver-mock type: \driver
-    con-man.launch-container 'amar.io:5000/databox-driver-mock:latest'
   .then (result) ->
     # TODO: Reject and catch
     throw new Error result.err if result.err?
-    run-test 0 100 result.port
+    run-test 0 100
   .then ->
     console.log 'Done'
   .catch !-> console.log it
