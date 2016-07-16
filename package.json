@@ -40,6 +40,7 @@
     "ursa": "^0.9.4"
   },
   "devDependencies": {
+    "mongodb": "^2.2.2",
     "riot": "^2.4.0",
     "stats-lite": "^2.0.1"
   }
