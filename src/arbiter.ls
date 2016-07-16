@@ -19,8 +19,8 @@ run-test = do ->
       resolve!
       return
 
-    launch-store = "databox-store-mongo-#store-count"
-      |> -> con-man.launch-container 'amar.io:5000/databox-store-mongo:latest',  it, [ "HOSTNAME=#it" ]
+    launch-store = "databox-store-sqlite3-#store-count"
+      |> -> con-man.launch-container 'amar.io:5000/databox-store-sqlite3:latest',  it, [ "HOSTNAME=#it" ]
 
     launch-store
       .then (info) !-> out.write "#{new Date!},#{store-count + 1}\n"
@@ -45,6 +45,7 @@ con-man.connect!
   .then (result) ->
     # TODO: Reject and catch
     throw new Error result.err if result.err?
+    <-! set-timeout _, 1000
     run-test 0 100
   .then ->
     console.log 'Done'
