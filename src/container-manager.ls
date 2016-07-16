@@ -50,7 +50,7 @@ export connect = ->
 export kill-all = ->
   resolve, reject <-! new Promise!
 
-  err, containers <-! docker.list-containers all: true filters: '{ "label": [ "databox.type" ] }'
+  err, containers <-! docker.list-containers all: true# filters: '{ "label": [ "databox.type" ] }'
   promises = containers.map (container) ->
     id = container.Id
     name = container.Names[0].substring 1
@@ -195,11 +195,12 @@ export launch-container = do ->
     resolve, reject <-! new Promise!
 
     # Pull to install or for updates first
-    console.log "Pulling image from #repo-tag"
-    err, stream <-! docker.pull repo-tag
-    if err? then reject err; return
-    err, output <-! docker.modem.follow-progress stream
-    if err? then reject err; return
+    #console.log "Pulling image from #repo-tag"
+    #err, stream <-! docker.pull repo-tag
+    #if err? then reject err; return
+    ##stream.pipe process.stdout
+    #err, output <-! docker.modem.follow-progress stream
+    #if err? then reject err; return
     # TODO: Handle potential namespace collisions
     name := name or repo-tag-to-name repo-tag
 
@@ -260,9 +261,10 @@ export launch-container = do ->
       return
 
     if exposed-port-count is 1
-      if '8080/tcp' not of exposed-ports
-        container.remove !-> resolve error: 'Container not launched due to attempting to expose a port other than port 8080.'
-        return
+      # TODO: Only if databox type
+      #if '8080/tcp' not of exposed-ports
+      #  container.remove !-> resolve error: 'Container not launched due to attempting to expose a port other than port 8080.'
+      #  return
       config.PublishAllPorts = true
 
     console.log "Starting #name container"
@@ -293,7 +295,11 @@ export launch-container = do ->
     err, data <-! container.inspect
     if err? then reject err; return
 
-    port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
+    # TODO: Hack
+    if name.starts-with \mongo
+      port = parse-int data.NetworkSettings.Ports['27017/tcp'][0].HostPort
+    else
+      port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
 
     # TODO: Error handling
     resolve { name , port }
