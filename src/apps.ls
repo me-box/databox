@@ -9,6 +9,8 @@ require! {
 
 const server-port = process.env.PORT or 8080
 
+start-time = 0
+
 run-test = do ->
   out = fs.create-write-stream 'data/stores.csv'
     ..write 'stores,name,timestamp,entries\n'
@@ -21,15 +23,17 @@ run-test = do ->
       resolve!
       return
 
-    launch-store = "databox-store-mongo-#store-count"
-      |> -> con-man.launch-container 'amar.io:5000/databox-store-mongo:latest',  it, [ "HOSTNAME=#it" ]
+    launch-store = "mongo-#store-count"
+      |> -> con-man.launch-container \mongo:latest it
 
     launch-store
       .then (info) !->
+        console.log info
+        <-! set-timeout _, 2000
         # Persistent
-        child_process.spawn \curl [ '-s' "\"http://localhost:#{info.port}/read?id=[1-9999999999999999999]\"" ]
-          ..stdout.on \data !->
-            out.write "#{store-count + 1},#{info.name},#{new Date!},1\n"
+        child_process.fork \src/read.ls [] env: PORT: info.port
+          ..on \message !->
+            out.write "#{store-count + 1},#{info.name},#{new Date! - start-time},#it\n"
       .then ->
         ++store-count
         run-test store-count-max
@@ -53,6 +57,7 @@ con-man.connect!
   .then (result) ->
     # TODO: Reject and catch
     throw new Error result.err if result.err?
+    start-time := new Date!
     run-test 100
   .then ->
     console.log 'Done'
