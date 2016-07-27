@@ -62,6 +62,8 @@ export launch = (port, con-man) !->
           url: "https://datashop.amar.io/app/get/"
           form: name: repository
 
+        # TODO: Notify if app server is down
+
         body = JSON.parse body
 
         # Silently ignore if app not found (no manifest, or special)
