@@ -225,7 +225,8 @@ export launch-container = do ->
     result <-! (callback) !->
       # TODO: WARNING: Disable this whole bit for the tests
       # TODO: Change this based on what Mort says
-      unless type is \driver
+      # TODO: Don't hardcode this
+      unless type is \driver and ~name.index-of \driver
         callback {}
         return
       # TODO: Don't hardcode store type
