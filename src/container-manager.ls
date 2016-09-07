@@ -50,7 +50,7 @@ export connect = ->
 export kill-all = ->
   resolve, reject <-! new Promise!
 
-  err, containers <-! docker.list-containers all: true# filters: '{ "label": [ "databox.type" ] }'
+  err, containers <-! docker.list-containers all: true filters: '{ "label": [ "databox.type" ] }'
   promises = containers.map (container) ->
     id = container.Id
     name = container.Names[0].substring 1
@@ -125,6 +125,7 @@ export launch-arbiter = ->
   console.log 'Pulling Arbiter container'
   err, stream <-! docker.pull "#registry-url/databox-arbiter:latest"
   if err? then reject err; return
+  stream.pipe process.stdout
   err, output <-! docker.modem.follow-progress stream
   if err? then reject err; return
 
@@ -195,12 +196,12 @@ export launch-container = do ->
     resolve, reject <-! new Promise!
 
     # Pull to install or for updates first
-    #console.log "Pulling image from #repo-tag"
-    #err, stream <-! docker.pull repo-tag
-    #if err? then reject err; return
-    ##stream.pipe process.stdout
-    #err, output <-! docker.modem.follow-progress stream
-    #if err? then reject err; return
+    console.log "Pulling image from #repo-tag"
+    err, stream <-! docker.pull repo-tag
+    if err? then reject err; return
+    stream.pipe process.stdout
+    err, output <-! docker.modem.follow-progress stream
+    if err? then reject err; return
     # TODO: Handle potential namespace collisions
     name := name or repo-tag-to-name repo-tag
 
@@ -214,27 +215,28 @@ export launch-container = do ->
       name: name
       Image: repo-tag
       Env: [ "ARBITER_TOKEN=#token" ] ++ env
+      PublishAllPorts: true
     if err? then reject err; return
 
     err, data <-! container.inspect
     if err? then reject err; return
 
     type = data.Config.Labels[\databox.type]
-    /*
     result <-! (callback) !->
+      # TODO: WARNING: Disable this whole bit for the tests
+      # TODO: Change this based on what Mort says
       unless type is \driver
         callback {}
         return
       # TODO: Don't hardcode store type
       console.log "Launching passthrough store for #name driver"
       # TODO: Is launching store before driver a security risk (driver hostname getting hijacked)?
-      launch-container 'amar.io:5000/databox-store-passthrough:latest' "#name.store" [ "DRIVER_HOSTNAME=#name" ]
+      launch-container 'amar.io:5000/databox-store-passthrough:latest' "#name.store" [ "HOSTNAME=#name.store" "DRIVER_HOSTNAME=#name" ]
         .then callback
 
     if result.error?
       container.remove !-> resolve result.error
       return
-    */
     console.log "Passing #name token to Arbiter"
     update = JSON.stringify { name, token, type }
 
@@ -243,8 +245,6 @@ export launch-container = do ->
     err, res <-! update-arbiter { data: update, sig }
     # TODO: Error handling
     if err? then reject err; return
-
-    config = {}
 
     # Abort if container tried to expose more than just port 8080
     console.log "Checking ports exposed by #name container"
@@ -260,15 +260,15 @@ export launch-container = do ->
       container.remove !-> resolve error: 'Driver not launched due to not exposing any ports.'
       return
 
-    if exposed-port-count is 1
+    #if exposed-port-count is 1
       # TODO: Only if databox type
       #if '8080/tcp' not of exposed-ports
       #  container.remove !-> resolve error: 'Container not launched due to attempting to expose a port other than port 8080.'
       #  return
-      config.PublishAllPorts = true
 
     console.log "Starting #name container"
-    err, data <-! container.start config
+    err, data <-! container.start
+    # TODO: Handle error properly
     if err? then reject err; return
 
     # FIXME: Very weird race condition when connecting to networks after starting
