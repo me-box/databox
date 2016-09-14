@@ -1,4 +1,5 @@
 require! {
+  os
   crypto
   request
   ursa
@@ -7,6 +8,19 @@ require! {
 }
 
 export const registry-url = 'amar.io:5000'
+
+# Get local IP for env
+# TODO: Maybe find a different solution
+ifaces = os.network-interfaces!
+var ip
+do ->
+  for ifname in Object.keys ifaces
+    continue unless ifname.starts-with \w
+    for iface in ifaces[ifname]
+      continue unless iface.family is \IPv4 #and iface.internal
+      ip := iface.address
+      console.log "Local IP to use set as #ip"
+      return
 
 var docker
 var docker-emitter
@@ -214,7 +228,7 @@ export launch-container = do ->
     err, container <-! docker.create-container do
       name: name
       Image: repo-tag
-      Env: [ "ARBITER_TOKEN=#token" ] ++ env
+      Env: [ "DATABOX_IP=#ip" "ARBITER_TOKEN=#token" ] ++ env
       PublishAllPorts: true
     if err? then reject err; return
 
