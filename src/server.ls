@@ -17,7 +17,8 @@ export proxy-container = (name, port) !->
       "^/#name": '/'
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
-      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+      it.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Content-Length, X-Requested-With'
+      it.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
 
 export launch = (port, con-man) !->
   server = http.create-server app
@@ -28,6 +29,7 @@ export launch = (port, con-man) !->
     ..set \views \src/www
     ..set 'view engine' \pug
     ..use express.static \src/www
+    # FIXME: Using this before proxy is the reason POSTs break -- bad design! See: http://stackoverflow.com/questions/25207333/socket-hang-up-error-with-nodejs/25651651#25651651
     ..use body-parser.urlencoded extended: false
 
     ..get \/ (req, res) !->
