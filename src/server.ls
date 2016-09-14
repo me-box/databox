@@ -17,7 +17,8 @@ export proxy-container = (name, port) !->
       "^/#name": '/'
     on-proxy-res: !->
       it.headers['Access-Control-Allow-Origin'] = \*
-      it.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+      it.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Content-Length, X-Requested-With'
+      it.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
 
 export launch = (port, con-man) !->
   server = http.create-server app
