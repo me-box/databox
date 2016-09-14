@@ -29,6 +29,7 @@ export launch = (port, con-man) !->
     ..set \views \src/www
     ..set 'view engine' \pug
     ..use express.static \src/www
+    # FIXME: Using this before proxy is the reason POSTs break -- bad design! See: http://stackoverflow.com/questions/25207333/socket-hang-up-error-with-nodejs/25651651#25651651
     ..use body-parser.urlencoded extended: false
 
     ..get \/ (req, res) !->
