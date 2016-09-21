@@ -1,0 +1,66 @@
+div {
+	font-family: Roboto, sans-serif;
+	font-size: 11pt;
+}
+
+.mdl-layout__content {
+	margin: 16px;
+}
+
+.package_list {
+	display: flex;
+}
+
+.package {
+	flex: 1;
+	margin: 8px;
+}
+
+.transparent {
+	opacity: 0.8;
+}
+
+.badge {
+	color: #FFF;
+	/* background-color: #CCC; */
+	padding: 8px;
+	float: right;
+}
+
+.package_title {
+	background-color: #333333;
+	color: #FFFFFF;
+	padding: 8px;
+	font-size: 16pt;
+}
+
+.purpose {
+	background-color: #008181;
+	color: #FFFFFF;
+	padding: 8px;
+}
+
+.risk {
+	background-color: #333333;
+	color: #FFFFFF;
+	padding: 8px;
+}
+
+.exchange {
+	text-align: center;
+
+}
+
+.benefits {
+	background-color: #008181;
+	color: #FFFFFF;
+	padding: 8px;
+}
+
+.required {
+	user-select: none;
+	background-color: #d23737;
+	color: #FFFFFF;
+	padding: 8px;
+	text-align: center;
+}

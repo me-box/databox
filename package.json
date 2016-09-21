@@ -6,7 +6,8 @@
     "build": "riot --template pug src/www/templates",
     "watch": "riot --watch --template pug src/www/templates",
     "start": "lsc src/main.ls",
-    "test1": "lsc src/test-1.ls"
+    "test1": "lsc src/test1.ls",
+    "slayer": "lsc src/slayer.ls"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,7 @@
     "pug": "^2.0.0-alpha7",
     "request": "^2.69.0",
     "socket.io": "^1.4.5",
+    "typescript-simple": "^5.0.2",
     "ursa": "^0.9.4"
   },
   "devDependencies": {

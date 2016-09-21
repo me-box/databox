@@ -35,6 +35,9 @@ export launch = (port, con-man) !->
     ..get \/ (req, res) !->
       res.render \index
 
+    ..get \/slayer (req, res) !->
+      res.render \slayer
+
     ..get \/close (req, res) !->
       res.render \close
 
