@@ -1,0 +1,14 @@
+[
+	{
+		"id": 1,
+		"description": "Wireless things time series data store",
+		"hostname": "datastore_wirelessthings:8080",
+		"api_url": "/api/data"
+	},
+	{
+		"id": 2,
+		"description": "Hue bulbs state datastore",
+		"hostname": "datastore_huebulbs:8080",
+		"api_url": "/api/data"
+	}
+]

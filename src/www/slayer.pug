@@ -3,137 +3,23 @@ html
 	head
 		meta(charset='utf-8')
 		meta(name='viewport', content='width=device-width, initial-scale=1')
-		title Databox SLA-er
-		script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js')
-		link(rel='stylesheet', href="https://fonts.googleapis.com/icon?family=Material+Icons")
-		link(rel='stylesheet', href="https://code.getmdl.io/1.2.1/material.blue_grey-red.min.css")
-		script(defer, src="https://code.getmdl.io/1.2.1/material.min.js")
-		script(src='/socket.io/socket.io.js')
-		script(src='https://cdn.jsdelivr.net/riot/2.4/riot.min.js')
-		script(src='/templates/databox-manifest.js')
-		link(rel='stylesheet', href='/templates/databox-manifest.css')
-	body
-		databox-manifest
+		title Databox Slayer
+		link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
+		link(rel='stylesheet', href='/styles/databox.css')
+	body.mdl-layout.mdl-js-layout.mdl-layout--fixed-header
+		header.mdl-layout__header
+			a.mdl-layout-icon.mdl-button.mdl-js-button.mdl-button--icon(href="/")
+				i.material-icons
+					| arrow_back
+			div.mdl-layout__header-row
+				span.mdl-layout-title#title
+		main.mdl-layout__content
+			app-manifest
+				div.mdl-spinner.mdl-js-spinner.is-active
+		script(src='https://code.jquery.com/jquery-3.1.0.min.js')
+		script(src='https://cdn.jsdelivr.net/riot/2.6/riot.min.js')
+		script(src='/templates/app-manifest.js')
+		script(src='https://code.getmdl.io/1.2.1/material.min.js', defer)
 		script.
-			riot.mount('*', { 'manifest' : {
-				'manifest-version': 1,
-				'name': 'databox-twitter-sentiment',
-				'version': '0.1.0',
-				'description': 'A simple Databox app that performs sentiment analysis on your Twitter timeline',
-				'author': 'Yousef Amar <yousef@amar.io> (http://yousefamar.com/)',
-				'license': 'MIT',
-				'tags': ['databox', 'twitter', 'sentiment', 'analysis', 'word', 'cloud'],
-				'homepage': 'https://github.com/yousefamar/databox-twitter-sentiment',
-				'repository': {
-					'type': 'git',
-					'url': 'git+https://github.com/yousefamar/databox-twitter-sentiment.git'
-				},
-				'app': {
-					'id': 'd9fc9556.f02758'
-				},
-				'packages': [
-					{
-						'id': '38f45007.bb1fa',
-						'name': 'Required Package',
-						'purpose': 'Package to check layout, formatting and interaction with required packages.',
-						'required': true,
-						'datastores': [],
-						'outputs': [
-							{
-								'id': '6c93202d.ff2e5',
-								'type': 'app',
-								'color': '#d45500',
-								'icon': 'fa-mobile'
-							}
-						],
-						'risk': 'daily consumption snapshots',
-						'benefits': '5% bill reduction'
-					},
-					{
-						'id': '38f45007.bb1fa',
-						'name': 'Optional Package',
-						'purpose': 'Similarly, this is to test optional packages.',
-						'required': false,
-						'datastores': [],
-						'outputs': [
-							{
-								'id': '6c93202d.ff2e5',
-								'type': 'app',
-								'color': '#d45500',
-								'icon': 'fa-mobile'
-							}
-						],
-						'risk': 'daily consumption snapshots',
-						'benefits': '5% bill reduction'
-					},
-					{
-						'id': '38f45007.bb1fa',
-						'name': 'Optional Package 2',
-						'purpose': 'Another optional package!',
-						'required': false,
-						'datastores': [],
-						'outputs': [
-							{
-								'id': '6c93202d.ff2e5',
-								'type': 'app',
-								'color': '#d45500',
-								'icon': 'fa-mobile'
-							}
-						],
-						'risk': 'daily consumption snapshots',
-						'benefits': '5% bill reduction'
-					}
-				],
-				'forbidden-combinations': [],
-				'datasources': [
-					{
-						'type': 'temp',
-						'required': true,
-						'clientid': 'temp sensor',
-						'name': "Temp Datasource"
-					}
-				]
-			}, 'sensors': [
-				{
-					"id": 1,
-					"driver_id": 1,
-					"sensor_type": 'temp',
-					"datastore_id": 1,
-					"vendor_id": 1,
-					"vendor_code": "AATEMP",
-					"unit": "Degrees Cel",
-					"short_unit": "ºC",
-					"description": "Temperature sensor",
-					"location": "Kitchen",
-					"hostname": "datastore_wirelessthings:8080",
-					"api_url": "/api/data"
-				},
-				{
-					"id": 4,
-					"driver_id": 1,
-					"sensor_type": 'temp',
-					"datastore_id": 1,
-					"vendor_id": 1,
-					"vendor_code": "ABTEMP",
-					"unit": "Degrees Cel",
-					"short_unit": "ºC",
-					"description": "Temperature sensor",
-					"location": "Bathroom",
-					"hostname": "datastore_wirelessthings:8080",
-					"api_url": "/api/data"
-				},
-				{
-					"id": 5,
-					"driver_id": 1,
-					"sensor_type": 'temp',
-					"datastore_id": 1,
-					"vendor_id": 1,
-					"vendor_code": "ACTEMP",
-					"unit": "Degrees Cel",
-					"short_unit": "ºC",
-					"description": "Temperature sensor",
-					"location": "Living Room",
-					"hostname": "datastore_wirelessthings:8080",
-					"api_url": "/api/data"
-				}
-			]})
+			$("#title").text(window.location.hash.substr(1));
+			riot.mount('app-manifest', {'name': window.location.hash.substr(1)});

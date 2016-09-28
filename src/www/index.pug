@@ -3,89 +3,29 @@ html
 	head
 		meta(charset='utf-8')
 		meta(name='viewport', content='width=device-width, initial-scale=1')
-		title Databox Minimal Dashboard
-		link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css', integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7', crossorigin='anonymous')
-		link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css', integrity='sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r', crossorigin='anonymous')
-		script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js')
-		script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', integrity='sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS', crossorigin='anonymous')
+		title Databox Dashboard
+		link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
+		link(rel='stylesheet', href='/styles/databox.css')
+	body.mdl-layout.mdl-js-layout.mdl-layout--fixed-header
+		script(src='https://code.jquery.com/jquery-3.1.0.min.js')
+		script(src='https://cdn.jsdelivr.net/riot/2.6/riot.min.js')
 		script(src='/socket.io/socket.io.js')
-		script(src='https://cdn.jsdelivr.net/riot/2.4/riot.min.js')
-		//script(src='https://cdn.rawgit.com/pugjs/pug/1.11.0/runtime.js')
-		script(src='/templates/running-list.js')
-		script(src='/templates/all-list.js')
-		script(src='/templates/store.js')
-		style.
-			body {
-				min-height: 2000px;
-				padding-top: 70px;
-			}
-			#app-ui-iframe {
-				width: 100%;
-				height: 100%;
-			}
-	body
-		nav.navbar.navbar-default.navbar-fixed-top
-			.container
-				.navbar-header
-					button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#navbar', aria-expanded='false', aria-controls='navbar')
-						span.sr-only Toggle navigation
-						span.icon-bar
-						span.icon-bar
-						span.icon-bar
-					a.navbar-brand(href='#') Databox Placeholder Dashboard
-				#navbar.collapse.navbar-collapse
-					ul.nav.navbar-nav
-						li.active
-							a(href='#overview', data-toggle='tab') Overview
-						li
-							a(href='#running', data-toggle='tab') Running Apps
-						li
-							a(href='#all', data-toggle='tab') All Apps
-						li
-							a(href='#store', data-toggle='tab') Store
-		.tab-content
-			#overview.tab-pane.fade.in.active
-				.container
-					.jumbotron
-						h4 Under Construction
-						p This tab is a remnant of the first iteration but still used for debug; please ignore.
-					.panel.panel-default
-						.panel-heading
-							h3.panel-title Broker Control Panel
-						.panel-body
-							div
-								| Status: 
-								span#broker-status Running
-								button#broker-status-toggle-button.btn.btn-default(type='button', data-loading-text='Toggling...', autocomplete='off', style='float: right;') Toggle
-								iframe(frameBorder='0', width='100%', style='height: 80vh;', src='/broker/')
-							//sandbox='allow-forms allow-scripts', 
-			#running.tab-pane.fade
-				.container
-					running-list#running-app-list
-			#all.tab-pane.fade
-				.container
-					.alert.alert-warning(role='alert')
-						strong Warning:
-						|  This list may include apps that are already running
-					all-list#all-app-list
-			#store.tab-pane.fade
-				.container
-					h4
-						| Repositories on 
-						a(href='https://amar.io:5000/v2/_catalog') Private Docker Registry
-					ul.list-group
-						img(src='spinner.gif', width="16px", height="16px" style='float: left;')
-						h4 Loading...
-					store
-		#app-ui.modal.fade(tabindex='-1', role='dialog', aria-labelledby='app-ui-label')
-			.modal-dialog(role='document')
-				.modal-content
-					.modal-header
-						button.close(type='button', data-dismiss='modal', aria-label='Close')
-							span(aria-hidden='true') &times;
-						h4#app-ui-title.modal-title Databox App
-					.modal-body
-						iframe#app-ui-iframe(sandbox='allow-forms allow-scripts allow-popups', width='100%', style='height: 80vh;')
-					.modal-footer
-		script(src='/index.js')
-		//script riot.mount('*')
+		script(src='/templates/app-list.js')
+		script(src='/templates/app-store.js')
+		script(src='https://code.getmdl.io/1.2.1/material.min.js', defer)
+		header.mdl-layout__header
+			div.mdl-layout__header-row
+				span.mdl-layout-title
+					| Databox Dashboard
+			div.mdl-layout__tab-bar.mdl-js-ripple-effect
+				a.mdl-layout__tab.is-active(href="#apps")
+					| Installed Apps
+				a.mdl-layout__tab(href="#store")
+					| App Store
+		main.mdl-layout__content
+			section.mdl-layout__tab-panel.is-active(id="apps")
+				app-list
+			section.mdl-layout__tab-panel(id="store")
+				app-store
+		script.
+			riot.mount('*');

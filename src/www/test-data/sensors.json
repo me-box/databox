@@ -1,0 +1,38 @@
+[
+	{
+		"id": 1,
+		"driver_id": 1,
+		"sensor_type_id": 1,
+		"datastore_id": 1,
+		"vendor_id": 1,
+		"vendor_code": "AATEMP",
+		"unit": "Degrees Cel",
+		"short_unit": "ºC",
+		"description": "Temperature sensor",
+		"location": "Kitchen"
+	},
+	{
+		"id": 4,
+		"driver_id": 1,
+		"sensor_type_id": 1,
+		"datastore_id": 1,
+		"vendor_id": 1,
+		"vendor_code": "ABTEMP",
+		"unit": "Degrees Cel",
+		"short_unit": "ºC",
+		"description": "Temperature sensor",
+		"location": "Bathroom"
+	},
+	{
+		"id": 5,
+		"driver_id": 1,
+		"sensor_type_id": 2,
+		"datastore_id": 1,
+		"vendor_id": 1,
+		"vendor_code": "ACTEMP",
+		"unit": "Degrees Cel",
+		"short_unit": "ºC",
+		"description": "Other sensor",
+		"location": "Living Room"
+	}
+]

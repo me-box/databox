@@ -32,24 +32,24 @@ export launch = (port, con-man) !->
     # FIXME: Using this before proxy is the reason POSTs break -- bad design! See: http://stackoverflow.com/questions/25207333/socket-hang-up-error-with-nodejs/25651651#25651651
     ..use body-parser.urlencoded extended: false
 
-    ..get \/ (req, res) !->
+    ..get '/' (req, res) !->
       res.render \index
 
-    ..get \/slayer (req, res) !->
+    ..get '/slayer' (req, res) !->
       res.render \slayer
 
-    ..get \/close (req, res) !->
+    ..get '/close' (req, res) !->
       res.render \close
 
-    ..post '/list-containers' (req, res) !->
-      err, containers <-! con-man.get-docker!.list-containers all: req.body.all, filters: '{ "label": [ "databox.type" ] }'
+    ..get '/list-containers' (req, res) !->
+      err, containers <-! con-man.get-docker!.list-containers all: true, filters: '{ "label": [ "databox.type" ] }'
       containers |> JSON.stringify |> res.end
 
-    ..post '/list-images' (req, res) !->
+    ..get '/list-images' (req, res) !->
       err, images <-! con-man.get-docker!.list-images filters: '{ "label": [ "databox.type" ] }'
       images |> JSON.stringify |> res.end
 
-    ..post '/list-store' (req, res) !->
+    ..get '/list-store' (req, res) !->
       (error, response, body) <-! request "https://#{con-man.registry-url}/v2/_catalog"
       if error
         error |> JSON.stringify |> res.end
@@ -82,11 +82,23 @@ export launch = (port, con-man) !->
       err, stream <-! con-man.get-docker!.pull "#{con-man.registry-url}/#name:#tag"
       stream.pipe res
 
-    ..post '/launch-container' (req, res) !->
-      con-man.launch-container req.body.repo-tag
+    ..post '/install' (req, res) !->
+      sla = JSON.parse(req.body.sla)
+      name = sla.name
+      repo-tag = "#{con-man.registry-url}/#name:latest"
+      con-man.launch-container repo-tag
         .then (info) !->
           proxy-container info.name, info.port
           info |> JSON.stringify |> res.send
+
+    ..post '/uninstall' (req, res) !->
+      name = req.body.name || req.body.id
+      container = con-man.get-docker!.get-container req.body.id
+      console.log "Stopping #name"
+      err, data <-! container.stop
+      console.log "Removing #name"
+      err, data <-! container.remove
+      data |> JSON.stringify |> res.send
 
   io.on \connection (socket) !->
     # TODO: Error handling
