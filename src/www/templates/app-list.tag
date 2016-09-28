@@ -34,7 +34,6 @@ app-list
 		uninstall(e)
 		{
 			var app = e.item;
-			console.log("Uninstall " + JSON.stringify(app));
 			$.post("/uninstall", {"id": app.Id}, function (data) {
 				console.log(data);
 			});

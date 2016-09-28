@@ -24,7 +24,7 @@ app-manifest
 				| {risk}
 			div.mdl-color--red-700.mdl-typography--text-center.padded
 				| {selectedText(this)}
-	div.padded(if="{ sensors != null && datastores != null && 'datasources' in manifest}")
+	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest}")
 		div.padded.mdl-color--cyan-800.mdl-typography--subhead.mdl-color-text--white
 			| Datasources
 		ul.mdl-list
@@ -132,8 +132,8 @@ app-manifest
 		}
 
 		installApp(e) {
-			$.post("/install", {"sla": JSON.stringify(manifest)}, function (data) {
+			$.post("/install", {"sla": JSON.stringify(this.manifest)}, function (data) {
 				console.log(data);
 			});
-			history.go(-1);
+			window.location.href = "/";
 		}
