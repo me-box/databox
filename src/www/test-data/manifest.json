@@ -37,7 +37,7 @@
 						"icon": "fa-mobile"
 					}
 				],
-				"risk": "daily consumption snapshots",
+				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			},
 			{
@@ -54,7 +54,7 @@
 						"icon": "fa-mobile"
 					}
 				],
-				"risk": "daily consumption snapshots",
+				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			},
 			{
@@ -71,7 +71,7 @@
 						"icon": "fa-mobile"
 					}
 				],
-				"risk": "daily consumption snapshots",
+				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			}
 		],

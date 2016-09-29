@@ -21,7 +21,7 @@ app-manifest
 			div.exchange
 				| in exchange for
 			div.dark.padded
-				| {risk}
+				| {risks}
 			div.mdl-color--red-700.mdl-typography--text-center.padded
 				| {selectedText(this)}
 	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest}")
@@ -50,8 +50,8 @@ app-manifest
 			else {
 				$.post("http://store.upintheclouds.org/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
 			}
-			$.get("/test-data/datastores.json", this.setDatastores);
-			$.get("/test-data/sensors.json", this.setSensors);
+			$.get("/directory/api/datastore", this.setDatastores);
+			$.get("/directory/api/sensor", this.setSensors);
 		});
 
 		getSensors(type) {
