@@ -101,7 +101,7 @@ export launch = (port, con-man) !->
         .then (info) !->
           index = installingApps.indexOf("/"+name)
           if index != -1
-            delete installingApps[index]
+            installingApps.splice(index, 1)
           console.log("Installing: " + JSON.stringify(installingApps))
           proxy-container info.name, info.port
           info |> JSON.stringify |> res.send
