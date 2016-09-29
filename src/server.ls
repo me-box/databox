@@ -22,6 +22,7 @@ export proxy-container = (name, port) !->
 
 export launch = (port, con-man) !->
   server = http.create-server app
+  installingApps = []
   io := io server
 
   app
@@ -43,6 +44,13 @@ export launch = (port, con-man) !->
 
     ..get '/list-containers' (req, res) !->
       err, containers <-! con-man.get-docker!.list-containers all: true, filters: '{ "label": [ "databox.type" ] }'
+      for appName in installingApps
+        found = false
+        for app in containers
+          if app.Names.indexOf(appName) != -1
+            found = true
+        if !found
+          containers.push({Names:[appName], Status: "Installing"})
       containers |> JSON.stringify |> res.end
 
     ..get '/list-images' (req, res) !->
@@ -85,9 +93,16 @@ export launch = (port, con-man) !->
     ..post '/install' (req, res) !->
       sla = JSON.parse(req.body.sla)
       name = sla.name
+      console.log(JSON.stringify(installingApps))
       repo-tag = "#{con-man.registry-url}/#name:latest"
+      installingApps.push("/"+name)
+      io.emit \docker-create repo-tag
       con-man.launch-container repo-tag
         .then (info) !->
+          index = installingApps.indexOf("/"+name)
+          if index != -1
+            delete installingApps[index]
+          console.log("Installing: " + JSON.stringify(installingApps))
           proxy-container info.name, info.port
           info |> JSON.stringify |> res.send
 
