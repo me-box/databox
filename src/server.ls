@@ -62,7 +62,7 @@ export launch = (port, con-man) !->
 
       repositories.for-each (repository) !->
         error, response, body <-! request.post do
-          url: "https://datashop.amar.io/app/get/"
+          url: "http://store.upintheclouds.org/app/get/"
           form: name: repository
 
         # TODO: Notify if app server is down

@@ -48,7 +48,7 @@ app-manifest
 				$.get("/test-data/manifest.json", this.setManifest);
 			}
 			else {
-				$.post("https://datashop.amar.io/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
+				$.post("http://store.upintheclouds.org/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
 			}
 			$.get("/test-data/datastores.json", this.setDatastores);
 			$.get("/test-data/sensors.json", this.setSensors);
