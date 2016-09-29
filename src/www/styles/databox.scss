@@ -65,7 +65,7 @@ $color-accent-contrast: $color-white !default;
 .exchange {
 	text-align: center;
 	background: #333 url(../templates/sla.svg) no-repeat;
-	background-size: contain;
+	background-size: 100% 100%;
 	padding: 16px;
 	color: #000;
 }
