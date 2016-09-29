@@ -19,24 +19,13 @@
 			"type": "git",
 			"url": "git+https://github.com/yousefamar/databox-twitter-sentiment.git"
 		},
-		"app": {
-			"id": "d9fc9556.f02758"
-		},
 		"packages": [
 			{
 				"id": "38f45007.bb1fa",
 				"name": "Required Package",
 				"purpose": "Package to check layout, formatting and interaction with required packages.",
 				"required": true,
-				"datastores": [],
-				"outputs": [
-					{
-						"id": "6c93202d.ff2e5",
-						"type": "app",
-						"color": "#d45500",
-						"icon": "fa-mobile"
-					}
-				],
+				"datasources": [],
 				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			},
@@ -45,15 +34,7 @@
 				"name": "Optional Package",
 				"purpose": "Similarly, this is to test optional packages.",
 				"required": false,
-				"datastores": [],
-				"outputs": [
-					{
-						"id": "6c93202d.ff2e5",
-						"type": "app",
-						"color": "#d45500",
-						"icon": "fa-mobile"
-					}
-				],
+				"datasources": ["temp1"],
 				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			},
@@ -62,32 +43,24 @@
 				"name": "Optional Package 2",
 				"purpose": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 				"required": false,
-				"datastores": [],
-				"outputs": [
-					{
-						"id": "6c93202d.ff2e5",
-						"type": "app",
-						"color": "#d45500",
-						"icon": "fa-mobile"
-					}
-				],
+				"datasources": ["hue"],
 				"risks": "daily consumption snapshots",
 				"benefits": "5% bill reduction"
 			}
 		],
-		"forbidden-combinations": [],
+		"allowed-combinations": [],
 		"datasources": [
 			{
-				"type": "1",
+				"type": "Temperature",
 				"required": true,
-				"clientid": "temp",
-				"name": "Temperature Datasource"
+				"clientid": "temp1",
+				"granularity": []
 			},
 			{
-				"type": "5",
+				"type": "Hue Bulbs",
 				"required": true,
 				"clientid": "hue",
-				"name": "Hue Bulb Datasource"
+				"granularity": []
 			}
 		]
 	}
