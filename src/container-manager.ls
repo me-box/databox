@@ -7,7 +7,7 @@ require! {
   \docker-events : DockerEvents
 }
 
-export const registry-url = 'amar.io:5000'
+export const registry-url = 'registry.upintheclouds.org'
 
 # Get local IP for env
 # TODO: Maybe find a different solution
@@ -183,6 +183,43 @@ export launch-arbiter = ->
 
   resolve name: \arbiter port: parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
 
+export launch-directory = ->
+  resolve, reject <-! new Promise!
+
+  # Pull latest directory image
+  console.log 'Pulling directory container'
+  err, stream <-! docker.pull "#registry-url/databox-directory:latest"
+  if err? then reject err; return
+  stream.pipe process.stdout
+  err, output <-! docker.modem.follow-progress stream
+  if err? then reject err; return
+
+  # Create directory container
+  console.log 'Creating directory container'
+  err, directory <-! docker.create-container do
+    name: \directory
+    Image: "#registry-url/databox-directory:latest"
+    PublishAllPorts: true
+  if err? then reject err; return
+  
+  # Start directory container
+  console.log 'Starting directory container'
+  err, data <-! directory.start!
+  if err? then reject err; return
+
+  console.log 'Connecting directory container to driver network'
+  err, data <-! networks[\databox-driver-net].connect Container: directory.id
+  if err? then reject err; return
+
+  console.log 'Connecting directory container to app network'
+  err, data <-! networks[\databox-app-net].connect Container: directory.id
+  if err? then reject err; return
+
+  console.log 'Checking directory port'
+  err, data <-! directory.inspect
+  if err? then reject err; return
+
+  resolve name: \directory port: parse-int data.NetworkSettings.Ports['3000/tcp'][0].HostPort
 
 export launch-container = do ->
   repo-tag-to-name = (.match /(?:.*\/)?([^/:\s]+)(?::.*|$)/ .[1])
@@ -246,7 +283,7 @@ export launch-container = do ->
       # TODO: Don't hardcode store type
       console.log "Launching passthrough store for #name driver"
       # TODO: Is launching store before driver a security risk (driver hostname getting hijacked)?
-      launch-container 'amar.io:5000/databox-store-passthrough:latest' "#name.store" [ "HOSTNAME=#name.store" "DRIVER_HOSTNAME=#name" ]
+      launch-container 'registry.upintheclouds.org/databox-store-passthrough:latest' "#name.store" [ "HOSTNAME=#name.store" "DRIVER_HOSTNAME=#name" ]
         .then callback
 
     if result.error?

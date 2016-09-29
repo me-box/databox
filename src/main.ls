@@ -23,6 +23,13 @@ con-man.connect!
     console.log 'Setting up proxy to Arbiter'
     server.proxy-container info.name, info.port
   .then ->
+    # Launch Directory
+    console.log 'Launching Directory container'
+    con-man.launch-directory!
+  .then (info) ->
+    console.log 'Setting up proxy to Directory'
+    server.proxy-container info.name, info.port
+  .then ->
     # Launch server
     console.log 'Launching server'
     server.launch server-port, con-man
