@@ -22,6 +22,8 @@ app-manifest
 				| in exchange for
 			div.dark.padded
 				| {risks}
+				div(each="{datasource in datasources}")
+					| Access to { getDatasource(datasource).type }
 			div.mdl-color--red-700.mdl-typography--text-center.padded
 				| {selectedText(this)}
 	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest}")
@@ -120,6 +122,17 @@ app-manifest
 					}
 				}
 			}
+		}
+
+		getDatasource(datasource_id) {
+			for(datasource of this.manifest.datasources)
+			{
+				if(datasource.clientid === datasource_id)
+				{
+					return datasource;
+				}
+			}
+			return {"type": "sensor"};
 		}
 
 		selectedText(item) {
