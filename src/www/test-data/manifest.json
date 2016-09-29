@@ -51,12 +51,14 @@
 		"allowed-combinations": [],
 		"datasources": [
 			{
+				"name": "Temperature Datasource",
 				"type": "Temperature",
 				"required": true,
 				"clientid": "temp1",
 				"granularity": []
 			},
 			{
+				"name": "Light Datasource",
 				"type": "Hue Bulbs",
 				"required": true,
 				"clientid": "hue",
