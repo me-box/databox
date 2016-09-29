@@ -72,16 +72,19 @@ app-manifest
 		setManifest(data) {
 			this.manifest = data.manifest;
 			this.update();
+			componentHandler.upgradeAllRegistered();
 		}
 
 		setDatastores(data) {
 			this.datastores = data;
 			this.update();
+			componentHandler.upgradeAllRegistered();
 		}
 
 		setSensors(data) {
 			this.sensors = data;
 			this.update();
+			componentHandler.upgradeAllRegistered();
 		}
 
 		togglePackage(e) {
