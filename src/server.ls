@@ -91,6 +91,15 @@ export launch = (port, con-man) !->
           proxy-container info.name, info.port
           info |> JSON.stringify |> res.send
 
+    ..post '/restart' (req, res) !->
+      name = req.body.name || req.body.id
+      container = con-man.get-docker!.get-container req.body.id
+      console.log "Stopping #name"
+      err, data <-! container.stop
+      console.log "Starting #name"
+      err, data <-! container.start
+      data |> JSON.stringify |> res.send
+
     ..post '/uninstall' (req, res) !->
       name = req.body.name || req.body.id
       container = con-man.get-docker!.get-container req.body.id

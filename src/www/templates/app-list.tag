@@ -10,9 +10,13 @@ app-list
 				span.mdl-list__item-sub-title
 					| { Status }
 			span.mdl-list__item-secondary-content
-				a.mdl-list__item-secondary-action(onclick="{ parent.uninstall }")
-					i.material-icons
-						| close
+				span.mdl-list__item-secondary-action
+					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.restartApp }")
+						i.material-icons
+							| refresh
+					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.uninstall }")
+						i.material-icons
+							| close
 	script.
 		reload(message)
 		{
@@ -34,6 +38,14 @@ app-list
 			this.loaded = true;
 			this.update();
 			componentHandler.upgradeAllRegistered();
+		}
+
+		restartApp(e)
+		{
+			var app = e.item;
+			$.post("/restart", {"id": app.Id}, function (data) {
+				console.log(data);
+			});
 		}
 
 		uninstall(e)
