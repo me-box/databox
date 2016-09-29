@@ -26,6 +26,11 @@ app-list
 		reloaded(data)
 		{
 			this.apps = JSON.parse(data);
+			this.apps.sort(function (a, b) {
+				var nameA = a.Names[0].toUpperCase(); // ignore upper and lowercase
+				var nameB = b.Names[0].toUpperCase(); // ignore upper and lowercase
+				return nameA.localeCompare(nameB);
+			});
 			this.loaded = true;
 			this.update();
 			componentHandler.upgradeAllRegistered();

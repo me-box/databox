@@ -80,14 +80,14 @@
 			{
 				"type": "1",
 				"required": true,
-				"clientid": "temp1",
+				"clientid": "temp",
 				"name": "Temperature Datasource"
 			},
 			{
-				"type": "2",
+				"type": "5",
 				"required": true,
-				"clientid": "other2",
-				"name": "Other Datasource"
+				"clientid": "hue",
+				"name": "Hue Bulb Datasource"
 			}
 		]
 	}
