@@ -52,14 +52,14 @@
 		"datasources": [
 			{
 				"name": "Temperature Datasource",
-				"type": "Temperature",
+				"type": "temp",
 				"required": true,
 				"clientid": "temp1",
 				"granularity": []
 			},
 			{
 				"name": "Light Datasource",
-				"type": "Hue Bulbs",
+				"type": "huebulb",
 				"required": true,
 				"clientid": "hue",
 				"granularity": []

@@ -23,7 +23,7 @@ app-manifest
 			div.dark.padded
 				| {risks}
 				div(each="{datasource in datasources}")
-					| Access to { getDatasource(datasource).type }
+					| Access to { getDatasourceType(datasource) }
 			div.mdl-color--red-700.mdl-typography--text-center.padded
 				| {selectedText(this)}
 	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest}")
@@ -32,6 +32,8 @@ app-manifest
 		ul.mdl-list
 			li.mdl-list__item.mdl-list__item--two-line(each="{ manifest.datasources }", id="{'datasource_' + clientid}")
 				span.mdl-list__item-primary-content
+					i.material-icons.mdl-list__item-icon
+						| input
 					span
 						| { name }
 					span.mdl-list__item-sub-title
@@ -39,14 +41,22 @@ app-manifest
 				ul.mdl-menu.mdl-menu--bottom-left.mdl-js-menu.mdl-js-ripple-effect(for="{'datasource_' + clientid}")
 					li.mdl-menu__item(each="{ getSensors(type) }", onclick="{ parent.selectSensor(parent)}")
 						| { description }, { location }
+					li.mdl-menu__item(disabled, if="{ getSensors(type).length == 0 }")
+						| No sensors found
 	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="{ installApp }")
 		| Install
 	script.
 		this.manifest = null;
 		this.sensors = null;
 		this.datastores = null;
+		this.typeMapping = {
+			"temp": {id: 1, name: "Temperature"},
+			"huebulb": {id: 5, name: "Hue Lights"},
+			"sensorkit": {id: 6, name: "Sensor Kit"},
+			"app": {id: 7, name: "App"}
+		};
 		this.on('mount', function () {
-			if(getUrlVars()["test"] == "true") {
+			if (getUrlVars()["test"] == "true") {
 				$.get("/test-data/manifest.json", this.setManifest);
 			}
 			else {
@@ -57,17 +67,23 @@ app-manifest
 		});
 
 		getSensors(type) {
-			if(type == null)
-			{
+			if (type == null) {
 				console.log(type + " == null");
 				return this.sensors;
 			}
-			else
-			{
-				var typeString = String(type);
-				return this.sensors.filter(function (sensor) {
-					return sensor.sensor_type_id == typeString;
-				});
+			else {
+				var typeObj = this.typeMapping[type];
+				if(typeObj != null)
+				{
+					return this.sensors.filter(function (sensor) {
+						return sensor.sensor_type_id === typeObj.id;
+					});
+				}
+				else {
+					return this.sensors.filter(function (sensor) {
+						return sensor.sensor_type_id === type;
+					});
+				}
 			}
 		}
 
@@ -112,10 +128,8 @@ app-manifest
 			return function (e) {
 				var sensor = e.item;
 				var datasource = source._item;
-				for (var datastore of this.datastores)
-				{
-					if(datastore.id == sensor.datastore_id)
-					{
+				for (var datastore of this.datastores) {
+					if (datastore.id == sensor.datastore_id) {
 						datasource.hostname = datastore.hostname;
 						datasource.api_url = datastore.api_url;
 						datasource.sensor = sensor.description + ", " + sensor.location;
@@ -124,12 +138,15 @@ app-manifest
 			}
 		}
 
-		getDatasource(datasource_id) {
-			for(datasource of this.manifest.datasources)
-			{
-				if(datasource.clientid === datasource_id)
-				{
-					return datasource;
+		getDatasourceType(datasource_id) {
+			for (datasource of this.manifest.datasources) {
+				if (datasource.clientid === datasource_id) {
+					var type = this.typeMapping[datasource.type];
+					if(type != null)
+					{
+						return type.name;
+					}
+					return datasource.type;
 				}
 			}
 			return {"type": "sensor"};

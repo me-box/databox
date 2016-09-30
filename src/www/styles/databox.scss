@@ -58,6 +58,10 @@ $color-accent-contrast: $color-white !default;
 	background-color: #eee
 }
 
+.mdl-menu.mdl-menu--bottom {
+	left: 0;
+	right: 0; }
+
 .padded {
 	padding: 16px;
 }
