@@ -226,16 +226,22 @@ export launch-container = do ->
 
   update-arbiter = (params, callback) !->
     err, arbiter <-! get-container \arbiter
+    if err? then console.log "update 1" err
     if err? then callback err; return
     err, data <-! arbiter.inspect
+    if err? then console.log "update 2" err
     if err? then callback err; return
-
     port = parse-int data.NetworkSettings.Ports['8080/tcp'][0].HostPort
 
     error, response, body <-! request.post do
       url: "http://localhost:#port/update"
       form: params
-
+    if error? then 
+      console.log "URL: http://localhost:#port/update" 
+      console.log "params" params 
+      console.log "error" error 
+      console.log "response" response 
+      console.log "body" body 
     if error? then callback error; return
 
     # TODO: Error handling
@@ -262,14 +268,19 @@ export launch-container = do ->
     token = buffer.to-string \base64
 
     console.log "Creating #name container"
-    err, container <-! docker.create-container do
+    err, container <-! docker.create-container do 
       name: name
       Image: repo-tag
       Env: [ "DATABOX_IP=#ip" "ARBITER_TOKEN=#token" ] ++ env
       PublishAllPorts: true
+      Privileged: true
+      Devices: [{ PathOnHost: "/dev/bus/usb/001", PathInContainer: "/dev/bus/usb/001", CgroupPermissions: "mrw" }]
+
+    if err? then console.log "1" err
     if err? then reject err; return
 
     err, data <-! container.inspect
+    if err? then console.log "2" err
     if err? then reject err; return
 
     type = data.Config.Labels[\databox.type]
@@ -291,11 +302,12 @@ export launch-container = do ->
       return
     console.log "Passing #name token to Arbiter"
     update = JSON.stringify { name, token, type }
-
+    console.log update
     sig = key-pair.hash-and-sign \md5 new Buffer update .to-string \base64
 
     err, res <-! update-arbiter { data: update, sig }
     # TODO: Error handling
+    if err? then console.log "3" err
     if err? then reject err; return
 
     # Abort if container tried to expose more than just port 8080

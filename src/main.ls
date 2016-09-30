@@ -1,5 +1,6 @@
 require! {
   './container-manager.ls': con-man
+  './mozfest-containers.ls': moz-con
   './server.ls'
 }
 
@@ -29,6 +30,10 @@ con-man.connect!
   .then (info) ->
     console.log 'Setting up proxy to Directory'
     server.proxy-container info.name, info.port
+  .then ->
+    console.log 'Launching Mozfest Containers'
+    console.log moz-con
+    moz-con.run! 
   .then ->
     # Launch server
     console.log 'Launching server'
