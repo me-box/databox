@@ -1,50 +1,50 @@
 {
-  "name": "databox-container-manager",
-  "version": "0.1.0",
-  "description": "Databox OS container manager and dashboard server",
-  "scripts": {
-    "build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
-    "watch": "riot --watch --template pug src/www/templates | node-sass -w src/www/styles/ -o src/www/styles/",
-    "start": "npm run-script build && lsc src/main.ls",
-    "test1": "lsc src/test1.ls"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yousefamar/databox-container-manager.git"
-  },
-  "keywords": [
-    "docker",
-    "databox",
-    "personal",
-    "data",
-    "dashboard",
-    "container",
-    "manager"
-  ],
-  "author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/yousefamar/databox-container-manager/issues"
-  },
-  "homepage": "https://github.com/yousefamar/databox-container-manager#readme",
-  "dependencies": {
-    "body-parser": "^1.14.2",
-    "docker-events": "0.0.2",
-    "dockerode": "^2.2.9",
-    "express": "^4.13.4",
-    "http-proxy-middleware": "^0.12.0",
-    "livescript": "^1.4.0",
-    "material-design-lite": "^1.2.1",
-    "node-sass": "^3.10.0",
-    "pug": "^2.0.0-alpha7",
-    "request": "^2.69.0",
-    "socket.io": "^1.4.5",
-    "typescript-simple": "^5.0.2",
-    "ursa": "^0.9.4"
-  },
-  "devDependencies": {
-    "mongodb": "^2.2.2",
-    "riot": "^2.4.0",
-    "stats-lite": "^2.0.1"
-  }
+	"name": "databox-container-manager",
+	"version": "0.1.0",
+	"description": "Databox OS container manager and dashboard server",
+	"scripts": {
+		"build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
+		"watch": "riot --watch --template pug src/www/templates | node-sass -w src/www/styles/ -o src/www/styles/",
+		"start": "npm run-script build && lsc src/main.ls",
+		"test1": "lsc src/test1.ls"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/yousefamar/databox-container-manager.git"
+	},
+	"keywords": [
+		"docker",
+		"databox",
+		"personal",
+		"data",
+		"dashboard",
+		"container",
+		"manager"
+	],
+	"author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/yousefamar/databox-container-manager/issues"
+	},
+	"homepage": "https://github.com/yousefamar/databox-container-manager#readme",
+	"dependencies": {
+		"body-parser": "^1.14.2",
+		"docker-events": "0.0.2",
+		"dockerode": "^2.2.9",
+		"express": "^4.13.4",
+		"http-proxy-middleware": "^0.12.0",
+		"livescript": "^1.4.0",
+		"material-design-lite": "^1.2.1",
+		"node-sass": "^3.10.0",
+		"pug": "^2.0.0-alpha7",
+		"riot": "^2.4.0",
+		"request": "^2.69.0",
+		"socket.io": "^1.4.5",
+		"typescript-simple": "^5.0.2",
+		"ursa": "^0.9.4"
+	},
+	"devDependencies": {
+		"mongodb": "^2.2.2",
+		"stats-lite": "^2.0.1"
+	}
 }
