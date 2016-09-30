@@ -5,7 +5,7 @@
   "scripts": {
     "build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
     "watch": "riot --watch --template pug src/www/templates | node-sass -w src/www/styles/ -o src/www/styles/",
-    "start": "lsc src/main.ls",
+    "start": "npm run-script build && lsc src/main.ls",
     "test1": "lsc src/test1.ls"
   },
   "repository": {
