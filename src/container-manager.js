@@ -99,6 +99,18 @@ var listNetworks = function(networks, name) {
   });
 }
 
+var createNetwork = function(name) {
+  return new Promise( (resolve, reject) =>  {
+    docker.createNetwork({Name:name,Driver:'bridge'}, (err,data) => {
+      if(err) {
+        reject("[createNetwork] Can't list networks");
+        return;
+      }
+      resolve(data);
+    })
+  });
+}
+
 var getContainer = function(id) {
   return new Promise( (resolve, reject) =>  {
     resolve(docker.getContainer(id));
@@ -154,13 +166,13 @@ exports.initNetworks = function () {
 
           return Promise.all(requiredNets)
               .then((networks) => {
-                console.log("Networks already exist");
+                //console.log("Networks already exist");
                 console.log(networks);
                 resolve(networks);
               })
-              .catch(networks => {
-                console.log("Creating networks")
-                //TODO:  NEED TO BE WRITTEN!!
+              .catch(err => {
+                //console.log("Creating networks")
+                reject(err);
               })
 
         })
