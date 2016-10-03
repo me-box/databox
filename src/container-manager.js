@@ -5,7 +5,7 @@ var ursa = require('ursa');
 var DockerEvents = require('docker-events');
 
 var docker = new Docker(); 
-var dockerEmitter = new DockerEvents(docker);
+var dockerEmitter = new DockerEvents({docker:docker});
 
 
 exports.connect  = function () {

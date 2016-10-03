@@ -1,4 +1,4 @@
-
+var Promise = require('promise');
 var Config = require('./config.json');
 var http = require('http');
 var express = require('express');
@@ -47,7 +47,40 @@ exports.launch = function (port, conman) {
     });
 
     app.get('/list-store',(req,res) => { 
-        res.end(JSON.stringify("ERROR: NOT IMPLIMENTED YET!!"));
+        
+        console.log('list-store');
+
+        request('https://' + Config.registryUrl + '/v2/_catalog', (error,response,body) => {
+           if(error) {
+                res.end(JSON.stringify(error)); 
+                return  
+            }
+            var repositories = JSON.parse(body).repositories;
+            console.log(repositories);
+            var repocount = repositories.length;
+            var manifests = [];
+
+            repositories.map((repo) => {
+                console.log("get manifest for " + repo);
+                request.post( {'url':Config.storeUrl+'/app/get/', 'form':{'name':repo}}, (err,data) => {
+
+                    if(err) {
+                        //do nothong
+                        return ;
+                    }
+
+                    body = JSON.parse(data.body);
+                    if( typeof body.error == 'undefined' || body.error != 23) {
+                        manifests.push(body);
+                    }
+                    repocount--;
+                    if(repocount <= 0) {
+                        res.end(JSON.stringify(manifests));
+                    } 
+                });
+            });
+
+        });
     });
 
 
@@ -120,7 +153,33 @@ exports.launch = function (port, conman) {
 
     io.on('connection',(socket)=>{
 
-        conman.getDockerEmitter();
+        var emitter = conman.getDockerEmitter();
+
+        emitter.on("connect", function() {
+          socket.emit('docker-connec');
+        });
+        emitter.on("disconnect", function() {
+          socket.emit('docker-disconnect');
+        });
+        emitter.on("_message", function(message) {
+          socket.emit('docker-_message',message);
+        });
+        emitter.on("create", function(message) {
+          socket.emit('docker-create',message);
+        });
+        emitter.on("start", function(message) {
+          socket.emit('docker-star',message);
+        });
+        emitter.on("start", function(message) {
+          socket.emit('docker-stop',message);
+        });
+        emitter.on("die", function(message) {
+          socket.emit('docker-die',message);
+        });
+        emitter.on("destroy", function(message) {
+          socket.emit('docker-destroy',message);
+        });
+        emitter.start();
 
     //TODO: NOT SURE HOW TO DO THIS IN JS YET
 
