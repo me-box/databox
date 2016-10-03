@@ -54,7 +54,7 @@ app-manifest
 			"bulbs": {id: 5, name: "Hue Lights"},
 			"temp": {id: 1, name: "Temperature"},
 			"huebulb": {id: 5, name: "Hue Lights"},
-			"sensorkit": {id: 6, name: "Sensor Kit"},
+			"sensingkit": {id: 6, name: "Sensor Kit"},
 			"app": {id: 7, name: "App"}
 		};
 		this.on('mount', function () {
