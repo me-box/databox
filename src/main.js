@@ -28,7 +28,7 @@ setup()
   //    return conman.launchDirectory();
   //})
   
-  .then ( data => { 
+  .then ( () => { 
             console.log("Starting Server!!");
             return server.launch(Config.serverPort, conman);
             } ) 

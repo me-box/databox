@@ -13,13 +13,14 @@ var app = express();
 exports.proxyContainer = function (name, port) {
     return new Promise( (resolve, reject) =>  {
 
-        var p = proxy(name, {'target': "http://localhost:" + port, 'ws': true, 'pathRewrite':{ ["^/"+name]: '/'} });
-
-        p.onProxyRes = (proxyRes, req, res) => {
+        var onProxyRes = function(proxyRes, req, res) {
+            console.log(proxyRes, req, res);
             proxyRes.headers['Access-Control-Allow-Origin'] = '*';
             proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Content-Length, X-Requested-With';
             proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-        };   
+        };
+
+        var p = proxy("/"+name, {logLevel: 'debug', target: "http://localhost:" + port, ws: true, pathRewrite:{ ["^/"+name]: '/'}, proxyRes: onProxyRes });
 
         app.use(p);
         resolve();
@@ -36,6 +37,7 @@ exports.launch = function (port, conman) {
     app.set('views', 'src/www');
     app.set('view engine','pug');
     app.use(express.static('src/www'));
+
     app.use(bodyParser.urlencoded({extended: false}));
 
     app.get('/',(req,res) => { res.render('index') });
@@ -197,6 +199,7 @@ exports.launch = function (port, conman) {
         emitter.start();
         
     })
+
     server.listen(port);
 }
 
