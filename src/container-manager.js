@@ -295,10 +295,10 @@ exports.launchDirectory = function () {
       console.log("conecting to app network");
       return connectToNetwork(Directory,'databox-app-net');          
     })
-    .then((Arbiter) => {return inspectContainer(Directory)} ) 
-    .then((data) => { resolve({'name': 'arbiter', port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
+    .then((Directory) => {return inspectContainer(Directory)} ) 
+    .then((data) => { resolve({'name': 'directory', port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
     .catch((err) => {
-      console.log("Error creating Arbiter");
+      console.log("Error creating Directory");
       reject(err)
     });
 

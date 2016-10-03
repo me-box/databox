@@ -1,8 +1,8 @@
 
 {
-	"registryUrl__": "registry.upintheclouds.org",
-  "storeUrl__": "http://store.upintheclouds.org",
-	"registryUrl": "amar.io:5000",
-	"storeUrl": "https://datashop.amar.io",
+	"registryUrl": "registry.upintheclouds.org",
+  "storeUrl": "http://store.upintheclouds.org",
+	"registryUrl__": "amar.io:5000",
+	"storeUrl__": "https://datashop.amar.io",
   "serverPort": 8080
 }

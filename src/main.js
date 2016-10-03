@@ -23,10 +23,14 @@ setup()
               return server.proxyContainer(info.name, info.port)
             })
 
-  //.then( () => {
-  //    console.log('Launching Directory container');
-  //    return conman.launchDirectory();
-  //})
+  .then( () => {
+      console.log('Launching Directory container');
+      return conman.launchDirectory();
+  })
+  .then( info => { 
+              console.log('Setting up proxy to Directory');
+              return server.proxyContainer(info.name, info.port)
+            })
   
   .then ( () => { 
             console.log("Starting Server!!");
