@@ -156,7 +156,7 @@ exports.launch = function (port, conman) {
         var emitter = conman.getDockerEmitter();
 
         emitter.on("connect", function() {
-          socket.emit('docker-connec');
+          socket.emit('docker-connect');
         });
         emitter.on("disconnect", function() {
           socket.emit('docker-disconnect');

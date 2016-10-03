@@ -90,41 +90,60 @@ exports.killAll = function () {
   });
 }
 
+var listNetworks = function(networks, name) {
+  return new Promise( (resolve, reject) =>  {
+    docker.listNetworks({}, (err,data) => {
+      if(err) reject("[listNetworks] Can't list networks");
+      resolve(data);
+    })
+  });
+}
+
+
+var getNetwork = function(networks, name) {
+  return new Promise( (resolve, reject) =>  {
+    for(i in networks) {
+          var net = networks[i];
+          if(net.Name === name) {
+            var n = docker.getNetwork(net.Id)
+            resolve(n)
+            return;
+          }
+      }
+      console.log("Network " + name + " not found!");
+      docker.createNetwork({'Name': name, 'Driver': 'bridge'}, (err,data) => {
+        if(err) reject("[getNetwork] Can't create networks")
+        resolve(data);
+      })
+  });
+}
+
+var connectToNetwork = function (container, networkName) {
+  return new Promise( (resolve, reject) =>  {
+    console.log("Conecting container to " + networkName);
+    listNetworks({})
+    .then( (nets) => { return getNetwork(nets,networkName)})
+    .then( (net) => {
+        net.connect({'Container':container.id}, (err,data) => {
+          if(err) { 
+            reject("Can't conect to network" + err);
+            return;
+          }
+          resolve(container);
+        });
+      })
+      .catch(err => reject('[connectToNetwork]' + err))
+  });
+}
+
 exports.initNetworks = function () {
   return new Promise( (resolve, reject) =>  {
       
-      var listNetworks = function(networks, name) {
-        return new Promise( (resolve, reject) =>  {
-          docker.listNetworks({}, (err,data) => {
-            if(err) reject("[listNetworks] Can't list networks");
-            resolve(data);
-          })
-        });
-      }
-
-      var getNetwork = function(networks, name) {
-        return new Promise( (resolve, reject) =>  {
-          for(net in networks) {
-                if(net.Name === name) {
-                  var n = docker.getNetwork(net.Id)
-                  //console.log(n)
-                  resolve(n)
-                  return;
-                }
-            }
-            console.log("Network " + name + " not found!");
-            docker.createNetwork({'Name': name, 'Driver': 'bridge'}, (err,data) => {
-              if(err) reject("[getNetwork] Can't create networks")
-              resolve(data);
-            })
-        });
-      }
-
       listNetworks({})
         .then(networks => {
           var requiredNets =  [  
-                      getNetwork('databox-driver-net'), 
-                      getNetwork('databox-app-net')
+                      getNetwork(networks,'databox-driver-net'), 
+                      getNetwork(networks,'databox-app-net')
                     ]
 
           return Promise.all(requiredNets)
@@ -197,12 +216,25 @@ var createContainer = function(opts) {
 var startContainer = function(cont) {
   return new Promise( (resolve, reject) =>  {
     //TODO: check cont
-    cont.start((err ,data, cont) => {
+    cont.start((err ,data) => {
       if(err) {
         reject(err);
         return;
       }
       resolve(cont);
+    })
+  });
+}
+
+var inspectContainer = function(cont) {
+  return new Promise( (resolve, reject) =>  {
+    //TODO: check cont
+    cont.inspect((err ,data, cont) => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
     })
   });
 }
@@ -213,7 +245,7 @@ exports.launchArbiter = function () {
     pullImage("/databox-arbiter:latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
-        console.log(keys);
+        //console.log(keys);
         return createContainer(
               {'Name': 'arbiter',
                'Image': Config.registryUrl + "/databox-arbiter:latest",
@@ -224,7 +256,39 @@ exports.launchArbiter = function () {
           );
       })
     .then((Arbiter) => { return startContainer(Arbiter) })
-    .then((Arbiter) => { resolve(Arbiter) })
+    .then((Arbiter) => { 
+      console.log("conecting to driver network");
+      return connectToNetwork(Arbiter,'databox-driver-net');          
+    })
+    .then((Arbiter) => { 
+      console.log("conecting to app network");
+      return connectToNetwork(Arbiter,'databox-app-net');          
+    })
+    .then((Arbiter) => {return inspectContainer(Arbiter)} ) 
+    .then((data) => { resolve({'name': 'arbiter', port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
+    .catch((err) => {
+      console.log("Error creating Arbiter");
+      reject(err)
+    });
+
+  });
+}
+
+exports.launchDirectory = function () {
+  return new Promise( (resolve, reject) =>  {
+    
+    pullImage("/databox-directory:latest")
+    .then((Directory) => { return startContainer(Directory) })
+    .then((Directory) => { 
+      console.log("conecting to driver network");
+      return connectToNetwork(Directory,'databox-driver-net');          
+    })
+    .then((Directory) => { 
+      console.log("conecting to app network");
+      return connectToNetwork(Directory,'databox-app-net');          
+    })
+    .then((Arbiter) => {return inspectContainer(Directory)} ) 
+    .then((data) => { resolve({'name': 'arbiter', port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Arbiter");
       reject(err)

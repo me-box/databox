@@ -15,8 +15,18 @@ setup()
   
   .then( networks => { 
               console.log('Launching Arbiter container');
-              return conman.launchArbiter()
+              return conman.launchArbiter();
             })
+
+  //.then( info => { 
+  //            console.log('Setting up proxy to Arbiter');
+  //            return server.proxyContainer(info.name, info.port)
+  //          })
+
+  //.then( () => {
+  //    console.log('Launching Arbiter container');
+  //    return conman.launchDirectory();
+  //})
   
   .then ( data => { 
             console.log("Starting Server!!");
