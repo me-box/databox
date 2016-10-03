@@ -73,12 +73,10 @@ exports.launch = function (port, conman) {
                 return  
             }
             var repositories = JSON.parse(body).repositories;
-            console.log(repositories);
             var repocount = repositories.length;
             var manifests = [];
 
             repositories.map((repo) => {
-                console.log("get manifest for " + repo);
                 request.post( {'url':Config.storeUrl+'/app/get/', 'form':{'name':repo}}, (err,data) => {
 
                     if(err) {
@@ -120,23 +118,24 @@ exports.launch = function (port, conman) {
 
     app.post('/restart', (req,res) => {
         name = req.body.name || req.body.id
+        console.log("Restarting " + req.body.id);
         conman.getContainer(req.body.id)
         .then( (container) => {
-            console.log("Restarting " + container.Name);
+            console.log("Restarting " + container.id);
             container.stop((err,data) => {
                 
                 if(err) {
                     res.send(JSON.stringify(err))
                     return
                 }
-                console.log("Stoped " + container.Name);
+                console.log("Stoped " + container.id);
 
                 container.start((err,data) => {
                     if(err) {
                         res.send(JSON.stringify(err))
                         return
                     }
-                    console.log("Restarted " + container.Name);
+                    console.log("Restarted " + container.id);
                     res.send(JSON.stringify(data))
                 })
             })
@@ -147,21 +146,21 @@ exports.launch = function (port, conman) {
         name = req.body.name || req.body.id
         conman.getContainer(req.body.id)
         .then( (container) => {
-            console.log("Uninstalling " + container.Name);
+            console.log("Uninstalling " + container.id);
             container.stop((err,data) => {
                 
                 if(err) {
                     res.send(JSON.stringify(err))
                     return
                 }
-                console.log("Stoped " + container.Name);
+                console.log("Stoped " + container.id);
 
                 container.remove((err,data) => {
                     if(err) {
                         res.send(JSON.stringify(err))
                         return
                     }
-                    console.log("Removed " + container.Name);
+                    console.log("Removed " + container.id);
                     res.send(JSON.stringify(data))
                 })
             })

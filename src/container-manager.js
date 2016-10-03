@@ -99,6 +99,12 @@ var listNetworks = function(networks, name) {
   });
 }
 
+var getContainer = function(id) {
+  return new Promise( (resolve, reject) =>  {
+    resolve(docker.getContainer(id));
+  });
+}
+exports.getContainer = getContainer;
 
 var getNetwork = function(networks, name) {
   return new Promise( (resolve, reject) =>  {
