@@ -247,7 +247,7 @@ exports.launchArbiter = function () {
     .then(keys => {
         //console.log(keys);
         return createContainer(
-              {'Name': 'arbiter',
+              {'name': 'arbiter',
                'Image': Config.registryUrl + "/databox-arbiter:latest",
                //PortBindings: '8080/tcp': [ HostPort: \8081 ]
                'PublishAllPorts': true,
@@ -278,6 +278,14 @@ exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
     
     pullImage("/databox-directory:latest")
+    .then(() => {
+        return createContainer(
+              {'name': 'directory',
+               'Image': Config.registryUrl + "/databox-directory:latest",
+               'PublishAllPorts': true
+            }
+          );
+      })
     .then((Directory) => { return startContainer(Directory) })
     .then((Directory) => { 
       console.log("conecting to driver network");

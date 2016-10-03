@@ -10,6 +10,21 @@ var proxy = require('http-proxy-middleware');
 var app = express();
 
 
+exports.proxyContainer = function (name, port) {
+    return new Promise( (resolve, reject) =>  {
+
+        var p = proxy(name, {'target': "http://localhost:" + port, 'ws': true, 'pathRewrite':{ ["^/"+name]: '/'} });
+
+        p.onProxyRes = (proxyRes, req, res) => {
+            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+            proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Content-Length, X-Requested-With';
+            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+        };   
+
+        app.use(p);
+        resolve();
+    });
+}
 
 
 exports.launch = function (port, conman) { 
@@ -180,24 +195,6 @@ exports.launch = function (port, conman) {
           socket.emit('docker-destroy',message);
         });
         emitter.start();
-
-    //TODO: NOT SURE HOW TO DO THIS IN JS YET
-
-    /*con-man.get-docker-emitter!
-      ..on \connect    !-> socket.emit \docker-connect
-      ..on \disconnect !-> socket.emit \docker-disconnect
-      ..on \_message   !-> socket.emit \docker-_message   it
-      ..on \create     !-> socket.emit \docker-create     it
-      ..on \start      !-> socket.emit \docker-start      it
-      ..on \stop       !-> socket.emit \docker-stop       it
-      ..on \die        !-> socket.emit \docker-die        it
-      ..on \destroy    !-> socket.emit \docker-destroy    it
-      # TODO: Inform of container status changes
-      ..start!
-
-      socket.on \disconnect !-> ..stop!
-
-    socket.on \echo !-> socket.emit \echo it*/
         
     })
     server.listen(port);

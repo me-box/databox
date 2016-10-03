@@ -18,13 +18,13 @@ setup()
               return conman.launchArbiter();
             })
 
-  //.then( info => { 
-  //            console.log('Setting up proxy to Arbiter');
-  //            return server.proxyContainer(info.name, info.port)
-  //          })
+  .then( info => { 
+              console.log('Setting up proxy to Arbiter');
+              return server.proxyContainer(info.name, info.port)
+            })
 
   //.then( () => {
-  //    console.log('Launching Arbiter container');
+  //    console.log('Launching Directory container');
   //    return conman.launchDirectory();
   //})
   
