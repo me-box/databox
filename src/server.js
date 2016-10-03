@@ -15,7 +15,7 @@ var app = express();
 exports.launch = function (port, conman) { 
     server = http.createServer(app);
     installingApps = [];
-    //io = io(app);
+    io = io(server);
     
     app.enable('trust proxy');
     app.set('views', 'src/www');

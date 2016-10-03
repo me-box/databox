@@ -83,7 +83,7 @@ exports.killAll = function () {
       });
       Promise.all(ids)
       .then(() => {resolve()})
-      .catch(err => reject(err))
+      .catch(err => {consol.log(err)})//reject(err)})
       
     })
     .catch(err => reject(err))
