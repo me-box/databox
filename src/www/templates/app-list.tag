@@ -6,9 +6,9 @@ app-list
 				i.material-icons.mdl-list__item-icon
 					| developer_board
 				span
-					| { Names[0] }
+					| { Names[0].startsWith('/') ? Names[0].substring(1) : Names[0] }
 				span.mdl-list__item-sub-title
-					| { Status }
+					| { State }
 			span.mdl-list__item-secondary-content
 				span.mdl-list__item-secondary-action
 					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.restartApp }", if="{Status != 'Installing'}")
