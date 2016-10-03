@@ -4,11 +4,8 @@ var Config = require('./config.json');
 var server = require('./server.js');
 
 
-var setup = function (){ return Promise.resolve() };
 
-setup()
-  .then( data => { return conman.connect() } )
-
+conman.connect()
   .then( data => { return conman.killAll(data)})
   
   .then( data => { return conman.initNetworks()})
@@ -31,7 +28,7 @@ setup()
               console.log('Setting up proxy to Directory');
               return server.proxyContainer(info.name, info.port)
             })
-  
+
   .then ( () => { 
             console.log("Starting Server!!");
             return server.launch(Config.serverPort, conman);
