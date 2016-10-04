@@ -7,13 +7,13 @@ var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
 
-var docker = new Docker(); 
+var docker = new Docker();
 var dockerEmitter = new DockerEvents({docker:docker});
 
 var ip = '127.0.0.1';
 
 exports.connect  = function () {
-  
+
   return new Promise( (resolve, reject) => docker.ping(function (err,data) {
 
     if(err) reject("Cant connect to docker!");
@@ -34,7 +34,7 @@ exports.getDockerEmitter = function () {
 
 var listContainers = function(){
   return new Promise( (resolve, reject) =>  {
-    docker.listContainers({all: true, filters: { "label": [ "databox.type" ] }}, 
+    docker.listContainers({all: true, filters: { "label": [ "databox.type" ] }},
         (err, containers) => {
           if(err) {
             reject(err);
@@ -51,8 +51,8 @@ exports.listContainers = listContainers;
 var listImages = function(){
   return new Promise( (resolve, reject) =>  {
 
-    docker.listImages({filters: { "label": [ "databox.type" ] }}, 
-    //docker.listContainers({all: true}, 
+    docker.listImages({filters: { "label": [ "databox.type" ] }},
+    //docker.listContainers({all: true},
         (err, containers) => {
           if(err) {
             reject(err);
@@ -103,9 +103,9 @@ exports.killAll = function () {
         console.log("removing " + e.Image + " id=" + e.Id + " ...");
         ids.push(remove(e.Id));
       };
-      return Promise.all(ids)   
+      return Promise.all(ids)
     })
-    .then((data) => {resolve()}) 
+    .then((data) => {resolve()})
     .catch(err => {consol.log("[killAll-2]" + err); reject(err)})
   });
 }
@@ -163,7 +163,7 @@ var connectToNetwork = function (container, networkName) {
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {
         net.connect({'Container':container.id}, (err,data) => {
-          if(err) { 
+          if(err) {
             reject("Can't conect to network" + err);
             return;
           }
@@ -176,11 +176,11 @@ var connectToNetwork = function (container, networkName) {
 
 exports.initNetworks = function () {
   return new Promise( (resolve, reject) =>  {
-      
+
       listNetworks({})
         .then(networks => {
-          var requiredNets =  [  
-                      getNetwork(networks,'databox-driver-net'), 
+          var requiredNets =  [
+                      getNetwork(networks,'databox-driver-net'),
                       getNetwork(networks,'databox-app-net')
                     ]
 
@@ -205,27 +205,27 @@ exports.initNetworks = function () {
 
 
 var pullImage = function (imageName) {
-  return new Promise( (resolve, reject) =>  {
-    //Pull latest Arbiter image
-      console.log('Pulling ' + imageName);
-      docker.pull(Config.registryUrl + imageName, (err,stream) => {
-        if (err) {
-          reject(err); 
-          return;
-        }
+	return new Promise((resolve, reject) => {
+		//Pull latest Arbiter image
+		console.log('Pulling ' + imageName);
+		docker.pull(Config.registryUrl + imageName, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
 
-        //stream.pipe(process.stdout);
-        //docker.modem.followProgress(stream, (err, output) => {
-        //  if (err) {
-        //    reject(err); 
-        //    return;
-        //  }
-        //})
-        resolve(";->");
-      
-      })
-  });
-}
+			stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				resolve(";->");
+			});
+		})
+	});
+};
 exports.pullImage = pullImage;
 
 var keyPair = null;
@@ -280,7 +280,7 @@ var inspectContainer = function(cont) {
 
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
-    
+
     pullImage("/databox-arbiter:latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
@@ -295,15 +295,15 @@ exports.launchArbiter = function () {
           );
       })
     .then((Arbiter) => { return startContainer(Arbiter) })
-    .then((Arbiter) => { 
+    .then((Arbiter) => {
       console.log("conecting to driver network");
-      return connectToNetwork(Arbiter,'databox-driver-net');          
+      return connectToNetwork(Arbiter,'databox-driver-net');
     })
-    .then((Arbiter) => { 
+    .then((Arbiter) => {
       console.log("conecting to app network");
-      return connectToNetwork(Arbiter,'databox-app-net');          
+      return connectToNetwork(Arbiter,'databox-app-net');
     })
-    .then((Arbiter) => {return inspectContainer(Arbiter)} ) 
+    .then((Arbiter) => {return inspectContainer(Arbiter)} )
     .then((data) => { resolve({'name': 'arbiter', port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Arbiter");
@@ -315,7 +315,7 @@ exports.launchArbiter = function () {
 
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
-    
+
     pullImage("/databox-directory:latest")
     .then(() => {
         return createContainer(
@@ -326,15 +326,15 @@ exports.launchDirectory = function () {
           );
       })
     .then((Directory) => { return startContainer(Directory) })
-    .then((Directory) => { 
+    .then((Directory) => {
       console.log("conecting to driver network");
-      return connectToNetwork(Directory,'databox-driver-net');          
+      return connectToNetwork(Directory,'databox-driver-net');
     })
-    .then((Directory) => { 
+    .then((Directory) => {
       console.log("conecting to app network");
-      return connectToNetwork(Directory,'databox-app-net');          
+      return connectToNetwork(Directory,'databox-app-net');
     })
-    .then((Directory) => {return inspectContainer(Directory)} ) 
+    .then((Directory) => {return inspectContainer(Directory)} )
     .then((data) => { resolve({'name': 'directory', port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Directory");
@@ -388,7 +388,7 @@ var updateArbiter = function(data) {
     .then((Arbiter) => {return inspectContainer(Arbiter)})
     .then((arbiterInfo) => {
       var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
-      request.post( 
+      request.post(
                     { url: "http://localhost:"+port+"/update",
                       form: data
                     }
@@ -409,7 +409,7 @@ var updateArbiter = function(data) {
 //NOTE: Name is optional and will override default
 //NOTE: Env is optional and additive
 exports.launchContainer = function (repoTag, name, env) {
-  
+
   env = env ? env : [];
   var name = name ? name : repoTagToName(repoTag);
   var arbiterToken = null;
@@ -420,7 +420,7 @@ exports.launchContainer = function (repoTag, name, env) {
 
   return new Promise( (resolve, reject) =>  {
 
-    pullImage(repoTag)
+    pullImage("/" + name + ":latest")
     .then(() => {
       console.log("Generating Arbiter token for "+name+" container");
       return generateArbiterToken();
@@ -430,7 +430,7 @@ exports.launchContainer = function (repoTag, name, env) {
       return createContainer(
                               {
                                 'name': name,
-                                'Image': Config.registryUrl + repoTag +":latest",
+                                'Image': Config.registryUrl + '/' + name +":latest",
                                 'Env': [ "DATABOX_IP="+ip, "ARBITER_TOKEN="+token ],
                                 'PublishAllPorts': true
                               }
@@ -455,7 +455,7 @@ exports.launchContainer = function (repoTag, name, env) {
       var sig = keyPair.hashAndSign('md5', new Buffer(update)).toString('base64');
 
       return updateArbiter({data:update, sig });
-      
+
     })
     .then(() => {
       return startContainer(container);
