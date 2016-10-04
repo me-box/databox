@@ -11,13 +11,13 @@ app-list
 					| { State }
 			span.mdl-list__item-secondary-content
 				span.mdl-list__item-secondary-action
-					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.restartApp }", if="{Status != 'Installing'}")
+					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.restartApp }", if="{State != 'installing'}")
 						i.material-icons
 							| refresh
-					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.uninstall }", if="{Status != 'Installing'}")
+					button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.uninstall }", if="{State != 'installing'}")
 						i.material-icons
 							| close
-					div.mdl-spinner.mdl-js-spinner.is-active(if="{Status == 'Installing'}")
+					div.mdl-spinner.mdl-js-spinner.is-active(if="{State == 'installing'}")
 	script.
 		reload(message)
 		{
