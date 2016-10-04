@@ -1,48 +1,49 @@
 {
-  "name": "databox-container-manager",
-  "version": "0.1.0",
-  "description": "Databox OS container manager and dashboard server",
-  "scripts": {
-    "build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
-    "start": "node src/main.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yousefamar/databox-container-manager.git"
-  },
-  "keywords": [
-    "docker",
-    "databox",
-    "personal",
-    "data",
-    "dashboard",
-    "container",
-    "manager"
-  ],
-  "author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
-  "author": "Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/yousefamar/databox-container-manager-js/issues"
-  },
-  "homepage": "https://github.com/yousefamar/databox-container-manager-js#readme",
-  "dependencies": {
-    "docker-events": "0.0.2",
-    "dockerode": "^2.2.9",
-    "Promise": "",
-    "ursa": "^0.9.4",
-    "express":"",
-    "body-parser": "^1.14.2",
-    "http-proxy-middleware": "^0.12.0",
-    "material-design-lite": "^1.2.1",
-    "node-sass": "^3.10.0",
-    "pug": "^2.0.0-alpha7",
-    "request": "^2.69.0",
-    "typescript-simple": "^5.0.2",
-    "socket.io": "^1.4.5"
-  },
-  "devDependencies": {
-    "riot": "^2.4.0",
-    "stats-lite": "^2.0.1"
-  }
+	"name": "databox-container-manager",
+	"version": "0.1.0",
+	"description": "Databox OS container manager and dashboard server",
+	"scripts": {
+		"build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
+		"watch": "riot --watch --template pug src/www/templates | node-sass -w src/www/styles/ -o src/www/styles/",
+		"start": "node src/main.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/yousefamar/databox-container-manager.git"
+	},
+	"keywords": [
+		"docker",
+		"databox",
+		"personal",
+		"data",
+		"dashboard",
+		"container",
+		"manager"
+	],
+	"author": "Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()",
+	"author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/yousefamar/databox-container-manager-js/issues"
+	},
+	"homepage": "https://github.com/yousefamar/databox-container-manager-js#readme",
+	"dependencies": {
+		"docker-events": "0.0.2",
+		"dockerode": "^2.2.9",
+		"Promise": "",
+		"ursa": "^0.9.4",
+		"express": "",
+		"body-parser": "^1.14.2",
+		"http-proxy-middleware": "^0.12.0",
+		"material-design-lite": "^1.2.1",
+		"node-sass": "^3.10.0",
+		"pug": "^2.0.0-alpha7",
+		"request": "^2.69.0",
+		"typescript-simple": "^5.0.2",
+		"socket.io": "^1.4.5"
+	},
+	"devDependencies": {
+		"riot": "^2.4.0",
+		"stats-lite": "^2.0.1"
+	}
 }
