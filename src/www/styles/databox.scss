@@ -17,6 +17,10 @@ $color-accent-contrast: $color-white !default;
 	padding: 16px;
 }
 
+.mdl-list__item--two-line {
+	user-select: none;
+}
+
 .dark {
 	background-color: #333;
 }
