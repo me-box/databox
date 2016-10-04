@@ -35,7 +35,13 @@ conman.connect()
             } ) 
   
   .then( data => { console.log("--------- PROCESSING REQUESTS ----------")})
-  
+  .then( () => {
+
+      console.log("Starting some containers!!");
+      conman.launchContainer('/databox-vendor-phidgets');
+      conman.launchContainer('/databox-driver-mobile')
+
+  })
   .catch(err => {
             console.log(err);
             var stack = new Error().stack

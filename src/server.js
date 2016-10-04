@@ -47,9 +47,17 @@ exports.launch = function (port, conman) {
     app.get('/list-containers',(req,res) => { 
         conman.listContainers()
         .then( (containers) => {
-
-            //TODO: deal with installing containers
-
+            for(appName in installingApps) {
+              found = false;
+              for(app in containers) {
+                if(app.Names.indexOf(appName) != -1){
+                  found = true;
+                }
+                if(!found){
+                  containers.push({Names:[appName], Status: "Installing"});
+                }
+              }
+            }
             res.end(JSON.stringify(containers));
         })
         //.catch()
@@ -80,7 +88,7 @@ exports.launch = function (port, conman) {
                 request.post( {'url':Config.storeUrl+'/app/get/', 'form':{'name':repo}}, (err,data) => {
 
                     if(err) {
-                        //do nothong
+                        //do nothing
                         return ;
                     }
 
@@ -113,7 +121,22 @@ exports.launch = function (port, conman) {
 
 
     app.post('/install', (req,res) => {
-        res.end(JSON.stringify("ERROR: NOT IMPLIMENTED YET!!"));
+        var sla = JSON.parse(req.body.sla);
+        var name = sla.name;
+        console.log(JSON.stringify(installingApps));
+        repoTag =  '/' + name;
+        installingApps.push("/"+name);
+
+        io.emit('docker-create',repoTag);
+        conman.launchContainer(repoTag)
+          .then((info) => {
+            var index = installingApps.indexOf('/'+name)
+            if(index != -1) {
+              installingApps.splice(index, 1)
+            }
+            proxyContainer(info.name, info.port);
+            res.send(JSON.stringify(info)); 
+          });
     });
 
     app.post('/restart', (req,res) => {
@@ -124,7 +147,7 @@ exports.launch = function (port, conman) {
             console.log("Restarting " + container.id);
             container.stop((err,data) => {
                 
-                if(err) {
+                if(err && err['statusCode'] != 304) {
                     res.send(JSON.stringify(err))
                     return
                 }

@@ -3,10 +3,14 @@ var Promise = require('promise');
 var Config = require('./config.json');
 var ursa = require('ursa');
 var DockerEvents = require('docker-events');
+var os = require('os');
+var crypto = require('crypto');
+var request = require('request');
 
 var docker = new Docker(); 
 var dockerEmitter = new DockerEvents({docker:docker});
 
+var ip = '127.0.0.1';
 
 exports.connect  = function () {
   
@@ -226,13 +230,14 @@ var pullImage = function (imageName) {
 }
 exports.pullImage = pullImage;
 
- var generatingCMkeyPair = function () {
-  return new Promise( (resolve, reject) =>  {
-        //Generating CM Key Pair
-        console.log('Generating CM key pair');
-        var keyPair = ursa.generatePrivateKey();
-        var publicKey = keyPair.toPublicPem('base64');
-        resolve({'keyPair':keyPair,'publicKey':publicKey});
+var keyPair = null;
+var generatingCMkeyPair = function () {
+return new Promise( (resolve, reject) =>  {
+      //Generating CM Key Pair
+      console.log('Generating CM key pair');
+      keyPair = ursa.generatePrivateKey();
+      var publicKey = keyPair.toPublicPem('base64');
+      resolve({'keyPair':keyPair,'publicKey':publicKey});
   });
 }
 
@@ -336,6 +341,150 @@ exports.launchDirectory = function () {
     .catch((err) => {
       console.log("Error creating Directory");
       reject(err)
+    });
+
+  });
+}
+
+var repoTagToName = function (repoTag) {
+  return repoTag.match(/(?:.*\/)?([^/:\s]+)(?::.*|$)/)[1];
+}
+
+var generateArbiterToken = function () {
+  return new Promise( (resolve, reject) =>  {
+    crypto.randomBytes(32, function (err, buffer) {
+      if(err) reject(err);
+      var token = buffer.toString('base64');
+      resolve(token)
+    });
+  });
+}
+
+var configureDriver = function (cont) {
+  return new Promise( (resolve, reject) =>  {
+      connectToNetwork(cont,'databox-driver-net')
+      .then(resolve())
+      .catch((err) => reject(err))
+  });
+}
+
+var configureApp = function (cont) {
+  return new Promise( (resolve, reject) =>  {
+      connectToNetwork(cont,'databox-app-net')
+      .then(resolve())
+      .catch((err) => reject(err))
+  });
+}
+
+var configureStore = function (cont) {
+  return new Promise( (resolve, reject) =>  {
+      connectToNetwork(cont,'databox-driver-net')
+      .then(resolve())
+      .catch((err) => reject(err))
+  });
+}
+
+var updateArbiter = function(data) {
+  return new Promise( (resolve, reject) =>  {
+    getContainer('arbiter')
+    .then((Arbiter) => {return inspectContainer(Arbiter)})
+    .then((arbiterInfo) => {
+      var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
+      request.post( 
+                    { url: "http://localhost:"+port+"/update",
+                      form: data
+                    }
+                    ,
+                    function(err, response, body) {
+                      if(err) {
+                        reject(err);
+                        return;
+                      }
+                      resolve(JSON.parse(body));
+                    }
+                  )
+    })
+    .catch((err) => reject(err))
+  });
+}
+
+//NOTE: Name is optional and will override default
+//NOTE: Env is optional and additive
+exports.launchContainer = function (repoTag, name, env) {
+  
+  env = env ? env : [];
+  var name = name ? name : repoTagToName(repoTag);
+  var arbiterToken = null;
+  var type = null;
+  var containerInfo = null;
+  var container = null;
+  var containerPort = null;
+
+  return new Promise( (resolve, reject) =>  {
+
+    pullImage(repoTag)
+    .then(() => {
+      console.log("Generating Arbiter token for "+name+" container");
+      return generateArbiterToken();
+    })
+    .then((token) => {
+      arbiterToken = token;
+      return createContainer(
+                              {
+                                'name': name,
+                                'Image': Config.registryUrl + repoTag +":latest",
+                                'Env': [ "DATABOX_IP="+ip, "ARBITER_TOKEN="+token ],
+                                'PublishAllPorts': true
+                              }
+                            );
+    })
+    .then((cont) => {
+      container = cont
+      return inspectContainer(container)
+    })
+    //.then((info) => {
+    //
+    //  console.log("Checking ports exposed by #name container");
+    //  TODO: this might be needed here!!
+    //})
+    .then( (info) => {
+      type = info.Config.Labels['databox.type'];
+
+      console.log("Passing "+name+" token to Arbiter");
+
+      var update = JSON.stringify({ name:name, token:arbiterToken, type:type });
+
+      var sig = keyPair.hashAndSign('md5', new Buffer(update)).toString('base64');
+
+      return updateArbiter({data:update, sig });
+      
+    })
+    .then(() => {
+      return startContainer(container);
+    })
+    .then(() => {
+      if(type == 'driver') {
+        return configureDriver(container);
+      } else if(type == 'store') {
+        return configureStore(container);
+      } else {
+        return configureApp(container);
+      }
+    })
+    .then(() => {
+      return getContainer(name)
+    })
+    .then((cont) => {
+      return inspectContainer(cont)
+    })
+    .then( (info) => {
+      containerInfo = info;
+      containerPort = parseInt(info.NetworkSettings.Ports['8080/tcp'][0].HostPort);
+      resolve({name:name, port:containerPort})
+    })
+    .catch((err) => {
+      console.log("[launchContainer ERROR]" + err);
+      reject(err);
     });
 
   });
