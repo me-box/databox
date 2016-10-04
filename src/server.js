@@ -47,15 +47,15 @@ exports.launch = function (port, conman) {
     app.get('/list-containers',(req,res) => { 
         conman.listContainers()
         .then( (containers) => {
-            for(appName in installingApps) {
+            for(appName of installingApps) {
               found = false;
-              for(app in containers) {
+              for(app of containers) {
                 if(app.Names.indexOf(appName) != -1){
                   found = true;
                 }
-                if(!found){
-                  containers.push({Names:[appName], Status: "Installing"});
-                }
+              }
+              if(!found){
+                containers.push({Names:[appName], Status: "Installing"});
               }
             }
             res.end(JSON.stringify(containers));
@@ -172,7 +172,7 @@ exports.launch = function (port, conman) {
             console.log("Uninstalling " + container.id);
             container.stop((err,data) => {
                 
-                if(err) {
+                if(err && err['statusCode'] != 304) {
                     res.send(JSON.stringify(err))
                     return
                 }

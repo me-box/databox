@@ -34,9 +34,7 @@ exports.getDockerEmitter = function () {
 
 var listContainers = function(){
   return new Promise( (resolve, reject) =>  {
-
     docker.listContainers({all: true, filters: { "label": [ "databox.type" ] }}, 
-    //docker.listContainers({all: true}, 
         (err, containers) => {
           if(err) {
             reject(err);
@@ -216,14 +214,14 @@ var pullImage = function (imageName) {
           return;
         }
 
-        stream.pipe(process.stdout);
-        docker.modem.followProgress(stream, (err, output) => {
-          if (err) {
-            reject(err); 
-            return;
-          }
-          resolve(";->");
-        })
+        //stream.pipe(process.stdout);
+        //docker.modem.followProgress(stream, (err, output) => {
+        //  if (err) {
+        //    reject(err); 
+        //    return;
+        //  }
+        //})
+        resolve(";->");
       
       })
   });
@@ -480,6 +478,7 @@ exports.launchContainer = function (repoTag, name, env) {
     .then( (info) => {
       containerInfo = info;
       containerPort = parseInt(info.NetworkSettings.Ports['8080/tcp'][0].HostPort);
+      console.log("Container " + name + " launched");
       resolve({name:name, port:containerPort})
     })
     .catch((err) => {
