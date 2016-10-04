@@ -34,7 +34,10 @@ var listContainers = function(){
     docker.listContainers({all: true, filters: { "label": [ "databox.type" ] }}, 
     //docker.listContainers({all: true}, 
         (err, containers) => {
-          if(err) reject(err);
+          if(err) {
+            reject(err);
+            return;
+          }
           resolve(containers);
         }
       );
@@ -49,7 +52,10 @@ var listImages = function(){
     docker.listImages({filters: { "label": [ "databox.type" ] }}, 
     //docker.listContainers({all: true}, 
         (err, containers) => {
-          if(err) reject(err);
+          if(err) {
+            reject(err);
+            return;
+          }
           resolve(containers);
         }
       );
@@ -62,12 +68,23 @@ var kill = function (id) {
   return new Promise( (resolve, reject) =>  {
     container = docker.getContainer(id);
     container.stop({},(err,data) => {
-      if(err) reject(err);
-      container.remove({},(err,data) => {
-        if(err) reject(err);
         console.log("killed " + id + "!");
         resolve();
       });
+    });
+}
+
+var remove = function (id) {
+  return new Promise( (resolve, reject) =>  {
+    container = docker.getContainer(id);
+    container.remove({force: true},(err,data) => {
+      if(err) {
+        console.log("[remove]" + err);
+        reject(err);
+        return;
+      }
+      console.log("removed " + id + "!");
+      resolve();
     });
   });
 }
@@ -77,16 +94,17 @@ exports.killAll = function () {
     listContainers()
     .then(containers => {
       ids = []
-      containers.forEach((e, i) => {
+      for(var i in containers) {
+        var e = containers[i];
         console.log("killing " + e.Image + " id=" + e.Id + " ...");
         ids.push(kill(e.Id));
-      });
-      Promise.all(ids)
-      .then(() => {resolve()})
-      .catch(err => {consol.log(err)})//reject(err)})
-      
+        console.log("removing " + e.Image + " id=" + e.Id + " ...");
+        ids.push(remove(e.Id));
+      };
+      return Promise.all(ids)   
     })
-    .catch(err => reject(err))
+    .then((data) => {resolve()}) 
+    .catch(err => {consol.log("[killAll-2]" + err); reject(err)})
   });
 }
 
@@ -166,8 +184,8 @@ exports.initNetworks = function () {
 
           return Promise.all(requiredNets)
               .then((networks) => {
-                //console.log("Networks already exist");
-                console.log(networks);
+                console.log("Networks already exist");
+                //console.log(networks);
                 resolve(networks);
               })
               .catch(err => {
