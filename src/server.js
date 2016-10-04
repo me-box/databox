@@ -55,11 +55,11 @@ exports.launch = function (port, conman) {
                 }
               }
               if(!found){
-                containers.push({Names:[appName], Status: "Installing"});
+                containers.push({Names:[appName], State: "installing"});
               }
             }
             res.end(JSON.stringify(containers));
-        })
+        });
         //.catch()
     });
 
