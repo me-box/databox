@@ -21,6 +21,11 @@ $color-accent-contrast: $color-white !default;
 	user-select: none;
 }
 
+.mdl-list__item--two-line:hover {
+	background-color: #eee;
+}
+
+
 .dark {
 	background-color: #333;
 }
@@ -59,7 +64,6 @@ $color-accent-contrast: $color-white !default;
 }
 
 .mdl-list__item:hover {
-	background-color: #eee
 }
 
 .mdl-menu.mdl-menu--bottom {

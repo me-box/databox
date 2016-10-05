@@ -1,5 +1,6 @@
 app-store
-	div.mdl-spinner(if="{!loaded}")
+	div.mdl-typography--text-center
+		div.mdl-spinner.mdl-js-spinner.is-active(if="{!loaded}")
 	ul.mdl-list
 		li.mdl-list__item.mdl-list__item--two-line(each="{ apps }")
 			a.mdl-list__item-primary-content(href="slayer#{ manifest.name }")
@@ -11,14 +12,14 @@ app-store
 					| { manifest.author }
 	script.
 		this.loaded = false;
-		this.apps = null;
+		this.apps = [];
 		this.on('mount', function () {
 			$.get("/list-store", this.setApps);
 		});
 
 		setApps(data)
 		{
-			this.apps = JSON.parse(data);
+			this.apps = data;
 			this.apps.sort(function (a, b)
 			{
 				var nameA = a.manifest.name.toUpperCase(); // ignore upper and lowercase

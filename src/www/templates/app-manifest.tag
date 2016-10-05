@@ -62,7 +62,8 @@ app-manifest
 				$.get("/test-data/manifest.json", this.setManifest);
 			}
 			else {
-				$.post("http://store.upintheclouds.org/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
+				$.get("/manifest?" + $.param({name: window.location.hash.substr(1)}), this.setManifest);
+				//$.post("http://store.upintheclouds.org/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
 			}
 			$.get("/directory/api/datastore", this.setDatastores);
 			$.get("/directory/api/sensor", this.setSensors);
