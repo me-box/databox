@@ -25,14 +25,14 @@ exports.proxyContainer = function (name, port) {
         app.use(p);
         resolve();
     });
-}
+};
 
 
-exports.launch = function (port, conman) { 
+exports.launch = function (port, conman) {
     server = http.createServer(app);
     installingApps = [];
     io = io(server);
-    
+
     app.enable('trust proxy');
     app.set('views', 'src/www');
     app.set('view engine','pug');
@@ -41,10 +41,20 @@ exports.launch = function (port, conman) {
     app.use(bodyParser.urlencoded({extended: false}));
 
     app.get('/',(req,res) => { res.render('index') });
-    app.get('/slayer',(req,res) => { res.render('slayer') });
-    app.get('/close',(req,res) => { res.render('close') });
+	app.get('/slayer',(req,res) => { res.render('slayer') });
 
-    app.get('/list-containers',(req,res) => { 
+	app.get('/manifest', (req, res) => {
+		request.post({'url': Config.storeUrl + '/app/get/', 'form': {'name': req.query.name}}, (err, data) => {
+			if (err) {
+				//do nothing
+				return;
+			}
+
+			res.json(JSON.parse(data.body));
+		});
+	});
+
+    app.get('/list-containers',(req,res) => {
         conman.listContainers()
         .then( (containers) => {
             for(appName of installingApps) {
@@ -58,27 +68,16 @@ exports.launch = function (port, conman) {
                 containers.push({Names:[appName], State: "installing"});
               }
             }
-            res.end(JSON.stringify(containers));
+            res.json(containers);
         });
         //.catch()
     });
 
-    app.get('/list-images',(req,res) => { 
-        conman.listImages()
-        .then( (images) => {            
-            res.end(JSON.stringify(images));
-        })
-        //.catch()
-    });
-
-    app.get('/list-store',(req,res) => { 
-        
-        console.log('list-store');
-
+    app.get('/list-store',(req,res) => {
         request('https://' + Config.registryUrl + '/v2/_catalog', (error,response,body) => {
            if(error) {
-                res.end(JSON.stringify(error)); 
-                return  
+                res.json(error);
+                return
             }
             var repositories = JSON.parse(body).repositories;
             var repocount = repositories.length;
@@ -98,8 +97,8 @@ exports.launch = function (port, conman) {
                     }
                     repocount--;
                     if(repocount <= 0) {
-                        res.end(JSON.stringify(manifests));
-                    } 
+                        res.json(manifests);
+                    }
                 });
             });
 
@@ -135,7 +134,7 @@ exports.launch = function (port, conman) {
               installingApps.splice(index, 1)
             }
             proxyContainer(info.name, info.port);
-            res.send(JSON.stringify(info)); 
+            res.json(info);
           });
     });
 
@@ -146,23 +145,23 @@ exports.launch = function (port, conman) {
         .then( (container) => {
             console.log("Restarting " + container.id);
             container.stop((err,data) => {
-                
+
                 if(err && err['statusCode'] != 304) {
-                    res.send(JSON.stringify(err))
+                    res.json(err)
                     return
                 }
                 console.log("Stoped " + container.id);
 
                 container.start((err,data) => {
                     if(err) {
-                        res.send(JSON.stringify(err))
-                        return
+                        res.json(err);
+                        return;
                     }
                     console.log("Restarted " + container.id);
-                    res.send(JSON.stringify(data))
+                    res.json(data)
                 })
             })
-        }) 
+        })
     });
 
     app.post('/uninstall', (req,res) => {
@@ -171,23 +170,23 @@ exports.launch = function (port, conman) {
         .then( (container) => {
             console.log("Uninstalling " + container.id);
             container.stop((err,data) => {
-                
+
                 if(err && err['statusCode'] != 304) {
-                    res.send(JSON.stringify(err))
-                    return
+                    res.json(err);
+                    return;
                 }
                 console.log("Stoped " + container.id);
 
                 container.remove((err,data) => {
                     if(err) {
-                        res.send(JSON.stringify(err))
-                        return
+                        res.json(err);
+                        return;
                     }
                     console.log("Removed " + container.id);
-                    res.send(JSON.stringify(data))
+                    res.json(data);
                 })
             })
-        }) 
+        })
     });
 
     io.on('connection',(socket)=>{
@@ -219,7 +218,7 @@ exports.launch = function (port, conman) {
           socket.emit('docker-destroy',message);
         });
         emitter.start();
-        
+
     })
 
     server.listen(port);

@@ -19,7 +19,7 @@ app-store
 
 		setApps(data)
 		{
-			this.apps = JSON.parse(data);
+			this.apps = data;
 			this.apps.sort(function (a, b)
 			{
 				var nameA = a.manifest.name.toUpperCase(); // ignore upper and lowercase

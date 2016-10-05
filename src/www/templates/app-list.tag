@@ -20,7 +20,7 @@ app-list
 						button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.restartApp }", if="{State != 'installing'}")
 							i.material-icons
 								| refresh
-						button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.uninstall }", if="{State != 'installing'}")
+						button.mdl-button.mdl-js-button.mdl-button--icon(onclick="{ parent.uninstall }", if="{State != 'installing'}", disabled="{ Section === 'System' }")
 							i.material-icons
 								| close
 						div.mdl-spinner.mdl-js-spinner.is-active(if="{State == 'installing'}")
@@ -51,7 +51,7 @@ app-list
 
 		reloaded(data)
 		{
-			this.apps = JSON.parse(data);
+			this.apps = data;
 			for (var app of this.apps) {
 				if (!('Labels' in app)) {
 					this.setAppSection(app, "app");
