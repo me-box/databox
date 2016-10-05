@@ -12,6 +12,13 @@ var dockerEmitter = new DockerEvents({docker:docker});
 
 var ip = '127.0.0.1';
 
+//ARCH to append -amd to the end of a container name if running on arm
+var ARCH = '';
+if(process.arch == 'arm'){
+  ARCH = '-arm';
+} 
+
+
 exports.connect  = function () {
 
   return new Promise( (resolve, reject) => docker.ping(function (err,data) {
@@ -281,13 +288,13 @@ var inspectContainer = function(cont) {
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
 
-    pullImage("/databox-arbiter:latest")
+    pullImage("/databox-arbiter"+ARCH+":latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
         //console.log(keys);
         return createContainer(
               {'name': 'arbiter',
-               'Image': Config.registryUrl + "/databox-arbiter:latest",
+               'Image': Config.registryUrl + "/databox-arbiter"+ARCH+":latest",
                //PortBindings: '8080/tcp': [ HostPort: \8081 ]
                'PublishAllPorts': true,
                'Env': [ "CM_PUB_KEY=" + keys['publicKey'] ]
@@ -316,11 +323,11 @@ exports.launchArbiter = function () {
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
 
-    pullImage("/databox-directory:latest")
+    pullImage("/databox-directory"+ARCH+":latest")
     .then(() => {
         return createContainer(
               {'name': 'directory',
-               'Image': Config.registryUrl + "/databox-directory:latest",
+               'Image': Config.registryUrl + "/databox-directory"+ARCH+":latest",
                'PublishAllPorts': true
             }
           );
@@ -420,7 +427,7 @@ exports.launchContainer = function (repoTag, name, env) {
 
   return new Promise( (resolve, reject) =>  {
 
-    pullImage("/" + name + ":latest")
+    pullImage("/" + name + ARCH + ":latest")
     .then(() => {
       console.log("Generating Arbiter token for "+name+" container");
       return generateArbiterToken();
@@ -430,7 +437,7 @@ exports.launchContainer = function (repoTag, name, env) {
       return createContainer(
                               {
                                 'name': name,
-                                'Image': Config.registryUrl + '/' + name +":latest",
+                                'Image': Config.registryUrl + '/' + name + ARCH +":latest",
                                 'Env': [ "DATABOX_IP="+ip, "ARBITER_TOKEN="+token ],
                                 'PublishAllPorts': true
                               }
