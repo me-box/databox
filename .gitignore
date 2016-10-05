@@ -34,6 +34,7 @@ node_modules
 
 #IDE
 .idea
+.vscode
 
 # Generated files
 /src/www/templates/*.js
