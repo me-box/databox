@@ -29,7 +29,7 @@ app-list
 		this.listAll = true;
 		this.sections = {
 			"app": {name: "Apps", icon: "extension"},
-			"other": {name: "System", icon: "work"},
+			"other": {name: "System", icon: "settings_applications"},
 			"driver": {name: "Drivers", icon: "developer_board"}
 		};
 		this.apps = [];
