@@ -30,6 +30,7 @@ app-list
 		this.sections = {
 			"app": {name: "Apps", icon: "extension"},
 			"other": {name: "System", icon: "settings_applications"},
+			"store": {name: "Datastore", icon: "dns"},
 			"driver": {name: "Drivers", icon: "developer_board"}
 		};
 		this.apps = [];
