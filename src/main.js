@@ -32,18 +32,17 @@ conman.connect()
   .then ( () => { 
             console.log("Starting Server!!");
             return server.launch(Config.serverPort, conman);
-            } ) 
-  
-  .then( data => { console.log("--------- PROCESSING REQUESTS ----------")})
+        }) 
+  .then( () => { console.log("--------- PROCESSING REQUESTS ----------")})
   .then( () => {
-
-      console.log("Starting some containers!!");
-      conman.launchContainer('/databox-vendor-phidgets');
-      conman.launchContainer('/databox-driver-mobile')
-
+      return conman.getActiveSLAs();
+  })
+  .then( (slas) => {
+      conman.restoreContainers(slas);
   })
   .catch(err => {
+            console.log('ERROR ENDS UP HERE');
             console.log(err);
             var stack = new Error().stack
-          console.log( stack )
+            console.log( stack )
           });

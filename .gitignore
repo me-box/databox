@@ -35,6 +35,8 @@ node_modules
 #IDE
 .idea
 .vscode
+#sla db
+sladatastore.db
 
 # Generated files
 /src/www/templates/*.js

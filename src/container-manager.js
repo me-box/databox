@@ -10,6 +10,8 @@ var request = require('request');
 var docker = new Docker();
 var dockerEmitter = new DockerEvents({docker:docker});
 
+var db = require('./container-manager-db.js')
+
 var ip = '127.0.0.1';
 
 //ARCH to append -amd to the end of a container name if running on arm
@@ -215,7 +217,7 @@ var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
 		//Pull latest Arbiter image
 		console.log('Pulling ' + imageName);
-		docker.pull(Config.registryUrl + imageName, (err, stream) => {
+		docker.pull(Config.registryUrl + "/" + imageName, (err, stream) => {
 			if (err) {
 				reject(err);
 				return;
@@ -227,8 +229,7 @@ var pullImage = function (imageName) {
 					reject(err);
 					return;
 				}
-
-				resolve(";->");
+        resolve(";->");
 			});
 		})
 	});
@@ -251,7 +252,7 @@ var createContainer = function(opts) {
     //TODO: check opts
     docker.createContainer(opts,(err ,cont) => {
       if(err) {
-        reject(err);
+        reject('createContainer'+err);
         return;
       }
       resolve(cont);
@@ -264,37 +265,80 @@ var startContainer = function(cont) {
     //TODO: check cont
     cont.start((err ,data) => {
       if(err) {
-        reject(err);
+        reject('startContainer:: '+err);
         return;
       }
-      resolve(cont);
+      db.updateSLAContainerRunningState(cont.name,true)
+      .then(resolve(cont))
+      .catch((err) => resolve());
     })
   });
 }
+exports.startContainer = startContainer;
+
+var stopContainer = function(cont) {
+  return new Promise( (resolve, reject) =>  {
+    //TODO: check cont
+    cont.stop((err ,data) => {
+      if(err && err['statusCode'] != 304) { //don't error if container is already stopped!
+        reject(err);
+        return;
+      }
+      inspectContainer(cont)
+      .then( (info) => {
+        console.log("updateSLAContainerRunningState::" + info.Name);
+        db.updateSLAContainerRunningState(info.Name,false)
+        .then(resolve(cont))
+        .catch((err) => reject(err));
+      })
+      
+    })
+  });
+}
+exports.stopContainer = stopContainer;
+
+var removeContainer = function (cont) {
+  console.log(cont);
+  return new Promise( (resolve, reject) =>  {
+    cont.remove({force: true},(err,data) => {
+      if(err) {
+        console.log("[remove]" + err);
+        reject(err);
+        return;
+      }
+      console.log("removed " + cont.name + "!");
+      db.deleteSLA(cont.name)
+      .then(resolve())
+      .catch((err) => resolve());
+    });
+  });
+}
+exports.removeContainer = removeContainer;
 
 var inspectContainer = function(cont) {
   return new Promise( (resolve, reject) =>  {
     //TODO: check cont
     cont.inspect((err ,data, cont) => {
       if(err) {
-        reject(err);
+        reject('inspectContainer::'+err);
         return;
       }
       resolve(data);
     })
   });
 }
-
+var arbiterName = '';
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
-
-    pullImage("/databox-arbiter"+ARCH+":latest")
+    var name = "databox-arbiter"+ARCH;
+    arbiterName = name;
+    pullImage(name+":latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
         //console.log(keys);
         return createContainer(
-              {'name': 'arbiter',
-               'Image': Config.registryUrl + "/databox-arbiter"+ARCH+":latest",
+              {'name': name,
+               'Image': Config.registryUrl + "/"+name+":latest",
                //PortBindings: '8080/tcp': [ HostPort: \8081 ]
                'PublishAllPorts': true,
                'Env': [ "CM_PUB_KEY=" + keys['publicKey'] ]
@@ -303,15 +347,15 @@ exports.launchArbiter = function () {
       })
     .then((Arbiter) => { return startContainer(Arbiter) })
     .then((Arbiter) => {
-      console.log("conecting to driver network");
+      console.log("connecting to driver network");
       return connectToNetwork(Arbiter,'databox-driver-net');
     })
     .then((Arbiter) => {
-      console.log("conecting to app network");
+      console.log("connecting to app network");
       return connectToNetwork(Arbiter,'databox-app-net');
     })
     .then((Arbiter) => {return inspectContainer(Arbiter)} )
-    .then((data) => { resolve({'name': 'arbiter', port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
+    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Arbiter");
       reject(err)
@@ -320,29 +364,31 @@ exports.launchArbiter = function () {
   });
 }
 
+var directoryName = null;
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
-
-    pullImage("/databox-directory"+ARCH+":latest")
+    var name = "databox-directory"+ARCH;
+    directoryName = name;
+    pullImage(name+":latest")
     .then(() => {
         return createContainer(
               {'name': 'directory',
-               'Image': Config.registryUrl + "/databox-directory"+ARCH+":latest",
+               'Image': Config.registryUrl + "/"+name+":latest",
                'PublishAllPorts': true
             }
           );
       })
     .then((Directory) => { return startContainer(Directory) })
     .then((Directory) => {
-      console.log("conecting to driver network");
+      console.log("connecting to driver network");
       return connectToNetwork(Directory,'databox-driver-net');
     })
     .then((Directory) => {
-      console.log("conecting to app network");
+      console.log("connecting to app network");
       return connectToNetwork(Directory,'databox-app-net');
     })
     .then((Directory) => {return inspectContainer(Directory)} )
-    .then((data) => { resolve({'name': 'directory', port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
+    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Directory");
       reject(err)
@@ -391,7 +437,7 @@ var configureStore = function (cont) {
 
 var updateArbiter = function(data) {
   return new Promise( (resolve, reject) =>  {
-    getContainer('arbiter')
+    getContainer(arbiterName)
     .then((Arbiter) => {return inspectContainer(Arbiter)})
     .then((arbiterInfo) => {
       var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
@@ -413,21 +459,37 @@ var updateArbiter = function(data) {
   });
 }
 
-//NOTE: Name is optional and will override default
-//NOTE: Env is optional and additive
-exports.launchContainer = function (repoTag, name, env) {
-
-  env = env ? env : [];
-  var name = name ? name : repoTagToName(repoTag);
+var launchContainer = function (repoTag, sla) {
+  console.log("launchContainer::",repoTag, sla);
+  var env = [];
+  var name = repoTagToName(repoTag);
+  name = name + ARCH;
+  
   var arbiterToken = null;
   var type = null;
   var containerInfo = null;
   var container = null;
   var containerPort = null;
+  var containerSLA = sla ? sla : false;
+  var SLA_RetrievedFromDB = false;
 
   return new Promise( (resolve, reject) =>  {
 
-    pullImage("/" + name + ARCH + ":latest")
+    pullImage(name + ":latest")
+    .then( () => {
+      //Look for an SLA to use. If one is not provided then, look for one stored in the DB.
+      //If no SLA can be found db.getSLA() will reject its promise and stop the container
+      //installing.  
+      if(containerSLA !== false) {
+        return new Promise.resolve(containerSLA);
+      }
+      //sla not provided look to see if we have one for this container
+      SLA_RetrievedFromDB = true; 
+      return db.getSLA();
+    } )
+    .then((sla) => {
+      containerSLA = sla;
+    })     
     .then(() => {
       console.log("Generating Arbiter token for "+name+" container");
       return generateArbiterToken();
@@ -455,6 +517,8 @@ exports.launchContainer = function (repoTag, name, env) {
     .then( (info) => {
       type = info.Config.Labels['databox.type'];
 
+      //TODO: Parse containerSLA and set ENV and start dependencies.
+
       console.log("Passing "+name+" token to Arbiter");
 
       var update = JSON.stringify({ name:name, token:arbiterToken, type:type });
@@ -476,12 +540,16 @@ exports.launchContainer = function (repoTag, name, env) {
         return configureApp(container);
       }
     })
-    .then(() => {
-      return getContainer(name)
-    })
-    .then((cont) => {
-      return inspectContainer(cont)
-    })
+    .then( () => {  
+      if(SLA_RetrievedFromDB) {
+        return new Promise.resolve();
+      } else {
+        return db.putSLA(name,containerSLA);} 
+      }
+    )
+    .then( () => {return db.updateSLAContainerRunningState(name,true);} )
+    .then( () => { return getContainer(name)})
+    .then((cont) => { return inspectContainer(cont) })
     .then( (info) => {
       containerInfo = info;
       containerPort = parseInt(info.NetworkSettings.Ports['8080/tcp'][0].HostPort);
@@ -494,4 +562,25 @@ exports.launchContainer = function (repoTag, name, env) {
     });
 
   });
+}
+exports.launchContainer = launchContainer;
+
+
+exports.restoreContainers = function (slas) {
+    
+  console.log("Launching " + slas.length + " containers");
+  var proms = [];
+  for(sla of slas){
+    //don't pass the SLA here it make the logic in launchContainer complex 
+    proms.push(launchContainer(sla.name));
+  }
+  return new Promise.all(proms);
+}
+
+exports.dumpDb = function() {
+  return db.dump();
+}
+
+exports.getActiveSLAs = function() {
+  return db.getActiveSLAs();
 }
