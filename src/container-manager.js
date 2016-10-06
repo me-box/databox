@@ -1,16 +1,15 @@
-var Docker = require('dockerode');
 var Promise = require('promise');
 var Config = require('./config.json');
 var ursa = require('ursa');
-var DockerEvents = require('docker-events');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
 
-var docker = new Docker();
-var dockerEmitter = new DockerEvents({docker:docker});
+var db = require('./include/container-manager-db.js');
 
-var db = require('./container-manager-db.js')
+var dockerHelper = require('./include/container-manager-docker-helper.js');
+
+var docker = dockerHelper.getDocker();
 
 var ip = '127.0.0.1';
 
@@ -22,23 +21,14 @@ if(process.arch == 'arm'){
 
 
 exports.connect  = function () {
-
   return new Promise( (resolve, reject) => docker.ping(function (err,data) {
-
     if(err) reject("Cant connect to docker!");
-
     resolve();
-
   }));
-
-}
-
-exports.getDocker = function () {
-  return docker;
 }
 
 exports.getDockerEmitter = function () {
-  return dockerEmitter;
+  return dockerHelper.getDockerEmitter();
 }
 
 var listContainers = function(){
@@ -57,86 +47,23 @@ var listContainers = function(){
 }
 exports.listContainers = listContainers;
 
-var listImages = function(){
-  return new Promise( (resolve, reject) =>  {
-
-    docker.listImages({filters: { "label": [ "databox.type" ] }},
-    //docker.listContainers({all: true},
-        (err, containers) => {
-          if(err) {
-            reject(err);
-            return;
-          }
-          resolve(containers);
-        }
-      );
-
-  });
-}
-exports.listImages = listImages;
-
-var kill = function (id) {
-  return new Promise( (resolve, reject) =>  {
-    container = docker.getContainer(id);
-    container.stop({},(err,data) => {
-        console.log("killed " + id + "!");
-        resolve();
-      });
-    });
-}
-
-var remove = function (id) {
-  return new Promise( (resolve, reject) =>  {
-    container = docker.getContainer(id);
-    container.remove({force: true},(err,data) => {
-      if(err) {
-        console.log("[remove]" + err);
-        reject(err);
-        return;
-      }
-      console.log("removed " + id + "!");
-      resolve();
-    });
-  });
-}
 
 exports.killAll = function () {
   return new Promise( (resolve, reject) =>  {
     listContainers()
-    .then(containers => {
-      ids = []
-      for(var i in containers) {
-        var e = containers[i];
-        console.log("killing " + e.Image + " id=" + e.Id + " ...");
-        ids.push(kill(e.Id));
-        console.log("removing " + e.Image + " id=" + e.Id + " ...");
-        ids.push(remove(e.Id));
-      };
-      return Promise.all(ids)
-    })
-    .then((data) => {resolve()})
-    .catch(err => {consol.log("[killAll-2]" + err); reject(err)})
-  });
-}
-
-var listNetworks = function(networks, name) {
-  return new Promise( (resolve, reject) =>  {
-    docker.listNetworks({}, (err,data) => {
-      if(err) reject("[listNetworks] Can't list networks");
-      resolve(data);
-    })
-  });
-}
-
-var createNetwork = function(name) {
-  return new Promise( (resolve, reject) =>  {
-    docker.createNetwork({Name:name,Driver:'bridge'}, (err,data) => {
-      if(err) {
-        reject("[createNetwork] Can't list networks");
-        return;
-      }
-      resolve(data);
-    })
+      .then(containers => {
+        ids = []
+        for(var i in containers) {
+          var e = containers[i];
+          console.log("killing " + e.Image + " id=" + e.Id + " ...");
+          ids.push(dockerHelper.kill(e.Id));
+          console.log("removing " + e.Image + " id=" + e.Id + " ...");
+          ids.push(dockerHelper.remove(e.Id));
+        };
+        return Promise.all(ids)
+      })
+      .then((data) => {resolve()})
+      .catch(err => {consol.log("[killAll-2]" + err); reject(err)})
   });
 }
 
@@ -147,50 +74,14 @@ var getContainer = function(id) {
 }
 exports.getContainer = getContainer;
 
-var getNetwork = function(networks, name) {
-  return new Promise( (resolve, reject) =>  {
-    for(i in networks) {
-          var net = networks[i];
-          if(net.Name === name) {
-            var n = docker.getNetwork(net.Id)
-            resolve(n)
-            return;
-          }
-      }
-      console.log("Network " + name + " not found!");
-      docker.createNetwork({'Name': name, 'Driver': 'bridge'}, (err,data) => {
-        if(err) reject("[getNetwork] Can't create networks")
-        resolve(data);
-      })
-  });
-}
-
-var connectToNetwork = function (container, networkName) {
-  return new Promise( (resolve, reject) =>  {
-    console.log("Conecting container to " + networkName);
-    listNetworks({})
-    .then( (nets) => { return getNetwork(nets,networkName)})
-    .then( (net) => {
-        net.connect({'Container':container.id}, (err,data) => {
-          if(err) {
-            reject("Can't conect to network" + err);
-            return;
-          }
-          resolve(container);
-        });
-      })
-      .catch(err => reject('[connectToNetwork]' + err))
-  });
-}
-
 exports.initNetworks = function () {
   return new Promise( (resolve, reject) =>  {
-
-      listNetworks({})
+      console.log('initNetworks');
+      dockerHelper.listNetworks()
         .then(networks => {
           var requiredNets =  [
-                      getNetwork(networks,'databox-driver-net'),
-                      getNetwork(networks,'databox-app-net')
+                      dockerHelper.getNetwork(networks,'databox-driver-net'),
+                      dockerHelper.getNetwork(networks,'databox-app-net')
                     ]
 
           return Promise.all(requiredNets)
@@ -200,7 +91,7 @@ exports.initNetworks = function () {
                 resolve(networks);
               })
               .catch(err => {
-                //console.log("Creating networks")
+                console.log("initNetworks::"+err);
                 reject(err);
               })
 
@@ -247,19 +138,6 @@ return new Promise( (resolve, reject) =>  {
   });
 }
 
-var createContainer = function(opts) {
-  return new Promise( (resolve, reject) =>  {
-    //TODO: check opts
-    docker.createContainer(opts,(err ,cont) => {
-      if(err) {
-        reject('createContainer'+err);
-        return;
-      }
-      resolve(cont);
-    })
-  });
-}
-
 var startContainer = function(cont) {
   return new Promise( (resolve, reject) =>  {
     //TODO: check cont
@@ -268,15 +146,20 @@ var startContainer = function(cont) {
         reject('startContainer:: '+err);
         return;
       }
-      db.updateSLAContainerRunningState(cont.name,true)
-      .then(resolve(cont))
-      .catch((err) => resolve());
+       dockerHelper.inspectContainer(cont)
+      .then( (info) => {
+        var name = repoTagToName(info.Name);
+        console.log("updateSLAContainerRunningState:: to true" + name);
+        db.updateSLAContainerRunningState(name,true)
+        .then(resolve(cont))
+        .catch((err) => reject(err));
+      })
     })
   });
 }
 exports.startContainer = startContainer;
 
-var stopContainer = function(cont) {
+exports.stopContainer = function(cont) {
   return new Promise( (resolve, reject) =>  {
     //TODO: check cont
     cont.stop((err ,data) => {
@@ -284,10 +167,11 @@ var stopContainer = function(cont) {
         reject(err);
         return;
       }
-      inspectContainer(cont)
+      dockerHelper.inspectContainer(cont)
       .then( (info) => {
-        console.log("updateSLAContainerRunningState::" + info.Name);
-        db.updateSLAContainerRunningState(info.Name,false)
+        var name = repoTagToName(info.Name);
+        console.log("updateSLAContainerRunningState to false::" + name);
+        db.updateSLAContainerRunningState(name,false)
         .then(resolve(cont))
         .catch((err) => reject(err));
       })
@@ -295,38 +179,30 @@ var stopContainer = function(cont) {
     })
   });
 }
-exports.stopContainer = stopContainer;
 
-var removeContainer = function (cont) {
+exports.removeContainer = function (cont) {
   console.log(cont);
   return new Promise( (resolve, reject) =>  {
-    cont.remove({force: true},(err,data) => {
-      if(err) {
-        console.log("[remove]" + err);
-        reject(err);
-        return;
-      }
-      console.log("removed " + cont.name + "!");
-      db.deleteSLA(cont.name)
-      .then(resolve())
-      .catch((err) => resolve());
+    
+    dockerHelper.inspectContainer(cont)
+    .then( (info) => {
+      cont.remove({force: true},(err,data) => {
+        if(err) {
+          console.log("[remove]" + err);
+          reject(err);
+          return;
+        } 
+        var name = repoTagToName(info.Name);
+        console.log("removed " + name + "!");
+        console.log("deleteSLA::" + name);
+        db.deleteSLA(name,false)
+        .then(resolve(cont))
+        .catch((err) => reject(err));
+      })
     });
   });
 }
-exports.removeContainer = removeContainer;
 
-var inspectContainer = function(cont) {
-  return new Promise( (resolve, reject) =>  {
-    //TODO: check cont
-    cont.inspect((err ,data, cont) => {
-      if(err) {
-        reject('inspectContainer::'+err);
-        return;
-      }
-      resolve(data);
-    })
-  });
-}
 var arbiterName = '';
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
@@ -336,7 +212,7 @@ exports.launchArbiter = function () {
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
         //console.log(keys);
-        return createContainer(
+        return dockerHelper.createContainer(
               {'name': name,
                'Image': Config.registryUrl + "/"+name+":latest",
                //PortBindings: '8080/tcp': [ HostPort: \8081 ]
@@ -348,13 +224,13 @@ exports.launchArbiter = function () {
     .then((Arbiter) => { return startContainer(Arbiter) })
     .then((Arbiter) => {
       console.log("connecting to driver network");
-      return connectToNetwork(Arbiter,'databox-driver-net');
+      return dockerHelper.connectToNetwork(Arbiter,'databox-driver-net');
     })
     .then((Arbiter) => {
       console.log("connecting to app network");
-      return connectToNetwork(Arbiter,'databox-app-net');
+      return dockerHelper.connectToNetwork(Arbiter,'databox-app-net');
     })
-    .then((Arbiter) => {return inspectContainer(Arbiter)} )
+    .then((Arbiter) => {return dockerHelper.inspectContainer(Arbiter)} )
     .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Arbiter");
@@ -371,7 +247,7 @@ exports.launchDirectory = function () {
     directoryName = name;
     pullImage(name+":latest")
     .then(() => {
-        return createContainer(
+        return dockerHelper.createContainer(
               {'name': 'directory',
                'Image': Config.registryUrl + "/"+name+":latest",
                'PublishAllPorts': true
@@ -381,13 +257,13 @@ exports.launchDirectory = function () {
     .then((Directory) => { return startContainer(Directory) })
     .then((Directory) => {
       console.log("connecting to driver network");
-      return connectToNetwork(Directory,'databox-driver-net');
+      return dockerHelper.connectToNetwork(Directory,'databox-driver-net');
     })
     .then((Directory) => {
       console.log("connecting to app network");
-      return connectToNetwork(Directory,'databox-app-net');
+      return dockerHelper.connectToNetwork(Directory,'databox-app-net');
     })
-    .then((Directory) => {return inspectContainer(Directory)} )
+    .then((Directory) => {return dockerHelper.inspectContainer(Directory)} )
     .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
     .catch((err) => {
       console.log("Error creating Directory");
@@ -413,7 +289,7 @@ var generateArbiterToken = function () {
 
 var configureDriver = function (cont) {
   return new Promise( (resolve, reject) =>  {
-      connectToNetwork(cont,'databox-driver-net')
+      dockerHelper.connectToNetwork(cont,'databox-driver-net')
       .then(resolve())
       .catch((err) => reject(err))
   });
@@ -421,7 +297,7 @@ var configureDriver = function (cont) {
 
 var configureApp = function (cont) {
   return new Promise( (resolve, reject) =>  {
-      connectToNetwork(cont,'databox-app-net')
+      dockerHelper.connectToNetwork(cont,'databox-app-net')
       .then(resolve())
       .catch((err) => reject(err))
   });
@@ -429,7 +305,7 @@ var configureApp = function (cont) {
 
 var configureStore = function (cont) {
   return new Promise( (resolve, reject) =>  {
-      connectToNetwork(cont,'databox-driver-net')
+      dockerHelper.connectToNetwork(cont,'databox-driver-net')
       .then(resolve())
       .catch((err) => reject(err))
   });
@@ -438,7 +314,7 @@ var configureStore = function (cont) {
 var updateArbiter = function(data) {
   return new Promise( (resolve, reject) =>  {
     getContainer(arbiterName)
-    .then((Arbiter) => {return inspectContainer(Arbiter)})
+    .then((Arbiter) => {return dockerHelper.inspectContainer(Arbiter)})
     .then((arbiterInfo) => {
       var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
       request.post(
@@ -496,7 +372,10 @@ var launchContainer = function (repoTag, sla) {
     })
     .then((token) => {
       arbiterToken = token;
-      return createContainer(
+
+      //TODO: Parse containerSLA and set ENV and start dependencies.
+      
+      return dockerHelper.createContainer(
                               {
                                 'name': name,
                                 'Image': Config.registryUrl + '/' + name + ARCH +":latest",
@@ -507,7 +386,7 @@ var launchContainer = function (repoTag, sla) {
     })
     .then((cont) => {
       container = cont
-      return inspectContainer(container)
+      return dockerHelper.inspectContainer(container)
     })
     //.then((info) => {
     //
@@ -516,8 +395,6 @@ var launchContainer = function (repoTag, sla) {
     //})
     .then( (info) => {
       type = info.Config.Labels['databox.type'];
-
-      //TODO: Parse containerSLA and set ENV and start dependencies.
 
       console.log("Passing "+name+" token to Arbiter");
 
@@ -549,7 +426,7 @@ var launchContainer = function (repoTag, sla) {
     )
     .then( () => {return db.updateSLAContainerRunningState(name,true);} )
     .then( () => { return getContainer(name)})
-    .then((cont) => { return inspectContainer(cont) })
+    .then((cont) => { return dockerHelper.inspectContainer(cont) })
     .then( (info) => {
       containerInfo = info;
       containerPort = parseInt(info.NetworkSettings.Ports['8080/tcp'][0].HostPort);
@@ -577,9 +454,6 @@ exports.restoreContainers = function (slas) {
   return new Promise.all(proms);
 }
 
-exports.dumpDb = function() {
-  return db.dump();
-}
 
 exports.getActiveSLAs = function() {
   return db.getActiveSLAs();

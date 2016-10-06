@@ -7,8 +7,8 @@ db = new Datastore({ filename: './slaStore/sladatastore.db', autoload: true });
 //stop more then one SLA being added to the db
 db.ensureIndex({fieldName:'SLAName',unique:true}); 
 
-exports.getSLA = function (tagname) {
-  return new Promise( (resolve, reject) => db.findOne({SLAName:tagname},function (err,doc) {
+exports.getSLA = function (name) {
+  return new Promise( (resolve, reject) => db.findOne({SLAName:name},function (err,doc) {
     if(err) {
       reject("SLA not found"  + err);
       return;
@@ -27,8 +27,8 @@ exports.getActiveSLAs = function () {
   }));
 }
 
-exports.putSLA = function (tagname,sla) {
-  sla['SLAName'] = tagname;
+exports.putSLA = function (name,sla) {
+  sla['SLAName'] = name;
   return new Promise( (resolve, reject) => db.insert(sla,function (err,doc) {
     if(err) {
       reject("SLA could not be saved" + err);
@@ -38,18 +38,18 @@ exports.putSLA = function (tagname,sla) {
   }));
 }
 
-exports.deleteSLA = function (tagname) {
-  return new Promise( (resolve, reject) => db.remove(sla,function (err,doc) {
+exports.deleteSLA = function (name) {
+  return new Promise( (resolve, reject) => db.remove({SLAName:name},function (err,doc) {
     if(err) {
-      reject("SLA could not be saved"  + err);
+      reject("SLA could not be removed"  + err);
       return;
     }
     resolve(doc);
   }));
 }
 
-exports.updateSLAContainerRunningState = function (tagname,running) {
-  return new Promise( (resolve, reject) => db.update( {SLAName:tagname}, 
+exports.updateSLAContainerRunningState = function (name,running) {
+  return new Promise( (resolve, reject) => db.update( {SLAName:name}, 
                                                       { $set: {SLAContainerRunning:running}},
                                                       function (err,doc) {
     if(err) {
