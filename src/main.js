@@ -32,18 +32,29 @@ conman.connect()
   .then ( () => { 
             console.log("Starting Server!!");
             return server.launch(Config.serverPort, conman);
-            } ) 
-  
-  .then( data => { console.log("--------- PROCESSING REQUESTS ----------")})
+        }) 
   .then( () => {
-
-      console.log("Starting some containers!!");
-      conman.launchContainer('/databox-vendor-phidgets');
-      conman.launchContainer('/databox-driver-mobile')
-
+      console.log("--------- Launching saved containers ----------")
+      return conman.getActiveSLAs();
+  })
+  .then( (slas) => {
+      return conman.restoreContainers(slas);
+  })
+  .then( (infos) => {
+      console.log(infos);
+      var proms = []
+      for(var info of infos) {
+          console.log(info);
+          proms.push(server.proxyContainer(info.name, info.port));
+      }
+      return new Promise.all(proms);
+  })
+  .then(() => {
+    console.log("--------- Done launching saved containers ----------")
   })
   .catch(err => {
+            console.log('ERROR ENDS UP HERE');
             console.log(err);
             var stack = new Error().stack
-          console.log( stack )
+            console.log( stack )
           });

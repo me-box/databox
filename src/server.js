@@ -67,8 +67,9 @@ exports.launch = function (port, conman) {
 	app.get('/list-containers', (req, res) => {
 		conman.listContainers()
 			.then((containers) => {
-				for (appName of installingApps) {
-					found = false;
+				for (var installingApp of installingApps) {
+					var appName = '/' + installingApp;
+					var found = false;
 					for (app of containers) {
 						if (app.Names.indexOf(appName) != -1) {
 							found = true;
@@ -126,51 +127,51 @@ exports.launch = function (port, conman) {
 			});
 	});
 
+    app.post('/install', (req,res) => {
+        var sla = JSON.parse(req.body.sla);
+        var name = sla.name;
+        console.log(JSON.stringify(installingApps));
+        repoTag = name;
+        installingApps.push(name);
 
-	app.post('/install', (req, res) => {
-		var sla = JSON.parse(req.body.sla);
-		var name = sla.name;
-		console.log(JSON.stringify(installingApps));
-		var repoTag = '/' + name;
-		installingApps.push("/" + name);
+        io.emit('docker-create',repoTag);
+        conman.launchContainer(repoTag,sla)
+	        .then((info) => {
+		        console.log("CONTAINER CREATED", info);
+		        var index = installingApps.indexOf(name);
+		        if (index != -1) {
+			        installingApps.splice(index, 1)
+		        }
+		        this.proxyContainer(info.name, info.port);
+		        res.send(JSON.stringify(info));
+	        });
+    });
 
-		io.emit('docker-create', repoTag);
-		conman.launchContainer(repoTag)
-			.then((info) => {
-				var index = installingApps.indexOf('/' + name);
-				if (index != -1) {
-					installingApps.splice(index, 1)
-				}
-				proxyContainer(info.name, info.port);
-				res.json(info);
-			});
-	});
+    app.post('/restart', (req,res) => {
+        console.log("Restarting " + req.body.id);
+        conman.getContainer(req.body.id)
+        .then((cont) => { return conman.stopContainer(cont)})
+        .then((cont) => { return conman.startContainer(cont)})
+        .then((data) => {
+            console.log("Restarted " + data.id);
+            res.send(JSON.stringify(data));
+        })
+        .catch((err)=>{ res.send(JSON.stringify(err)); })
+    });
 
-	app.post('/restart', (req, res) => {
-		var name = req.body.name || req.body.id;
-		console.log("Restarting " + req.body.id);
-		conman.getContainer(req.body.id)
-			.then((container) => {
-				console.log("Restarting " + container.id);
-				container.stop((err, data) => {
 
-					if (err && err['statusCode'] != 304) {
-						res.json(err);
-						return
-					}
-					console.log("Stoped " + container.id);
+    app.post('/uninstall', (req,res) => {
+	    console.log("Uninstalling " + req.body.id);
+        conman.getContainer(req.body.id)
+        .then((cont)=>{ return conman.stopContainer(cont)})
+        .then((cont)=>{ return conman.removeContainer(cont)})
+        .then((data)=>{
+            console.log("Uninstalled " + data.id);
+            res.send(JSON.stringify(data));
+        })
+        .catch((err)=>{res.send(JSON.stringify(err))});
 
-					container.start((err, data) => {
-						if (err) {
-							res.json(err);
-							return;
-						}
-						console.log("Restarted " + container.id);
-						res.json(data)
-					})
-				})
-			})
-	});
+    });
 
 	app.post('/uninstall', (req, res) => {
 		var name = req.body.name || req.body.id;
@@ -183,7 +184,7 @@ exports.launch = function (port, conman) {
 						res.json(err);
 						return;
 					}
-					console.log("Stoped " + container.id);
+					console.log("Stopped " + container.id);
 
 					container.remove((err, data) => {
 						if (err) {
