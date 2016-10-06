@@ -136,11 +136,12 @@ exports.launch = function (port, conman) {
         io.emit('docker-create',repoTag);
         conman.launchContainer(repoTag,sla)
           .then((info) => {
+			console.log("CONTAINER CREATED", info);
             var index = installingApps.indexOf(name)
             if(index != -1) {
               installingApps.splice(index, 1)
             }
-            proxyContainer(info.name, info.port);
+            this.proxyContainer(info.name, info.port);
             res.send(JSON.stringify(info)); 
           });
     });

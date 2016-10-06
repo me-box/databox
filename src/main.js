@@ -33,12 +33,24 @@ conman.connect()
             console.log("Starting Server!!");
             return server.launch(Config.serverPort, conman);
         }) 
-  .then( () => { console.log("--------- PROCESSING REQUESTS ----------")})
   .then( () => {
+      console.log("--------- Launching saved containers ----------")
       return conman.getActiveSLAs();
   })
   .then( (slas) => {
-      conman.restoreContainers(slas);
+      return conman.restoreContainers(slas);
+  })
+  .then( (infos) => {
+      console.log(infos);
+      var proms = []
+      for(var info of infos) {
+          console.log(info);
+          proms.push(server.proxyContainer(info.name, info.port));
+      }
+      return new Promise.all(proms);
+  })
+  .then(() => {
+    console.log("--------- Done launching saved containers ----------")
   })
   .catch(err => {
             console.log('ERROR ENDS UP HERE');

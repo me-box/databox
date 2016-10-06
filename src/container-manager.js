@@ -248,7 +248,7 @@ exports.launchDirectory = function () {
     pullImage(name+":latest")
     .then(() => {
         return dockerHelper.createContainer(
-              {'name': 'directory',
+              {'name': name,
                'Image': Config.registryUrl + "/"+name+":latest",
                'PublishAllPorts': true
             }
