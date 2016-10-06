@@ -11,28 +11,37 @@ conman.connect()
   .then( data => { return conman.initNetworks()})
   
   .then( networks => { 
-              console.log('Launching Arbiter container');
-              return conman.launchArbiter();
-            })
+      console.log('Launching Arbiter container');
+      return conman.launchArbiter();
+  })
 
   .then( info => { 
-              console.log('Setting up proxy to Arbiter');
-              return server.proxyContainer(info.name, info.port)
-            })
+      console.log('Setting up proxy to Arbiter');
+      return server.proxyContainer(info.name, info.port)
+  })
 
   .then( () => {
       console.log('Launching Directory container');
       return conman.launchDirectory();
   })
   .then( info => { 
-              console.log('Setting up proxy to Directory');
-              return server.proxyContainer(info.name, info.port)
-            })
+      console.log('Setting up proxy to Directory');
+      return server.proxyContainer(info.name, info.port)
+  })
+
+  .then( () => {
+      console.log('Launching datastore-timeseries container');
+      return conman.launchContainer('datastore-timeseries',{name:'datastore-timeseries'},false);
+  })
+  .then( info => { 
+      console.log('Setting up proxy to datastore-timeseries');
+      return server.proxyContainer(info.name, info.port)
+  })
 
   .then ( () => { 
-            console.log("Starting Server!!");
-            return server.launch(Config.serverPort, conman);
-        }) 
+      console.log("Starting Server!!");
+      return server.launch(Config.serverPort, conman);
+  }) 
   .then( () => {
       console.log("--------- Launching saved containers ----------")
       return conman.getActiveSLAs();

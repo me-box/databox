@@ -181,7 +181,7 @@ exports.stopContainer = function(cont) {
 }
 
 exports.removeContainer = function (cont) {
-  console.log(cont);
+
   return new Promise( (resolve, reject) =>  {
     
     dockerHelper.inspectContainer(cont)
@@ -204,6 +204,7 @@ exports.removeContainer = function (cont) {
 }
 
 var arbiterName = '';
+var DATABOX_ARBITER_ENDPOINT = null;
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-arbiter"+ARCH;
@@ -211,11 +212,10 @@ exports.launchArbiter = function () {
     pullImage(name+":latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
-        //console.log(keys);
+
         return dockerHelper.createContainer(
               {'name': name,
                'Image': Config.registryUrl + "/"+name+":latest",
-               //PortBindings: '8080/tcp': [ HostPort: \8081 ]
                'PublishAllPorts': true,
                'Env': [ "CM_PUB_KEY=" + keys['publicKey'] ]
             }
@@ -231,7 +231,10 @@ exports.launchArbiter = function () {
       return dockerHelper.connectToNetwork(Arbiter,'databox-app-net');
     })
     .then((Arbiter) => {return dockerHelper.inspectContainer(Arbiter)} )
-    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
+    .then((data) => { 
+      DATABOX_ARBITER_ENDPOINT = data.NetworkSettings.IPAddress + ':' + parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort)
+      resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) 
+    })
     .catch((err) => {
       console.log("Error creating Arbiter");
       reject(err)
@@ -241,6 +244,7 @@ exports.launchArbiter = function () {
 }
 
 var directoryName = null;
+var DATABOX_DIRECTORY_ENDPOINT = null;
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-directory"+ARCH;
@@ -264,7 +268,10 @@ exports.launchDirectory = function () {
       return dockerHelper.connectToNetwork(Directory,'databox-app-net');
     })
     .then((Directory) => {return dockerHelper.inspectContainer(Directory)} )
-    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
+    .then((data) => { 
+      DATABOX_DIRECTORY_ENDPOINT = data.NetworkSettings.IPAddress + ':' + parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) + '/api'
+      resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) 
+    })
     .catch((err) => {
       console.log("Error creating Directory");
       reject(err)
@@ -306,6 +313,7 @@ var configureApp = function (cont) {
 var configureStore = function (cont) {
   return new Promise( (resolve, reject) =>  {
       dockerHelper.connectToNetwork(cont,'databox-driver-net')
+      .then(()=>{ return dockerHelper.connectToNetwork(cont,'databox-app-net')} )
       .then(resolve())
       .catch((err) => reject(err))
   });
@@ -335,7 +343,7 @@ var updateArbiter = function(data) {
   });
 }
 
-var launchContainer = function (repoTag, sla) {
+var launchContainer = function (repoTag, sla, saveSla) {
   console.log("launchContainer::",repoTag, sla);
   var env = [];
   var name = repoTagToName(repoTag);
@@ -348,6 +356,7 @@ var launchContainer = function (repoTag, sla) {
   var containerPort = null;
   var containerSLA = sla ? sla : false;
   var SLA_RetrievedFromDB = false;
+  saveSla = typeof saveSla != 'undifined' ? saveSla : true;
 
   return new Promise( (resolve, reject) =>  {
 
@@ -372,6 +381,11 @@ var launchContainer = function (repoTag, sla) {
     })
     .then((token) => {
       arbiterToken = token;
+      var env = [ "DATABOX_IP="+ip, 
+                  "ARBITER_TOKEN="+token, 
+                  "DATABOX_DIRECTORY_ENDPOINT="+DATABOX_DIRECTORY_ENDPOINT,
+                  "DATABOX_ARBITER_ENDPOINT="+DATABOX_ARBITER_ENDPOINT
+                ]
 
       //TODO: Parse containerSLA and set ENV and start dependencies.
       
@@ -379,7 +393,7 @@ var launchContainer = function (repoTag, sla) {
                               {
                                 'name': name,
                                 'Image': Config.registryUrl + '/' + name + ARCH +":latest",
-                                'Env': [ "DATABOX_IP="+ip, "ARBITER_TOKEN="+token ],
+                                'Env': env,
                                 'PublishAllPorts': true
                               }
                             );
@@ -420,11 +434,19 @@ var launchContainer = function (repoTag, sla) {
     .then( () => {  
       if(SLA_RetrievedFromDB) {
         return new Promise.resolve();
+      } else if (!saveSla) {
+        return new Promise.resolve();
       } else {
         return db.putSLA(name,containerSLA);} 
       }
     )
-    .then( () => {return db.updateSLAContainerRunningState(name,true);} )
+    .then( () => {
+      if (!saveSla) {
+        return new Promise.resolve();
+      } else {
+        return db.updateSLAContainerRunningState(name,true);
+      }
+     })
     .then( () => { return getContainer(name)})
     .then((cont) => { return dockerHelper.inspectContainer(cont) })
     .then( (info) => {
