@@ -205,6 +205,7 @@ exports.removeContainer = function (cont) {
 
 var arbiterName = '';
 var DATABOX_ARBITER_ENDPOINT = null;
+var DATABOX_ARBITER_PORT = 8080;
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-arbiter"+ARCH;
@@ -232,7 +233,7 @@ exports.launchArbiter = function () {
     })
     .then((Arbiter) => {return dockerHelper.inspectContainer(Arbiter)} )
     .then((data) => { 
-      DATABOX_ARBITER_ENDPOINT = data.NetworkSettings.IPAddress + ':' + parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort)
+      DATABOX_ARBITER_ENDPOINT = 'http://' + data.NetworkSettings.IPAddress + ':' + DATABOX_ARBITER_PORT;
       resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) 
     })
     .catch((err) => {
@@ -245,6 +246,7 @@ exports.launchArbiter = function () {
 
 var directoryName = null;
 var DATABOX_DIRECTORY_ENDPOINT = null;
+var DATABOX_DIRECTORY_PORT = 3000;
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-directory"+ARCH;
@@ -269,7 +271,7 @@ exports.launchDirectory = function () {
     })
     .then((Directory) => {return dockerHelper.inspectContainer(Directory)} )
     .then((data) => { 
-      DATABOX_DIRECTORY_ENDPOINT = data.NetworkSettings.IPAddress + ':' + parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) + '/api'
+      DATABOX_DIRECTORY_ENDPOINT = 'http://' + data.NetworkSettings.IPAddress + ':' + DATABOX_DIRECTORY_PORT + '/api';
       resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) 
     })
     .catch((err) => {
@@ -394,7 +396,10 @@ var launchContainer = function (repoTag, sla, saveSla) {
                                 'name': name,
                                 'Image': Config.registryUrl + '/' + name +":latest",
                                 'Env': env,
-                                'PublishAllPorts': true
+                                'PublishAllPorts': true,
+                                'NetworkingConfig' : {
+                                  'Links': [ directoryName , arbiterName ]
+                                }
                               }
                             );
     })
