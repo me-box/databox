@@ -65,8 +65,8 @@ app-manifest
 				$.get("/manifest?" + $.param({name: window.location.hash.substr(1)}), this.setManifest);
 				//$.post("http://store.upintheclouds.org/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
 			}
-			$.get("/directory/api/datastore", this.setDatastores);
-			$.get("/directory/api/sensor", this.setSensors);
+			$.get("/databox-directory/api/datastore", this.setDatastores);
+			$.get("/databox-directory/api/sensor", this.setSensors);
 		});
 
 		getSensors(type) {
