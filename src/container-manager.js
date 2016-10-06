@@ -392,7 +392,7 @@ var launchContainer = function (repoTag, sla, saveSla) {
       return dockerHelper.createContainer(
                               {
                                 'name': name,
-                                'Image': Config.registryUrl + '/' + name + ARCH +":latest",
+                                'Image': Config.registryUrl + '/' + name +":latest",
                                 'Env': env,
                                 'PublishAllPorts': true
                               }
