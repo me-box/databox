@@ -239,6 +239,7 @@ exports.launchArbiter = function () {
 	    	if(body === 'active')
 		    {
 		    	console.log("Arbiter started");
+          DATABOX_ARBITER_ENDPOINT = containerInfoToEndPoint(data,DATABOX_ARBITER_PORT);
 			    resolve({'name': name, port: port });
 		    }
 		    else
@@ -429,7 +430,6 @@ var launchContainer = function (repoTag, sla, saveSla) {
         var updateContainerConfig= function (info) {
             config['NetworkingConfig']['Links'].push(requiredName);
             config['Env'].push(origName.toUpperCase().replace(/[^A-Z]/g,'_') + "_ENDPOINT=" + containerInfoToEndPoint(info));
-            console.log(config);
         }
 
         if(containerSLA != false && typeof containerSLA['resource-requirements'] != 'undefined' && Object.keys(containerSLA['resource-requirements']).length !== 0) {
@@ -480,7 +480,6 @@ var launchContainer = function (repoTag, sla, saveSla) {
       });
     })
     .then((cont) => {
-      console.log(cont);
       container = cont
       return dockerHelper.inspectContainer(container);
     })
@@ -515,7 +514,7 @@ var launchContainer = function (repoTag, sla, saveSla) {
     })
     .then( () => {  
       if(SLA_RetrievedFromDB) {
-        console.log("Not saving SLA SLA_RetrievedFromDB::" + SLA_RetrievedFromDB + "SLA::");
+        console.log("Not saving SLA SLA_RetrievedFromDB::" + SLA_RetrievedFromDB);
         return new Promise.resolve();
       } else if (!saveSla) {
         console.log("Not saving SLA saveSla::" + saveSla);
