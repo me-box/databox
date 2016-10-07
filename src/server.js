@@ -15,23 +15,32 @@ module.exports = {
 		var installingApps = [];
 		io = io(server);
 
+		this.proxies['store'] = Config.storeUrl;
+
 		app.enable('trust proxy');
 		app.set('views', 'src/www');
 		app.set('view engine', 'pug');
 		app.use(express.static('src/www'));
 
-		app.use(bodyParser.urlencoded({extended: false}));
-
 		app.use((req, res, next) => {
 			var firstPart = req.path.split('/')[1];
 			if (firstPart in this.proxies) {
-				var proxyURL = url.format({
-					protocol: req.protocol,
-					hostname: req.hostname,
-					port: this.proxies[firstPart],
-					pathname: req.baseUrl + req.path.substring(firstPart.length + 1),
-					query: req.query
-				});
+				var replacement = this.proxies[firstPart];
+				if(replacement.indexOf('://') != -1)
+				{
+					var parts = url.parse(replacement);
+					parts.pathname = req.baseUrl + req.path.substring(firstPart.length + 1);
+					parts.query = req.query;
+					var proxyURL = url.format(parts);
+				}
+				else {
+					var proxyURL = url.format({
+						protocol: req.protocol,
+						host: replacement,
+						pathname: req.baseUrl + req.path.substring(firstPart.length + 1),
+						query: req.query
+					});
+				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
 				return req
@@ -47,22 +56,13 @@ module.exports = {
 			next();
 		});
 
+		app.use(bodyParser.urlencoded({extended: false}));
+
 		app.get('/', (req, res) => {
 			res.render('index')
 		});
 		app.get('/slayer', (req, res) => {
 			res.render('slayer')
-		});
-
-		app.get('/manifest', (req, res) => {
-			request.post({'url': Config.storeUrl + '/app/get/', 'form': {'name': req.query.name}}, (err, data) => {
-				if (err) {
-					//do nothing
-					return;
-				}
-
-				res.json(JSON.parse(data.body));
-			});
 		});
 
 		app.get('/list-containers', (req, res) => {
@@ -143,7 +143,7 @@ module.exports = {
 					if (index != -1) {
 						installingApps.splice(index, 1)
 					}
-					this.proxies[info.name] = info.port;
+					this.proxies[info.name] = 'localhost:' + info.port;
 					res.json(info);
 				});
 		});

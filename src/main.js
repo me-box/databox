@@ -20,14 +20,14 @@ conman.connect()
 
 	.then(info => {
 		console.log('Setting up proxy to Arbiter');
-		server.proxies[info.name] = info.port;
+		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log('Launching Directory container');
 		return conman.launchDirectory();
 	})
 	.then(info => {
 		console.log('Setting up proxy to Directory');
-		server.proxies[info.name] = info.port;
+		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting Server!!");
 		return server.launch(Config.serverPort, conman);
@@ -42,7 +42,7 @@ conman.connect()
 	.then((infos) => {
 		for (var info of infos) {
 			console.log(info);
-			server.proxies[info.name] = info.port;
+			server.proxies[info.name] = 'localhost:' + info.port;
 		}
 
 		console.log("--------- Done launching saved containers ----------")
