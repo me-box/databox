@@ -395,7 +395,7 @@ var launchContainer = function (repoTag, sla, saveSla) {
       }
       //sla not provided look to see if we have one for this container
       SLA_RetrievedFromDB = true; 
-      return db.getSLA();
+      return db.getSLA(name);
     } )
     .then((sla) => {
       if(sla != null) {        
