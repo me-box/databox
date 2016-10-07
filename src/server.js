@@ -46,16 +46,17 @@ module.exports = {
 				return req
 					.pipe(request(proxyURL))
 					.on('error', (e) => {
-						console.log(e);
+						console.log('[Proxy] ERROR: ' + req.url + " " +  e.message);
 					})
 					.pipe(res)
 					.on('error', (e) => {
-						console.log(e);
+						console.log('[Proxy] ERROR: ' + req.url + " " +  e.message);
 					});
 			}
 			next();
 		});
 
+		// Needs to be after the proxy
 		app.use(bodyParser.urlencoded({extended: false}));
 
 		app.get('/', (req, res) => {
