@@ -181,7 +181,7 @@ exports.stopContainer = function(cont) {
 }
 
 exports.removeContainer = function (cont) {
-  console.log(cont);
+
   return new Promise( (resolve, reject) =>  {
     
     dockerHelper.inspectContainer(cont)
@@ -204,6 +204,8 @@ exports.removeContainer = function (cont) {
 }
 
 var arbiterName = '';
+var DATABOX_ARBITER_ENDPOINT = null;
+var DATABOX_ARBITER_PORT = 8080;
 exports.launchArbiter = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-arbiter"+ARCH;
@@ -211,11 +213,10 @@ exports.launchArbiter = function () {
     pullImage(name+":latest")
     .then(() => {return generatingCMkeyPair()})
     .then(keys => {
-        //console.log(keys);
+
         return dockerHelper.createContainer(
               {'name': name,
                'Image': Config.registryUrl + "/"+name+":latest",
-               //PortBindings: '8080/tcp': [ HostPort: \8081 ]
                'PublishAllPorts': true,
                'Env': [ "CM_PUB_KEY=" + keys['publicKey'] ]
             }
@@ -258,6 +259,8 @@ exports.launchArbiter = function () {
 };
 
 var directoryName = null;
+var DATABOX_DIRECTORY_ENDPOINT = null;
+var DATABOX_DIRECTORY_PORT = 3000;
 exports.launchDirectory = function () {
   return new Promise( (resolve, reject) =>  {
     var name = "databox-directory"+ARCH;
@@ -281,13 +284,24 @@ exports.launchDirectory = function () {
       return dockerHelper.connectToNetwork(Directory,'databox-app-net');
     })
     .then((Directory) => {return dockerHelper.inspectContainer(Directory)} )
-    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) })
+    .then((data) => { 
+      DATABOX_DIRECTORY_ENDPOINT = containerInfoToEndPoint(data,DATABOX_DIRECTORY_PORT);
+      resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['3000/tcp'][0].HostPort) }) 
+    })
     .catch((err) => {
       console.log("Error creating Directory");
       reject(err)
     });
 
   });
+}
+
+var containerInfoToEndPoint = function (info, port) {
+  if(typeof port != 'undefined') {
+    return 'http://' + info.NetworkSettings.IPAddress + ':' + port + '/api';
+  } else {
+    return 'http://' + info.NetworkSettings.IPAddress + ':8080/api';
+  }
 }
 
 var repoTagToName = function (repoTag) {
@@ -323,6 +337,7 @@ var configureApp = function (cont) {
 var configureStore = function (cont) {
   return new Promise( (resolve, reject) =>  {
       dockerHelper.connectToNetwork(cont,'databox-driver-net')
+      .then(()=>{ return dockerHelper.connectToNetwork(cont,'databox-app-net')} )
       .then(resolve())
       .catch((err) => reject(err))
   });
@@ -352,7 +367,7 @@ var updateArbiter = function(data) {
   });
 }
 
-var launchContainer = function (repoTag, sla) {
+var launchContainer = function (repoTag, sla, saveSla) {
   console.log("launchContainer::",repoTag, sla);
   var env = [];
   var name = repoTagToName(repoTag);
@@ -365,6 +380,7 @@ var launchContainer = function (repoTag, sla) {
   var containerPort = null;
   var containerSLA = sla ? sla : false;
   var SLA_RetrievedFromDB = false;
+  saveSla = typeof saveSla == 'undefined' ? true : saveSla;
 
   return new Promise( (resolve, reject) =>  {
 
@@ -374,6 +390,7 @@ var launchContainer = function (repoTag, sla) {
       //If no SLA can be found db.getSLA() will reject its promise and stop the container
       //installing.  
       if(containerSLA !== false) {
+        SLA_RetrievedFromDB = false;
         return new Promise.resolve(containerSLA);
       }
       //sla not provided look to see if we have one for this container
@@ -381,7 +398,9 @@ var launchContainer = function (repoTag, sla) {
       return db.getSLA();
     } )
     .then((sla) => {
-      containerSLA = sla;
+      if(sla != null) {        
+        containerSLA = sla;
+      }
     })     
     .then(() => {
       console.log("Generating Arbiter token for "+name+" container");
@@ -389,21 +408,81 @@ var launchContainer = function (repoTag, sla) {
     })
     .then((token) => {
       arbiterToken = token;
+      return new Promise((resolve,reject) => {
 
-      //TODO: Parse containerSLA and set ENV and start dependencies.
-      
-      return dockerHelper.createContainer(
-                              {
-                                'name': name,
-                                'Image': Config.registryUrl + '/' + name + ARCH +":latest",
-                                'Env': [ "DATABOX_IP="+ip, "ARBITER_TOKEN="+token ],
-                                'PublishAllPorts': true
-                              }
-                            );
+        var config =   {
+                        'name': name,
+                        'Image': Config.registryUrl + '/' + name +":latest",
+                        'Env': [ "DATABOX_IP="+ip, 
+                                "ARBITER_TOKEN="+token, 
+                                "DATABOX_DIRECTORY_ENDPOINT="+DATABOX_DIRECTORY_ENDPOINT,
+                                "DATABOX_ARBITER_ENDPOINT="+DATABOX_ARBITER_ENDPOINT
+                              ],
+                        'PublishAllPorts': true,
+                        'NetworkingConfig' : {
+                          'Links': [ directoryName , arbiterName ]
+                        }
+                      }
+        
+
+        //Parse containerSLA and set ENV and start dependencies.
+        var updateContainerConfig= function (info) {
+            config['NetworkingConfig']['Links'].push(requiredName);
+            config['Env'].push(origName.toUpperCase().replace(/[^A-Z]/g,'_') + "_ENDPOINT=" + containerInfoToEndPoint(info));
+            console.log(config);
+        }
+
+        if(containerSLA != false && typeof containerSLA['resource-requirements'] != 'undefined' && Object.keys(containerSLA['resource-requirements']).length !== 0) {
+          for(requiredType in containerSLA['resource-requirements']) {
+            var origName = containerSLA['resource-requirements'][requiredType];
+            var requiredName = containerSLA['resource-requirements'][requiredType] + ARCH;
+            console.log("container requires " + requiredType + " " + requiredName);
+            //look for running container
+            getContainer(requiredName)
+            .then((cont) => { return dockerHelper.inspectContainer(cont)})
+            .then((info) => {
+              console.log("Required container found linking it!");
+              updateContainerConfig(info);
+              dockerHelper.createContainer(config)
+              .then((cont)=>{resolve(cont); return;})
+              .catch( (err) => {reject(err); return;});
+
+            })
+            .catch((err) => {
+              //failed try to install
+              console.log("Required container not found trying to install it!", err);
+              var installedContainer = null
+              launchContainer(requiredName)
+              .then((data)=>{ return getContainer(data.name)})
+              .then((cont) => { installedContainer = cont; return dockerHelper.inspectContainer(installedContainer)})
+              .then((info) => {
+                console.log("Required container installed linking it!");
+                updateContainerConfig(info);
+                dockerHelper.createContainer(config)
+                .then((cont)=>{resolve(cont); return;})
+                .catch( (err) => {reject(err); return;});
+
+              })
+              .catch((err) => {
+                //install failed Give up :-(
+                console.log("Required container could not be installed!" + err);
+                return new Promise.reject("Required container could not be installed!" + err);
+              })
+            })
+          }
+          
+        } else {
+          //if there are no sla dependencies then just run it 
+          dockerHelper.createContainer(config)
+          .then( (cont) => {resolve(cont)})
+          .catch( (err) => {reject(err)});
+        }
+      });
     })
     .then((cont) => {
+      console.log(cont);
       container = cont
-      return dockerHelper.inspectContainer(container)
+      return dockerHelper.inspectContainer(container);
     })
     //.then((info) => {
     //
@@ -436,12 +515,23 @@ var launchContainer = function (repoTag, sla) {
     })
     .then( () => {  
       if(SLA_RetrievedFromDB) {
+        console.log("Not saving SLA SLA_RetrievedFromDB::" + SLA_RetrievedFromDB + "SLA::");
+        return new Promise.resolve();
+      } else if (!saveSla) {
+        console.log("Not saving SLA saveSla::" + saveSla);
         return new Promise.resolve();
       } else {
+        console.log("Saving SLA");
         return db.putSLA(name,containerSLA);} 
       }
     )
-    .then( () => {return db.updateSLAContainerRunningState(name,true);} )
+    .then( () => {
+      if (!saveSla) {
+        return new Promise.resolve();
+      } else {
+        return db.updateSLAContainerRunningState(name,true);
+      }
+     })
     .then( () => { return getContainer(name)})
     .then((cont) => { return dockerHelper.inspectContainer(cont) })
     .then( (info) => {
