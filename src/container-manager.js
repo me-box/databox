@@ -231,14 +231,31 @@ exports.launchArbiter = function () {
       return dockerHelper.connectToNetwork(Arbiter,'databox-app-net');
     })
     .then((Arbiter) => {return dockerHelper.inspectContainer(Arbiter)} )
-    .then((data) => { resolve({'name': name, port: parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort) }) })
+    .then((data) => {
+	    console.log("Waiting for Arbiter");
+    	var port = parseInt(data.NetworkSettings.Ports['8080/tcp'][0].HostPort);
+	    var untilActive = function(error, response, body) {
+	    	if(body === 'active')
+		    {
+		    	console.log("Arbiter started");
+			    resolve({'name': name, port: port });
+		    }
+		    else
+		    {
+		    	setTimeout(() =>{
+				    request.get("http://localhost:" + port + "/status", untilActive);
+		    	}, 1000);
+		    }
+	    };
+	    untilActive({});
+    })
     .catch((err) => {
       console.log("Error creating Arbiter");
       reject(err)
     });
 
   });
-}
+};
 
 var directoryName = null;
 exports.launchDirectory = function () {
