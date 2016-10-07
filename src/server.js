@@ -1,11 +1,9 @@
-var Promise = require('promise');
 var Config = require('./config.json');
 var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
 var io = require('socket.io');
-var proxy = require('http-proxy-middleware');
 var url = require('url');
 
 var app = express();
@@ -13,7 +11,7 @@ var app = express();
 module.exports = {
 	proxies: {},
 	launch: function (port, conman) {
-		server = http.createServer(app);
+		var server = http.createServer(app);
 		var installingApps = [];
 		io = io(server);
 
@@ -160,9 +158,8 @@ module.exports = {
 					return conman.startContainer(cont)
 				})
 				.then((data) => {
-					console.log("Restarted " + JSON.stringify(data));
 					console.log("Restarted " + data.id);
-					this.proxies[data.name] = data.port;
+
 					res.json(data);
 				})
 				.catch((err)=> {
