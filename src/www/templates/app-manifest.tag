@@ -91,6 +91,10 @@ app-manifest
 
 		setManifest(data) {
 			this.manifest = data.manifest;
+			if(this.manifest.packages.length === 1)
+			{
+				this.manifest.packages[0].enabled = true;
+			}
 			this.update();
 			componentHandler.upgradeAllRegistered();
 		}
