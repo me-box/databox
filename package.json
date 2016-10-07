@@ -5,7 +5,9 @@
   "scripts": {
     "build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
     "watch": "riot --watch --template pug src/www/templates | node-sass -w src/www/styles/ -o src/www/styles/",
-    "start": "node src/main.js"
+    "start": "node src/main.js",
+    "killall": "docker kill $(docker ps -a -q)",
+    "dockerclean": "docker kill $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi -f $(docker images -q)"
   },
   "repository": {
     "type": "git",
