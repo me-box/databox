@@ -138,6 +138,7 @@ app-manifest
 					if (datastore.id == sensor.datastore_id) {
 						datasource.hostname = datastore.hostname;
 						datasource.api_url = datastore.api_url;
+						datasource.sensor_id = sensor.id;
 						datasource.sensor = sensor.description + ", " + sensor.location;
 					}
 				}
