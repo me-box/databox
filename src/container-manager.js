@@ -456,9 +456,9 @@ var launchContainer = function (repoTag, sla, saveSla) {
 					if (containerSLA != false) {
 						for (var datasource of containerSLA['datasources']) {
 							var sensor = {
-								id: datasource.sensor_id,
 								hostname: datasource.hostname,
-								api_url: datasource.api_url
+								api_url: datasource.api_url,
+								sensor_id: datasource.sensor_id,
 							};
 							config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
 						}
