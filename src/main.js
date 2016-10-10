@@ -27,6 +27,7 @@ conman.connect()
 	})
 	.then(info => {
 		console.log('Setting up proxy to Directory');
+		console.log(JSON.stringify(info));
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting Server!!");
@@ -40,9 +41,10 @@ conman.connect()
 		return conman.restoreContainers(slas);
 	})
 	.then((infos) => {
-		for (var info of infos) {
-			console.log(info);
-			server.proxies[info.name] = 'localhost:' + info.port;
+		for (var containers of infos) {
+			for(var container of containers) {
+				server.proxies[container.name] = 'localhost:' + container.port;
+			}
 		}
 
 		console.log("--------- Done launching saved containers ----------")

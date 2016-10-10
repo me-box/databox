@@ -131,36 +131,39 @@ module.exports = {
 
 		app.post('/install', (req, res) => {
 			var sla = JSON.parse(req.body.sla);
-			var name = sla.name;
-			console.log(JSON.stringify(installingApps));
-			repoTag = name;
-			installingApps.push(name);
+			installingApps.push(sla.name);
 
-			io.emit('docker-create', repoTag);
-			conman.launchContainer(repoTag, sla)
-				.then((info) => {
-					console.log("CONTAINER CREATED", info);
-					var index = installingApps.indexOf(name);
-					if (index != -1) {
-						installingApps.splice(index, 1)
+			io.emit('docker-create', sla.name);
+			conman.launchContainer(sla)
+				.then((containers) => {
+					console.log("CONTAINER CREATED", sla.name);
+					for(var container of containers) {
+						var index = installingApps.indexOf(container.name);
+						if (index != -1) {
+							installingApps.splice(index, 1)
+						}
+						this.proxies[container.name] = 'localhost:' + container.port;
 					}
-					this.proxies[info.name] = 'localhost:' + info.port;
-					res.json(info);
+
+					res.json(containers);
+				})
+				.then(() => {
+					return conman.saveSLA(sla);
 				});
 		});
 
 		app.post('/restart', (req, res) => {
 			console.log("Restarting " + req.body.id);
 			conman.getContainer(req.body.id)
-				.then((cont) => {
-					return conman.stopContainer(cont)
+				.then((container) => {
+					return conman.stopContainer(container)
 				})
-				.then((cont) => {
-					return conman.startContainer(cont)
+				.then((container) => {
+					return conman.startContainer(container)
 				})
-				.then((data) => {
-					console.log("Restarted " + data.id);
-
+				.then((container) => {
+					console.log("Restarted " + container.name);
+					this.proxies[container.name] = 'localhost:' + container.port;
 					res.json(data);
 				})
 				.catch((err)=> {
