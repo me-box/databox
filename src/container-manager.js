@@ -25,11 +25,11 @@ exports.connect = function () {
 		if (err) reject("Cant connect to docker!");
 		resolve();
 	}));
-}
+};
 
 exports.getDockerEmitter = function () {
 	return dockerHelper.getDockerEmitter();
-}
+};
 
 var listContainers = function () {
 	return new Promise((resolve, reject) => {
@@ -44,7 +44,7 @@ var listContainers = function () {
 		);
 
 	});
-}
+};
 exports.listContainers = listContainers;
 
 
@@ -52,7 +52,7 @@ exports.killAll = function () {
 	return new Promise((resolve, reject) => {
 		listContainers()
 			.then(containers => {
-				ids = []
+				ids = [];
 				for (var i in containers) {
 					var e = containers[i];
 					console.log("killing " + e.Image + " id=" + e.Id + " ...");
@@ -60,8 +60,7 @@ exports.killAll = function () {
 					console.log("removing " + e.Image + " id=" + e.Id + " ...");
 					ids.push(dockerHelper.remove(e.Id));
 				}
-				;
-				return Promise.all(ids)
+				return Promise.all(ids);
 			})
 			.then((data) => {
 				resolve()
@@ -71,13 +70,13 @@ exports.killAll = function () {
 				reject(err)
 			})
 	});
-}
+};
 
 var getContainer = function (id) {
 	return new Promise((resolve, reject) => {
 		resolve(docker.getContainer(id));
 	});
-}
+};
 exports.getContainer = getContainer;
 
 exports.initNetworks = function () {
@@ -88,7 +87,7 @@ exports.initNetworks = function () {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net'),
 					dockerHelper.getNetwork(networks, 'databox-app-net')
-				]
+				];
 
 				return Promise.all(requiredNets)
 					.then((networks) => {
@@ -142,7 +141,7 @@ var generatingCMkeyPair = function () {
 		var publicKey = keyPair.toPublicPem('base64');
 		resolve({'keyPair': keyPair, 'publicKey': publicKey});
 	});
-}
+};
 
 var startContainer = function (cont) {
 	return new Promise((resolve, reject) => {
@@ -162,7 +161,7 @@ var startContainer = function (cont) {
 				})
 		})
 	});
-}
+};
 exports.startContainer = startContainer;
 
 exports.stopContainer = function (cont) {
@@ -184,7 +183,7 @@ exports.stopContainer = function (cont) {
 
 		})
 	});
-}
+};
 
 exports.removeContainer = function (cont) {
 
@@ -207,7 +206,7 @@ exports.removeContainer = function (cont) {
 				})
 			});
 	});
-}
+};
 
 var arbiterName = '';
 var DATABOX_ARBITER_ENDPOINT = null;
@@ -311,7 +310,7 @@ exports.launchDirectory = function () {
 			});
 
 	});
-}
+};
 
 var containerInfoToEndPoint = function (info, port) {
 	if (typeof port != 'undefined') {
@@ -319,11 +318,11 @@ var containerInfoToEndPoint = function (info, port) {
 	} else {
 		return 'http://' + info.NetworkSettings.IPAddress + ':8080/api';
 	}
-}
+};
 
 var repoTagToName = function (repoTag) {
 	return repoTag.match(/(?:.*\/)?([^/:\s]+)(?::.*|$)/)[1];
-}
+};
 
 var generateArbiterToken = function () {
 	return new Promise((resolve, reject) => {
@@ -333,7 +332,7 @@ var generateArbiterToken = function () {
 			resolve(token)
 		});
 	});
-}
+};
 
 var configureDriver = function (cont) {
 	return new Promise((resolve, reject) => {
@@ -341,7 +340,7 @@ var configureDriver = function (cont) {
 			.then(resolve())
 			.catch((err) => reject(err))
 	});
-}
+};
 
 var configureApp = function (cont) {
 	return new Promise((resolve, reject) => {
@@ -349,7 +348,7 @@ var configureApp = function (cont) {
 			.then(resolve())
 			.catch((err) => reject(err))
 	});
-}
+};
 
 var configureStore = function (cont) {
 	return new Promise((resolve, reject) => {
@@ -360,7 +359,7 @@ var configureStore = function (cont) {
 			.then(resolve())
 			.catch((err) => reject(err))
 	});
-}
+};
 
 var updateArbiter = function (data) {
 	return new Promise((resolve, reject) => {
@@ -387,7 +386,7 @@ var updateArbiter = function (data) {
 			})
 			.catch((err) => reject(err))
 	});
-}
+};
 
 var launchContainer = function (repoTag, sla, saveSla) {
 	console.log("launchContainer::", repoTag, sla);
@@ -454,18 +453,22 @@ var launchContainer = function (repoTag, sla, saveSla) {
 					};
 
 					if (containerSLA != false) {
-						for (var datasource of containerSLA['datasources']) {
-							var sensor = {
-								hostname: datasource.hostname,
-								api_url: datasource.api_url,
-								sensor_id: datasource.sensor_id,
-							};
-							config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
+						if('datasources' in containerSLA) {
+							for (var datasource of containerSLA.datasources) {
+								var sensor = {
+									hostname: datasource.hostname,
+									api_url: datasource.api_url,
+									sensor_id: datasource.sensor_id,
+								};
+								config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
+							}
 						}
 
-						for(var manifestPackage of containerSLA['packages']) {
-							var packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
-							config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
+						if('packages' in containerSLA) {
+							for (var manifestPackage of containerSLA.packages) {
+								var packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
+								config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
+							}
 						}
 					}
 
@@ -596,7 +599,7 @@ var launchContainer = function (repoTag, sla, saveSla) {
 				containerInfo = info;
 				containerPort = parseInt(info.NetworkSettings.Ports['8080/tcp'][0].HostPort);
 				console.log("Container " + name + " launched");
-				resolve({name: name, port: containerPort})
+				resolve({name: name, port: containerPort});
 			})
 			.catch((err) => {
 				console.log("[launchContainer ERROR]" + err);
@@ -617,9 +620,9 @@ exports.restoreContainers = function (slas) {
 		proms.push(launchContainer(sla.name));
 	}
 	return new Promise.all(proms);
-}
+};
 
 
 exports.getActiveSLAs = function () {
 	return db.getActiveSLAs();
-}
+};
