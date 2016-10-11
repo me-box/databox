@@ -6,7 +6,6 @@ var crypto = require('crypto');
 var request = require('request');
 
 var db = require('./include/container-manager-db.js');
-
 var dockerHelper = require('./include/container-manager-docker-helper.js');
 
 var docker = dockerHelper.getDocker();
@@ -167,10 +166,7 @@ var startContainer = function (cont) {
 							}
 						}
 					}
-					console.log("[SLA] Update " + response.name + ": running = true");
-					db.updateSLAContainerRunningState(response.name, true)
-						.then(resolve(response))
-						.catch((err) => reject(err));
+					resolve(response);
 				});
 		})
 	});
@@ -185,15 +181,7 @@ exports.stopContainer = function (cont) {
 				reject(err);
 				return;
 			}
-			dockerHelper.inspectContainer(cont)
-				.then((info) => {
-					var name = repoTagToName(info.Name);
-					console.log("updateSLAContainerRunningState to false::" + name);
-					db.updateSLAContainerRunningState(name, false)
-						.then(resolve(cont))
-						.catch((err) => reject(err));
-				})
-
+			resolve(cont);
 		})
 	});
 };
@@ -201,7 +189,6 @@ exports.stopContainer = function (cont) {
 exports.removeContainer = function (cont) {
 
 	return new Promise((resolve, reject) => {
-
 		dockerHelper.inspectContainer(cont)
 			.then((info) => {
 				cont.remove({force: true}, (err, data) => {
@@ -213,6 +200,7 @@ exports.removeContainer = function (cont) {
 					var name = repoTagToName(info.Name);
 					console.log("removed " + name + "!");
 					console.log("[SLA] Delete " + name);
+					resolve(info);
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
@@ -556,5 +544,5 @@ exports.restoreContainers = function (slas) {
 
 
 exports.getActiveSLAs = function () {
-	return db.getActiveSLAs();
+	return db.getAllSLAs();
 };
