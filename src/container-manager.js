@@ -485,6 +485,16 @@ var launchContainer = function (containerSLA) {
 					}
 				}
 
+				if('hardware-permissions' in containerSLA) {
+					for (var permmisions of containerSLA['hardware-permissions']) {
+						if(permmisions == 'usb') {
+								console.log("Adding USB hardware-permissions");
+								Config.Privileged = true;
+	      				config.Devices = [{ PathOnHost: "/dev/bus/usb/001", PathInContainer: "/dev/bus/usb/001", CgroupPermissions: "mrw" }]
+						}
+					}
+				}
+
 				if ('packages' in containerSLA) {
 					for (var manifestPackage of containerSLA.packages) {
 						var packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
