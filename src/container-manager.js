@@ -214,7 +214,7 @@ exports.removeContainer = function (cont) {
 					console.log("removed " + name + "!");
 					console.log("deleteSLA::" + name);
 					db.deleteSLA(name, false)
-						.then(resolve(cont))
+						.then(resolve(info))
 						.catch((err) => reject(err));
 				})
 			});

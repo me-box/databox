@@ -26,8 +26,7 @@ module.exports = {
 			var firstPart = req.path.split('/')[1];
 			if (firstPart in this.proxies) {
 				var replacement = this.proxies[firstPart];
-				if(replacement.indexOf('://') != -1)
-				{
+				if (replacement.indexOf('://') != -1) {
 					var parts = url.parse(replacement);
 					parts.pathname = req.baseUrl + req.path.substring(firstPart.length + 1);
 					parts.query = req.query;
@@ -46,11 +45,11 @@ module.exports = {
 				return req
 					.pipe(request(proxyURL))
 					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " +  e.message);
+						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
 					})
 					.pipe(res)
 					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " +  e.message);
+						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
 					});
 			}
 			next();
@@ -137,7 +136,7 @@ module.exports = {
 			conman.launchContainer(sla)
 				.then((containers) => {
 					console.log("CONTAINER CREATED", sla.name);
-					for(var container of containers) {
+					for (var container of containers) {
 						var index = installingApps.indexOf(container.name);
 						if (index != -1) {
 							installingApps.splice(index, 1)
@@ -175,20 +174,24 @@ module.exports = {
 		app.post('/uninstall', (req, res) => {
 			console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)
-				.then((cont)=> {
-					return conman.stopContainer(cont)
+				.then((container)=> {
+					return conman.stopContainer(container)
 				})
-				.then((cont)=> {
-					return conman.removeContainer(cont)
+				.then((container)=> {
+					return conman.removeContainer(container)
 				})
-				.then((data)=> {
-					console.log("Uninstalled " + data.id);
-					res.json(data);
+				.then((info)=> {
+					var name = info.Name;
+					if (info.Name.startsWith('/')) {
+						name = info.Name.substring(1);
+					}
+					console.log("Uninstalled " + name);
+					delete this.proxies[name];
+					res.json(info);
 				})
 				.catch((err)=> {
 					res.json(err)
 				});
-
 		});
 
 
