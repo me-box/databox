@@ -401,7 +401,7 @@ var launchDependencies = function (containerSLA) {
 				})
 				.then((info) => {
 					console.log("Required container found linking it!");
-					updateContainerConfig(info);
+					resolve([info]);
 				})
 				.catch((err) => {
 					//failed try to install
