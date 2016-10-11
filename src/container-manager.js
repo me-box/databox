@@ -389,6 +389,7 @@ var launchDependencies = function (containerSLA) {
 				})
 				.then((info) => {
 					console.log("Required container found linking it!");
+					info.name = requiredName;
 					resolve([info]);
 				})
 				.catch((err) => {
