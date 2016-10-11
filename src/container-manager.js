@@ -167,7 +167,7 @@ var startContainer = function (cont) {
 							}
 						}
 					}
-					console.log("updateSLAContainerRunningState:: to true" + response.name);
+					console.log("[SLA] Update " + response.name + ": running = true");
 					db.updateSLAContainerRunningState(response.name, true)
 						.then(resolve(response))
 						.catch((err) => reject(err));
@@ -212,7 +212,7 @@ exports.removeContainer = function (cont) {
 					}
 					var name = repoTagToName(info.Name);
 					console.log("removed " + name + "!");
-					console.log("deleteSLA::" + name);
+					console.log("[SLA] Delete " + name);
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
@@ -402,13 +402,6 @@ var launchDependencies = function (containerSLA) {
 				.then((info) => {
 					console.log("Required container found linking it!");
 					updateContainerConfig(info);
-					dockerHelper.createContainer(config)
-						.then((cont)=> {
-							resolve(cont);
-						})
-						.catch((err) => {
-							reject(err);
-						});
 				})
 				.catch((err) => {
 					//failed try to install
@@ -537,7 +530,7 @@ exports.launchContainer = launchContainer;
 
 
 var saveSLA = function (sla) {
-	console.log("Saving SLA " + sla.name);
+	console.log("[SLA] Store " + sla.name);
 	return db.putSLA(sla.name, sla);
 };
 exports.saveSLA = saveSLA;
