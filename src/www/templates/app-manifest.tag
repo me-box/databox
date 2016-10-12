@@ -49,14 +49,7 @@ app-manifest
 		this.manifest = null;
 		this.sensors = null;
 		this.datastores = null;
-		this.typeMapping = {
-			"temperature": {id: 1, name: "Temperature"},
-			"bulbs": {id: 5, name: "Hue Lights"},
-			"temp": {id: 1, name: "Temperature"},
-			"huebulb": {id: 5, name: "Hue Lights"},
-			"sensingkit": {id: 6, name: "Sensor Kit"},
-			"app": {id: 7, name: "App"}
-		};
+		this.types = {};
 		this.on('mount', function () {
 			if (getUrlVars()["test"] == "true") {
 				$.get("/test-data/manifest.json", this.setManifest);
@@ -66,6 +59,7 @@ app-manifest
 			}
 			$.get("/databox-directory/api/datastore", this.setDatastores);
 			$.get("/databox-directory/api/sensor", this.setSensors);
+			$.get("/databox-directory/api/sensor_type", this.setTypes);
 		});
 
 		getSensors(type) {
@@ -74,7 +68,7 @@ app-manifest
 				return this.sensors;
 			}
 			else {
-				var typeObj = this.typeMapping[type];
+				var typeObj = this.types[type];
 				if(typeObj != null)
 				{
 					return this.sensors.filter(function (sensor) {
@@ -104,6 +98,16 @@ app-manifest
 			this.update();
 			componentHandler.upgradeAllRegistered();
 		}
+
+		setTypes(data) {
+			for(var type of data) {
+				this.types[type.description] = {id: type.id, name: type.description}
+			}
+			console.log(JSON.stringify(this.types));
+			this.update();
+			componentHandler.upgradeAllRegistered();
+		}
+
 
 		setSensors(data) {
 			this.sensors = data;
@@ -148,7 +152,7 @@ app-manifest
 		getDatasourceType(datasource_id) {
 			for (datasource of this.manifest.datasources) {
 				if (datasource.clientid === datasource_id) {
-					var type = this.typeMapping[datasource.type];
+					var type = this.types[datasource.type];
 					if(type != null)
 					{
 						return type.name;
