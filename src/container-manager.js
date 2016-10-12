@@ -389,6 +389,7 @@ var launchDependencies = function (containerSLA) {
 				})
 				.then((info) => {
 					console.log("Required container found linking it!");
+					info.name = requiredName;
 					resolve([info]);
 				})
 				.catch((err) => {
@@ -470,6 +471,16 @@ var launchContainer = function (containerSLA) {
 							sensor_id: datasource.sensor_id,
 						};
 						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
+					}
+				}
+
+				if('hardware-permissions' in containerSLA) {
+					for (var permmisions of containerSLA['hardware-permissions']) {
+						if(permmisions == 'usb') {
+								console.log("Adding USB hardware-permissions");
+								Config.Privileged = true;
+	      				config.Devices = [{ PathOnHost: "/dev/bus/usb/001", PathInContainer: "/dev/bus/usb/001", CgroupPermissions: "mrw" }]
+						}
 					}
 				}
 
