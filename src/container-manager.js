@@ -142,32 +142,38 @@ var generatingCMkeyPair = function () {
 	});
 };
 
-var startContainer = function (cont) {
+var getContrainerInfo = function(container) {
+	return dockerHelper.inspectContainer(container)
+		.then((info) => {
+			var response = {
+				id: info.Id,
+				type: info.Config.Labels['databox.type'],
+				name: repoTagToName(info.Name),
+			};
+			if ('NetworkSettings' in info) {
+				response.ip = info.NetworkSettings.IPAddress;
+				if ('Ports' in info.NetworkSettings) {
+					for (var portName in info.NetworkSettings.Ports) {
+						response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						break;
+					}
+				}
+			}
+			return response;
+		});
+};
+
+var startContainer = function (container) {
 	return new Promise((resolve, reject) => {
-		//TODO: check cont
-		cont.start((err, data) => {
+		//TODO: check container
+		container.start((err, data) => {
 			if (err) {
 				reject('startContainer:: ' + err);
 				return;
 			}
-			dockerHelper.inspectContainer(cont)
-				.then((info) => {
-					var response = {
-						id: info.Id,
-						type: info.Config.Labels['databox.type'],
-						name: repoTagToName(info.Name),
-					};
-					if ('NetworkSettings' in info) {
-						response.ip = info.NetworkSettings.IPAddress;
-						if ('Ports' in info.NetworkSettings) {
-							for (var portName in info.NetworkSettings.Ports) {
-								response.port = info.NetworkSettings.Ports[portName][0].HostPort;
-								break;
-							}
-						}
-					}
-					resolve(response);
-				});
+			getContrainerInfo(container).then((info) => {
+				resolve(info);
+			});
 		})
 	});
 };
@@ -377,7 +383,6 @@ var updateArbiter = function (data) {
 
 var launchDependencies = function (containerSLA) {
 	var promises = [];
-	var startedDependencies = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
 		var requiredName = containerSLA['resource-requirements'][requiredType] + ARCH;
 		console.log("container requires " + requiredType + " " + requiredName);
@@ -385,7 +390,7 @@ var launchDependencies = function (containerSLA) {
 		promises.push(new Promise((resolve, reject) => {
 			getContainer(requiredName)
 				.then((cont) => {
-					return dockerHelper.inspectContainer(cont)
+					return getContrainerInfo(cont)
 				})
 				.then((info) => {
 					console.log("Required container found linking it!");
@@ -445,13 +450,15 @@ var launchContainer = function (containerSLA) {
 
 		launchDependencies(containerSLA)
 			.then((dependencies) => {
-				for(var dependecyList of dependencies) {
+				for (var dependecyList of dependencies) {
 					for (var dependency of dependecyList) {
-						config['NetworkingConfig']['Links'].push(dependency.name);
-						config['Env'].push(dependency.name.toUpperCase().replace(/[^A-Z]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
+						config.NetworkingConfig.Links.push(dependency.name);
+						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
 						launched.push(dependency);
 					}
 				}
+
+				console.log(JSON.stringify(config.Env));
 
 				return pullImage(name + ":latest");
 			})
@@ -461,7 +468,7 @@ var launchContainer = function (containerSLA) {
 			})
 			.then((token) => {
 				arbiterToken = token;
-				config['Env'].push("ARBITER_TOKEN=" + token);
+				config.Env.push("ARBITER_TOKEN=" + token);
 
 				if ('datasources' in containerSLA) {
 					for (var datasource of containerSLA.datasources) {
@@ -474,12 +481,16 @@ var launchContainer = function (containerSLA) {
 					}
 				}
 
-				if('hardware-permissions' in containerSLA) {
+				if ('hardware-permissions' in containerSLA) {
 					for (var permmisions of containerSLA['hardware-permissions']) {
-						if(permmisions == 'usb') {
-								console.log("Adding USB hardware-permissions");
-								Config.Privileged = true;
-	      				config.Devices = [{ PathOnHost: "/dev/bus/usb/001", PathInContainer: "/dev/bus/usb/001", CgroupPermissions: "mrw" }]
+						if (permmisions == 'usb') {
+							console.log("Adding USB hardware-permissions");
+							Config.Privileged = true;
+							config.Devices = [{
+								PathOnHost: "/dev/bus/usb/001",
+								PathInContainer: "/dev/bus/usb/001",
+								CgroupPermissions: "mrw"
+							}]
 						}
 					}
 				}
