@@ -19,6 +19,7 @@ $color-accent-contrast: $color-white !default;
 
 .mdl-list__item--two-line {
 	user-select: none;
+	white-space: nowrap;
 }
 
 .mdl-list__item--two-line:hover {

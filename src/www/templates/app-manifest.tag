@@ -43,7 +43,7 @@ app-manifest
 						| { description }, { location }
 					li.mdl-menu__item(disabled, if="{ getSensors(type).length == 0 }")
 						| No sensors found
-	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="{ installApp }")
+	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="{ installApp }", disabled="{ !isValid() }")
 		| Install
 	script.
 		this.manifest = null;
@@ -51,12 +51,7 @@ app-manifest
 		this.datastores = null;
 		this.types = {};
 		this.on('mount', function () {
-			if (getUrlVars()["test"] == "true") {
-				$.get("/test-data/manifest.json", this.setManifest);
-			}
-			else {
-				$.post("/store/app/get/", {name: window.location.hash.substr(1)}, this.setManifest);
-			}
+			$.post("/store/app/get/", {name: opts.name}, this.setManifest);
 			$.get("/databox-directory/api/datastore", this.setDatastores);
 			$.get("/databox-directory/api/sensor", this.setSensors);
 			$.get("/databox-directory/api/sensor_type", this.setTypes);
@@ -82,6 +77,18 @@ app-manifest
 				}
 			}
 		}
+
+		isValid() {
+			if(opts.validate) {
+				for (var datasource of this.manifest.datasources) {
+					if (datasource.hostname == null) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
 
 		setManifest(data) {
 			this.manifest = data.manifest;
@@ -121,17 +128,6 @@ app-manifest
 				package.enabled = !package.enabled;
 			}
 			return true;
-		}
-
-		function getUrlVars() {
-			var vars = [], hash;
-			var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-			for (var i = 0; i < hashes.length; i++) {
-				hash = hashes[i].split('=');
-				vars.push(hash[0]);
-				vars[hash[0]] = hash[1];
-			}
-			return vars;
 		}
 
 		selectSensor(source) {

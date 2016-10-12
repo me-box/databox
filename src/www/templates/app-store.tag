@@ -3,7 +3,7 @@ app-store
 		div.mdl-spinner.mdl-js-spinner.is-active(if="{!loaded}")
 	ul.mdl-list
 		li.mdl-list__item.mdl-list__item--two-line(each="{ apps }")
-			a.mdl-list__item-primary-content(href="slayer#{ manifest.name }")
+			a.mdl-list__item-primary-content(href="/install/{ manifest.name }")
 				i.material-icons.mdl-list__item-icon
 					| extension
 				span

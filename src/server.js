@@ -61,9 +61,15 @@ module.exports = {
 		app.get('/', (req, res) => {
 			res.render('index')
 		});
-		app.get('/slayer', (req, res) => {
-			res.render('slayer')
+		app.get('/install/:appname', (req, res) => {
+			var appname = req.params.appname;
+			res.render('install', {appname: appname})
 		});
+		app.get('/ui/:appname', (req, res) => {
+			var appname = req.params.appname;
+			res.render('ui', {appname: appname})
+		});
+
 
 		app.get('/list-containers', (req, res) => {
 			conman.listContainers()

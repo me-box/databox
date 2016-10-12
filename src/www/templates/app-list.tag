@@ -8,7 +8,7 @@ app-list
 			li.mdl-list__item
 				| { section }
 			li.mdl-list__item.mdl-list__item--two-line(each="{ listApps(section) }")
-				a.mdl-list__item-primary-content(href="{ Ports.length > 0 ? Names[0] + '/' : null }")
+				a.mdl-list__item-primary-content(href="{ Ports.length > 0 ? 'ui' + Names[0] + '/' : null }")
 					i.material-icons.mdl-list__item-icon
 						| { icon }
 					span
@@ -121,15 +121,8 @@ app-list
 			loaded = false;
 			console.log('disconnect');
 		});
-		//socket.on('docker-_message', function (message) {
-		//	console.log(message);
-		//});
 		socket.on('docker-create', this.reload);
 		socket.on('docker-start', this.reload);
 		socket.on('docker-stop', this.reload);
 		socket.on('docker-die', this.reload);
 		socket.on('docker-destroy', this.reload);
-		socket.on('echo', function (data) {
-			console.log(data);
-		});
-		socket.emit('echo', 'echo');
