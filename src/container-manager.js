@@ -52,12 +52,11 @@ exports.killAll = function () {
 		listContainers()
 			.then(containers => {
 				ids = [];
-				for (var i in containers) {
-					var e = containers[i];
-					console.log("killing " + e.Image + " id=" + e.Id + " ...");
-					ids.push(dockerHelper.kill(e.Id));
-					console.log("removing " + e.Image + " id=" + e.Id + " ...");
-					ids.push(dockerHelper.remove(e.Id));
+				for (var container of containers) {
+					var name = repoTagToName(container.Image);
+					console.log('[' + name + '] Uninstalling');
+					ids.push(dockerHelper.kill(container.Id));
+					ids.push(dockerHelper.remove(container.Id));
 				}
 				return Promise.all(ids);
 			})
@@ -80,7 +79,7 @@ exports.getContainer = getContainer;
 
 exports.initNetworks = function () {
 	return new Promise((resolve, reject) => {
-		console.log('initNetworks');
+		console.log('Creating Networks');
 		dockerHelper.listNetworks()
 			.then(networks => {
 				var requiredNets = [
@@ -111,7 +110,10 @@ exports.initNetworks = function () {
 var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
 		//Pull latest Arbiter image
-		console.log('Pulling ' + imageName);
+		var parts = imageName.split(':');
+		var name = parts[0];
+		var version = parts[1];
+		console.log('[' + name + '] Pulling ' + version + ' image');
 		docker.pull(Config.registryUrl + "/" + imageName, (err, stream) => {
 			if (err) {
 				reject(err);
@@ -241,18 +243,15 @@ exports.launchArbiter = function () {
 				return startContainer(Arbiter)
 			})
 			.then((Arbiter) => {
-				console.log("connecting to driver network");
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-driver-net');
 			})
 			.then((Arbiter) => {
-				console.log("connecting to app network");
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-app-net');
 			})
 			.then((Arbiter) => {
-				console.log("Waiting for Arbiter");
 				var untilActive = function (error, response, body) {
 					if (body === 'active') {
-						console.log("Arbiter started");
+						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'http://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
 						resolve({'name': Arbiter.name, port: Arbiter.port});
 					}
@@ -293,11 +292,9 @@ exports.launchDirectory = function () {
 				return startContainer(directory)
 			})
 			.then((directory) => {
-				console.log("connecting to driver network");
 				return dockerHelper.connectToNetwork(directory, 'databox-driver-net');
 			})
 			.then((directory) => {
-				console.log("connecting to app network");
 				return dockerHelper.connectToNetwork(directory, 'databox-app-net');
 			})
 			.then((directory) => {
@@ -385,7 +382,7 @@ var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
 		var requiredName = containerSLA['resource-requirements'][requiredType] + ARCH;
-		console.log("container requires " + requiredType + " " + requiredName);
+		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
 		promises.push(new Promise((resolve, reject) => {
 			getContainer(requiredName)
@@ -393,13 +390,13 @@ var launchDependencies = function (containerSLA) {
 					return getContrainerInfo(cont)
 				})
 				.then((info) => {
-					console.log("Required container found linking it!");
+					console.log('[' + containerSLA.name + "] Linking to existing "  + requiredType + " " + requiredName);
 					info.name = requiredName;
 					resolve([info]);
 				})
 				.catch((err) => {
 					//failed try to install
-					console.log("Required container not found trying to install it!", err);
+					//console.log("Required container not found trying to install it!", err);
 					//Look for an SLA to use. If one is not provided then, look for one stored in the DB.
 					//If no SLA can be found db.getSLA() will reject its promise and stop the container
 					//installing.
@@ -430,7 +427,7 @@ var launchDependencies = function (containerSLA) {
 
 var launchContainer = function (containerSLA) {
 	var name = repoTagToName(containerSLA.name) + ARCH;
-	console.log("launchContainer::", name);
+	console.log('[' + name + '] Launching');
 	var arbiterToken = null;
 	var config = {
 		'name': name,
@@ -458,12 +455,10 @@ var launchContainer = function (containerSLA) {
 					}
 				}
 
-				console.log(JSON.stringify(config.Env));
-
 				return pullImage(name + ":latest");
 			})
 			.then(() => {
-				console.log("Generating Arbiter token for " + name + " container");
+				console.log('[' + name + '] Generating Arbiter token');
 				return generateArbiterToken();
 			})
 			.then((token) => {
@@ -519,7 +514,7 @@ var launchContainer = function (containerSLA) {
 				}
 			})
 			.then((container) => {
-				console.log("Passing " + name + " token to Arbiter");
+				console.log('[' + name + '] Passing token to Arbiter');
 
 				var update = JSON.stringify({name: name, token: arbiterToken, type: container.type});
 
@@ -531,7 +526,7 @@ var launchContainer = function (containerSLA) {
 				resolve(launched);
 			})
 			.catch((err) => {
-				console.log("[launchContainer ERROR]" + err);
+				console.log("[" + name + "] ERROR Launcing: " + err);
 				reject(err);
 			});
 	});

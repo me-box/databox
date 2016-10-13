@@ -13,7 +13,7 @@ module.exports = {
 	launch: function (port, conman) {
 		var server = http.createServer(app);
 		var installingApps = [];
-		io = io(server);
+		io = io(server, {});
 
 		this.proxies['store'] = Config.storeUrl;
 
@@ -26,14 +26,15 @@ module.exports = {
 			var firstPart = req.path.split('/')[1];
 			if (firstPart in this.proxies) {
 				var replacement = this.proxies[firstPart];
+				var proxyURL;
 				if (replacement.indexOf('://') != -1) {
 					var parts = url.parse(replacement);
 					parts.pathname = req.baseUrl + req.path.substring(firstPart.length + 1);
 					parts.query = req.query;
-					var proxyURL = url.format(parts);
+					proxyURL = url.format(parts);
 				}
 				else {
-					var proxyURL = url.format({
+					proxyURL = url.format({
 						protocol: req.protocol,
 						host: replacement,
 						pathname: req.baseUrl + req.path.substring(firstPart.length + 1),
@@ -123,17 +124,6 @@ module.exports = {
 			});
 		});
 
-
-		app.post('/pull-app', (req, res) => {
-			conman.pullImage(Config.registryUrl + req.body.name + ':' + req.body.tag)
-				.then((err, data) => {
-					if (err) {
-						return;
-					}
-					stream.pipe(data)
-				});
-		});
-
 		app.post('/install', (req, res) => {
 			var sla = JSON.parse(req.body.sla);
 			installingApps.push(sla.name);
@@ -200,9 +190,7 @@ module.exports = {
 				});
 		});
 
-
 		io.on('connection', (socket) => {
-
 			var emitter = conman.getDockerEmitter();
 
 			emitter.on("connect", () => {

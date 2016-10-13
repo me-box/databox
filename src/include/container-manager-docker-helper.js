@@ -83,7 +83,7 @@ exports.getNetwork = getNetwork;
 
 exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
-    console.log("Conecting container to " + networkName);
+    console.log('[' + container.name + '] Conecting to ' + networkName);
     listNetworks({})
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {
@@ -97,7 +97,7 @@ exports.connectToNetwork = function (container, networkName) {
       })
       .catch(err => reject('[connectToNetwork]' + err))
   });
-}
+};
 
 exports.createContainer = function(opts) {
   return new Promise( (resolve, reject) =>  {

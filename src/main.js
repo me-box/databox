@@ -8,25 +8,22 @@ conman.connect()
 		return conman.killAll(data)
 	})
 
-	.then(data => {
+	.then(() => {
 		return conman.initNetworks()
 	})
 
-	.then(networks => {
-		console.log('Launching Arbiter container');
+	.then(() => {
+		console.log('[databox-arbiter] Launching');
 		return conman.launchArbiter();
 	})
 
 	.then(info => {
-		console.log('Setting up proxy to Arbiter');
 		server.proxies[info.name] = 'localhost:' + info.port;
 
-		console.log('Launching Directory container');
+		console.log('[databox-directory] Launching');
 		return conman.launchDirectory();
 	})
 	.then(info => {
-		console.log('Setting up proxy to Directory');
-		console.log(JSON.stringify(info));
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting Server!!");
@@ -36,12 +33,12 @@ conman.connect()
 		console.log("--------- Launching saved containers ----------");
 		return conman.getActiveSLAs();
 	})
-	.then((slas) => {
+	.then(slas => {
 		return conman.restoreContainers(slas);
 	})
-	.then((infos) => {
+	.then(infos => {
 		for (var containers of infos) {
-			for(var container of containers) {
+			for (var container of containers) {
 				server.proxies[container.name] = 'localhost:' + container.port;
 			}
 		}
