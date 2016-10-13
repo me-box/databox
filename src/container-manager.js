@@ -206,8 +206,8 @@ exports.removeContainer = function (cont) {
 						return;
 					}
 					var name = repoTagToName(info.Name);
-					console.log("removed " + name + "!");
-					console.log("[SLA] Delete " + name);
+					//console.log("removed " + name + "!");
+					//console.log("[SLA] Delete " + name);
 					resolve(info);
 					db.deleteSLA(name, false)
 						.then(resolve(info))
@@ -535,7 +535,7 @@ exports.launchContainer = launchContainer;
 
 
 var saveSLA = function (sla) {
-	console.log("[SLA] Store " + sla.name);
+	//console.log('[' + sla.name + '] Saving SLA');
 	return db.putSLA(sla.name, sla);
 };
 exports.saveSLA = saveSLA;

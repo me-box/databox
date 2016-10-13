@@ -131,7 +131,7 @@ module.exports = {
 			io.emit('docker-create', sla.name);
 			conman.launchContainer(sla)
 				.then((containers) => {
-					console.log("CONTAINER CREATED", sla.name);
+					console.log('[' + sla.name + '] Installed');
 					for (var container of containers) {
 						var index = installingApps.indexOf(container.name);
 						if (index != -1) {
@@ -148,7 +148,7 @@ module.exports = {
 		});
 
 		app.post('/restart', (req, res) => {
-			console.log("Restarting " + req.body.id);
+			//console.log("Restarting " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container) => {
 					return conman.stopContainer(container)
@@ -157,18 +157,19 @@ module.exports = {
 					return conman.startContainer(container)
 				})
 				.then((container) => {
-					console.log("Restarted " + container.name);
+					console.log('[' + container.name + '] Restarted');
 					this.proxies[container.name] = 'localhost:' + container.port;
 					res.json(data);
 				})
 				.catch((err)=> {
+					console.log(err);
 					res.json(err);
 				})
 		});
 
 
 		app.post('/uninstall', (req, res) => {
-			console.log("Uninstalling " + req.body.id);
+			//console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container)=> {
 					return conman.stopContainer(container)
@@ -181,11 +182,12 @@ module.exports = {
 					if (info.Name.startsWith('/')) {
 						name = info.Name.substring(1);
 					}
-					console.log("Uninstalled " + name);
+					console.log('[' + name + '] Uninstalled');
 					delete this.proxies[name];
 					res.json(info);
 				})
 				.catch((err)=> {
+					console.log(err);
 					res.json(err)
 				});
 		});
