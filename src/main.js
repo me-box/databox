@@ -1,4 +1,3 @@
-var Promise = require('promise');
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
 var server = require('./server.js');

@@ -142,7 +142,7 @@ var generatingCMkeyPair = function () {
 	});
 };
 
-var getContrainerInfo = function(container) {
+var getContrainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
 		.then((info) => {
 			var response = {

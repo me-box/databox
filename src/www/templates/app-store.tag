@@ -17,11 +17,9 @@ app-store
 			$.get("/list-store", this.setApps);
 		});
 
-		setApps(data)
-		{
+		setApps(data) {
 			this.apps = data;
-			this.apps.sort(function (a, b)
-			{
+			this.apps.sort(function (a, b) {
 				var nameA = a.manifest.name.toUpperCase(); // ignore upper and lowercase
 				var nameB = b.manifest.name.toUpperCase(); // ignore upper and lowercase
 				return nameA.localeCompare(nameB);

@@ -37,7 +37,3 @@ node_modules
 .vscode
 #sla db
 sladatastore.db
-
-# Generated files
-/src/www/templates/*.js
-/src/www/styles/databox.css
