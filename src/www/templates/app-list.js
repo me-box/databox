@@ -1,5 +1,5 @@
 
-riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section)}"><a class="mdl-list__item-primary-content" href="{Ports.length &gt; 0 ? \'ui\' + Names[0] + \'/\' : null}"><i class="material-icons mdl-list__item-icon">{icon}</i><span>{Names[0].startsWith(\'/\') ? Names[0].substring(1) : Names[0]}</span><span class="mdl-list__item-sub-title">{State}</span></a><span class="mdl-list__item-secondary-content"><span class="mdl-list__item-secondary-action"> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.restartApp}" if="{State != \'installing\'}"><i class="material-icons">refresh</i></button> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.uninstall}" if="{State != \'installing\'}" __disabled="{Section === \'System\'}"><i class="material-icons">close</i></button> <div class="mdl-spinner mdl-js-spinner is-active" if="{State == \'installing\'}"></div></span></span></li> </ul> </div>', '', '', function(opts) {
+riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section)}"><a class="mdl-list__item-primary-content" href="{Ports.length &gt; 0 ? \'ui\' + Names[0] + \'/\' : null}"><i class="material-icons mdl-list__item-icon">{icon}</i><span>{name}</span><span class="mdl-list__item-sub-title">{State}</span></a><span class="mdl-list__item-secondary-content"><span class="mdl-list__item-secondary-action"> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.restartApp}" if="{State != \'installing\'}"><i class="material-icons">refresh</i></button> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.uninstall}" if="{State != \'installing\'}" __disabled="{Section === \'System\'}"><i class="material-icons">close</i></button> <div class="mdl-spinner mdl-js-spinner is-active" if="{State == \'installing\'}"></div></span></span></li> </ul> </div>', '', '', function(opts) {
     this.loaded = false;
     this.listAll = true;
     this.sections = {
@@ -29,6 +29,10 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
     {
     	this.apps = data;
     	for (var app of this.apps) {
+    		app.name = app.Names[0];
+    		if (app.name.startsWith('/')) {
+    			app.name = app.name.substring(1);
+    		}
     		if (!('Labels' in app)) {
     			this.setAppSection(app, "app");
     		}
@@ -40,8 +44,8 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
     		}
     	}
     	this.apps.sort(function (a, b) {
-    		var nameA = a.Names[0].toUpperCase();
-    		var nameB = b.Names[0].toUpperCase();
+    		var nameA = a.name.toUpperCase();
+    		var nameB = b.name.toUpperCase();
     		return nameA.localeCompare(nameB);
     	});
     	this.loaded = true;
@@ -60,11 +64,10 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
     this.listSections = function()
     {
     	var sectionList = [];
-    	for (var name in this.sections)
-    	{
+    	for (var name in this.sections) {
     		var section = this.sections[name].name;
     		if (this.listAll || section === "Apps") {
-    			for (var app of this.apps) {
+    			for (var app of this.listApps()) {
     				if (app.Section === section) {
     					sectionList.push(section);
     					break;
@@ -77,8 +80,9 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
 
     this.listApps = function(section)
     {
-    	return this.apps.filter(function (value) {
-    		return value.Section === section;
+    	var filterString = this.filterString;
+    	return this.apps.filter(function (item) {
+    		return (section == null || item.Section === section) && (filterString == null || filterString.length === 0 || item.name.indexOf(filterString) !== -1);
     	});
     }.bind(this)
 

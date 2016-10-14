@@ -12,7 +12,7 @@ app-list
 					i.material-icons.mdl-list__item-icon
 						| { icon }
 					span
-						| { Names[0].startsWith('/') ? Names[0].substring(1) : Names[0] }
+						| { name }
 					span.mdl-list__item-sub-title
 						| { State }
 				span.mdl-list__item-secondary-content
@@ -54,6 +54,10 @@ app-list
 		{
 			this.apps = data;
 			for (var app of this.apps) {
+				app.name = app.Names[0];
+				if (app.name.startsWith('/')) {
+					app.name = app.name.substring(1);
+				}
 				if (!('Labels' in app)) {
 					this.setAppSection(app, "app");
 				}
@@ -65,8 +69,8 @@ app-list
 				}
 			}
 			this.apps.sort(function (a, b) {
-				var nameA = a.Names[0].toUpperCase(); // ignore upper and lowercase
-				var nameB = b.Names[0].toUpperCase(); // ignore upper and lowercase
+				var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+				var nameB = b.name.toUpperCase(); // ignore upper and lowercase
 				return nameA.localeCompare(nameB);
 			});
 			this.loaded = true;
@@ -85,11 +89,10 @@ app-list
 		listSections()
 		{
 			var sectionList = [];
-			for (var name in this.sections)
-			{
+			for (var name in this.sections) {
 				var section = this.sections[name].name;
 				if (this.listAll || section === "Apps") {
-					for (var app of this.apps) {
+					for (var app of this.listApps()) {
 						if (app.Section === section) {
 							sectionList.push(section);
 							break;
@@ -102,8 +105,9 @@ app-list
 
 		listApps(section)
 		{
-			return this.apps.filter(function (value) {
-				return value.Section === section;
+			var filterString = this.filterString;
+			return this.apps.filter(function (item) {
+				return (section == null || item.Section === section) && (filterString == null || filterString.length === 0 || item.name.indexOf(filterString) !== -1);
 			});
 		}
 

@@ -30,6 +30,13 @@ html
 			div.mdl-layout__header-row
 				span.mdl-layout-title
 					| Databox
+				div.mdl-layout-spacer
+				div.mdl-textfield.mdl-js-textfield.mdl-textfield--expandable.mdl-textfield--floating-label.mdl-textfield--align-right
+					label.mdl-button.mdl-js-button.mdl-button--icon(for="searchText")
+						i.material-icons
+							| search
+					div.mdl-textfield__expandable-holder
+						input.mdl-textfield__input#searchText(type="text")
 			div.mdl-layout__tab-bar.mdl-js-ripple-effect
 				a.mdl-layout__tab.is-active(href="#apps")
 					| Installed
@@ -41,4 +48,10 @@ html
 			section.mdl-layout__tab-panel(id="store")
 				app-store
 		script.
-			riot.mount('*');
+			var tags = riot.mount('*');
+
+			$('#searchText').on('input', function() {
+				for(var i = 0; i < tags.length; i++) {
+					tags[i].update({'filterString': $(this).val()});
+				}
+			});
