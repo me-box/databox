@@ -4,9 +4,9 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
     this.listAll = true;
     this.sections = {
     	"app": {name: "Apps", icon: "extension"},
-    	"other": {name: "System", icon: "settings_applications"},
+    	"driver": {name: "Drivers", icon: "developer_board"},
     	"store": {name: "Datastore", icon: "dns"},
-    	"driver": {name: "Drivers", icon: "developer_board"}
+    	"other": {name: "System", icon: "settings_applications"}
     };
     this.apps = [];
 
