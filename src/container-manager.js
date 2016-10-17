@@ -309,6 +309,45 @@ exports.launchDirectory = function () {
 	});
 };
 
+var notificationsName = null;
+var DATABOX_NOTIFICATIONS_ENDPOINT = null;
+var DATABOX_NOTIFICATIONS_PORT = 8080;
+exports.launchNotifications = function () {
+	return new Promise((resolve, reject) => {
+		var name = "databox-notifications" + ARCH;
+		directoryName = name;
+		pullImage(name + ":latest")
+			.then(() => {
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.registryUrl + "/" + name + ":latest",
+						'PublishAllPorts': true
+					}
+				);
+			})
+			.then((notifications) => {
+				return startContainer(notifications)
+			})
+			.then((notifications) => {
+				return dockerHelper.connectToNetwork(notifications, 'databox-driver-net');
+			})
+			.then((notifications) => {
+				return dockerHelper.connectToNetwork(notifications, 'databox-app-net');
+			})
+			.then((notifications) => {
+				DATABOX_NOTIFICATIONS_ENDPOINT = 'http://' + notifications.ip + ':' + DATABOX_NOTIFICATIONS_PORT + '/notify';
+				resolve(notifications);
+			})
+			.catch((err) => {
+				console.log("Error creating notifications");
+				reject(err)
+			});
+
+	});
+};
+
+
 var repoTagToName = function (repoTag) {
 	return repoTag.match(/(?:.*\/)?([^/:\s]+)(?::.*|$)/)[1];
 };
@@ -432,9 +471,11 @@ var launchContainer = function (containerSLA) {
 	var config = {
 		'name': name,
 		'Image': Config.registryUrl + '/' + name + ":latest",
-		'Env': ["DATABOX_IP=" + ip,
+		'Env': [
+			"DATABOX_IP=" + ip,
 			"DATABOX_DIRECTORY_ENDPOINT=" + DATABOX_DIRECTORY_ENDPOINT,
-			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT
+			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
+			"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
 		'NetworkingConfig': {
