@@ -10,7 +10,7 @@ app-store
 			li.mdl-list__item.mdl-list__item--two-line(each="{ listApps(section.id) }")
 				a.mdl-list__item-primary-content(href="/install/{ manifest.name }")
 					i.material-icons.mdl-list__item-icon
-						| { icon }
+						| { section.icon }
 					span
 						| { manifest.name }
 					span.mdl-list__item-sub-title
@@ -30,15 +30,11 @@ app-store
 		setApps(data) {
 			this.apps = data;
 			for (var app of this.apps) {
+				app.section = this.sections[0];
 				for(var section of this.sections) {
-					if(app.manifest.name.endsWith(section.id) || app.manifest.name.indexOf(section.id + '-') !== -1) {
-						app.section = section.id;
-						app.icon = section.icon;
+					if(app.manifest['databox-type'] === section.id) {
+						app.section = section;
 					}
-				}
-				if(app.section == null) {
-					app.section = "app";
-					app.icon = "extension";
 				}
 			}
 			this.apps.sort(function (a, b) {
@@ -56,7 +52,7 @@ app-store
 			var sectionList = [];
 			for (var section of this.sections) {
 				for (var app of this.listApps()) {
-					if (app.section === section.id) {
+					if (app.section.id === section.id) {
 						sectionList.push(section);
 						break;
 					}
@@ -68,7 +64,7 @@ app-store
 		listApps(section) {
 			var filterString = this.filterString;
 			var result = this.apps.filter(function (item) {
-				return (section == null || item.section === section) && (filterString == null || filterString.length === 0 || item.manifest.name.indexOf(filterString) !== -1);
+				return (section == null || item.section.id === section) && (filterString == null || filterString.length === 0 || item.manifest.name.indexOf(filterString) !== -1);
 			});
 
 			return result;

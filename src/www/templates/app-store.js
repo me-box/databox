@@ -1,5 +1,5 @@
 
-riot.tag2('app-store', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section.name}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section.id)}"><a class="mdl-list__item-primary-content" href="/install/{manifest.name}"><i class="material-icons mdl-list__item-icon">{icon}</i><span>{manifest.name}</span><span class="mdl-list__item-sub-title">{manifest.author}</span></a></li> </ul> </div>', '', '', function(opts) {
+riot.tag2('app-store', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section.name}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section.id)}"><a class="mdl-list__item-primary-content" href="/install/{manifest.name}"><i class="material-icons mdl-list__item-icon">{section.icon}</i><span>{manifest.name}</span><span class="mdl-list__item-sub-title">{manifest.author}</span></a></li> </ul> </div>', '', '', function(opts) {
     this.loaded = false;
     this.apps = [];
     this.sections = [
@@ -14,15 +14,11 @@ riot.tag2('app-store', '<div class="mdl-typography--text-center"> <div class="md
     this.setApps = function(data) {
     	this.apps = data;
     	for (var app of this.apps) {
+    		app.section = this.sections[0];
     		for(var section of this.sections) {
-    			if(app.manifest.name.endsWith(section.id) || app.manifest.name.indexOf(section.id + '-') !== -1) {
-    				app.section = section.id;
-    				app.icon = section.icon;
+    			if(app.manifest['databox-type'] === section.id) {
+    				app.section = section;
     			}
-    		}
-    		if(app.section == null) {
-    			app.section = "app";
-    			app.icon = "extension";
     		}
     	}
     	this.apps.sort(function (a, b) {
@@ -40,7 +36,7 @@ riot.tag2('app-store', '<div class="mdl-typography--text-center"> <div class="md
     	var sectionList = [];
     	for (var section of this.sections) {
     		for (var app of this.listApps()) {
-    			if (app.section === section.id) {
+    			if (app.section.id === section.id) {
     				sectionList.push(section);
     				break;
     			}
@@ -52,7 +48,7 @@ riot.tag2('app-store', '<div class="mdl-typography--text-center"> <div class="md
     this.listApps = function(section) {
     	var filterString = this.filterString;
     	var result = this.apps.filter(function (item) {
-    		return (section == null || item.section === section) && (filterString == null || filterString.length === 0 || item.manifest.name.indexOf(filterString) !== -1);
+    		return (section == null || item.section.id === section) && (filterString == null || filterString.length === 0 || item.manifest.name.indexOf(filterString) !== -1);
     	});
 
     	return result;
