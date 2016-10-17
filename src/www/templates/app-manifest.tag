@@ -26,7 +26,7 @@ app-manifest
 					| Access to { getDatasourceType(datasource) }
 			div.mdl-color--red-700.mdl-typography--text-center.padded
 				| {selectedText(this)}
-	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest}")
+	div.padded(if="{ sensors != null && datastores != null && manifest != null && 'datasources' in manifest && manifest.datasources.length > 0}")
 		div.padded.mdl-color--cyan-800.mdl-typography--subhead.mdl-color-text--white
 			| Datasources
 		ul.mdl-list
