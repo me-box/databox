@@ -23,6 +23,13 @@ conman.connect()
 		console.log('[databox-directory] Launching');
 		return conman.launchDirectory();
 	})
+	
+	.then(info => {
+		server.proxies[info.name] = 'localhost:' + info.port;
+
+		console.log('[databox-notification] Launching');
+		return conman.launchNotifications();
+	})
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
