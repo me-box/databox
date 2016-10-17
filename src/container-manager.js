@@ -582,12 +582,20 @@ var saveSLA = function (sla) {
 exports.saveSLA = saveSLA;
 
 exports.restoreContainers = function (slas) {
-	console.log("Launching " + slas.length + " containers");
-	var promises = [];
-	for (sla of slas) {
-		promises.push(launchContainer(sla));
-	}
-	return new Promise.all(promises);
+	return new Promise((resolve, reject)=>{
+		var infos = [];
+		var result = Promise.resolve();
+		slas.forEach(sla => {
+			console.log("Launching Container:: " + sla.name );
+			result = result.then((info) => { infos.push(info); return launchContainer(sla)} );
+		});
+		result = result.then((info)=> {
+										infos.push(info); 
+										infos.shift(); //remove unneeded first item.
+										resolve(infos)
+									});
+		return result;
+	});
 };
 
 
