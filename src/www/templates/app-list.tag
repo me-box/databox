@@ -13,7 +13,7 @@ app-list
 						| { icon }
 					span
 						| { name }
-					span.mdl-list__item-sub-title
+					span.mdl-list__item-sub-title(class="{mdl-color-text--red-A700: State == 'exited'}")
 						| { State }
 				span.mdl-list__item-secondary-content
 					span.mdl-list__item-secondary-action

@@ -159,7 +159,6 @@ module.exports = {
 				.then((container) => {
 					console.log('[' + container.name + '] Restarted');
 					this.proxies[container.name] = 'localhost:' + container.port;
-					res.json(data);
 				})
 				.catch((err)=> {
 					console.log(err);
