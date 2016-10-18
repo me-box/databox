@@ -1,5 +1,5 @@
 
-riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section)}"><a class="mdl-list__item-primary-content" href="{Ports.length &gt; 0 ? \'ui\' + Names[0] + \'/\' : null}"><i class="material-icons mdl-list__item-icon">{icon}</i><span>{name}</span><span class="mdl-list__item-sub-title {mdl-color-text--red-A700: State == \'exited\'}">{State}</span></a><span class="mdl-list__item-secondary-content"><span class="mdl-list__item-secondary-action"> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.restartApp}" if="{State != \'installing\'}"><i class="material-icons">refresh</i></button> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.uninstall}" if="{State != \'installing\'}" __disabled="{Section === \'System\'}"><i class="material-icons">close</i></button> <div class="mdl-spinner mdl-js-spinner is-active" if="{State == \'installing\'}"></div></span></span></li> </ul> </div>', '', '', function(opts) {
+riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl-spinner mdl-js-spinner is-active" if="{!loaded}"></div> </div> <div if="{listSections().length == 0}">Empty</div> <div each="{section in listSections()}"> <ul class="mdl-list"> <li class="mdl-list__item">{section}</li> <li class="mdl-list__item mdl-list__item--two-line" each="{listApps(section)}"><a class="mdl-list__item-primary-content" href="{Ports.length &gt; 0 ? \'ui\' + Names[0] + \'/\' : null}"><i class="material-icons mdl-list__item-icon" if="{!isError(State)}">{icon}</i><i class="material-icons mdl-list__item-icon mdl-color-text--yellow-700" if="{isError(State)}">warning</i><span>{name}</span><span class="mdl-list__item-sub-title {mdl-color-text--red-A700: isError(State)}">{State}</span></a><span class="mdl-list__item-secondary-content"><span class="mdl-list__item-secondary-action"> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.restartApp}" if="{State != \'installing\'}"><i class="material-icons">refresh</i></button> <button class="mdl-button mdl-js-button mdl-button--icon" onclick="{parent.uninstall}" if="{State != \'installing\'}" __disabled="{Section === \'System\'}"><i class="material-icons">close</i></button> <div class="mdl-spinner mdl-js-spinner is-active" if="{State == \'installing\'}"></div></span></span></li> </ul> </div>', '', '', function(opts) {
     this.loaded = false;
     this.listAll = true;
     this.sections = {
@@ -51,6 +51,10 @@ riot.tag2('app-list', '<div class="mdl-typography--text-center"> <div class="mdl
     	this.loaded = true;
     	this.update();
     	componentHandler.upgradeAllRegistered();
+    }.bind(this)
+
+    this.isError = function(state) {
+    	return state == 'exited';
     }.bind(this)
 
     this.restartApp = function(e)

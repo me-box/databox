@@ -9,11 +9,13 @@ app-list
 				| { section }
 			li.mdl-list__item.mdl-list__item--two-line(each="{ listApps(section) }")
 				a.mdl-list__item-primary-content(href="{ Ports.length > 0 ? 'ui' + Names[0] + '/' : null }")
-					i.material-icons.mdl-list__item-icon
+					i.material-icons.mdl-list__item-icon(if="{!isError(State)}")
 						| { icon }
+					i.material-icons.mdl-list__item-icon.mdl-color-text--yellow-700(if="{isError(State)}")
+						| warning
 					span
 						| { name }
-					span.mdl-list__item-sub-title(class="{mdl-color-text--red-A700: State == 'exited'}")
+					span.mdl-list__item-sub-title(class="{mdl-color-text--red-A700: isError(State)}")
 						| { State }
 				span.mdl-list__item-secondary-content
 					span.mdl-list__item-secondary-action
@@ -76,6 +78,10 @@ app-list
 			this.loaded = true;
 			this.update();
 			componentHandler.upgradeAllRegistered();
+		}
+
+		isError(state) {
+			return state == 'exited';
 		}
 
 		restartApp(e)
