@@ -93,35 +93,56 @@ module.exports = {
 		});
 
 		app.get('/list-store', (req, res) => {
-			request('https://' + Config.registryUrl + '/v2/_catalog', (error, response, body) => {
-				if (error) {
-					res.json(error);
-					return
-				}
-				var repositories = JSON.parse(body).repositories;
-				var repocount = repositories.length;
-				var manifests = [];
-
-				repositories.map((repo) => {
-					request.post({'url': Config.storeUrl + '/app/get/', 'form': {'name': repo}}, (err, data) => {
-
-						if (err) {
-							//do nothing
-							return;
+			conman.listContainers()
+				.then((containers) => {
+					request('https://' + Config.registryUrl + '/v2/_catalog', (error, response, body) => {
+						if (error) {
+							res.json(error);
+							return
 						}
+						var repositories = JSON.parse(body).repositories;
+						var repocount = repositories.length;
+						var manifests = [];
 
-						body = JSON.parse(data.body);
-						if (typeof body.error == 'undefined' || body.error != 23) {
-							manifests.push(body);
-						}
-						repocount--;
-						if (repocount <= 0) {
-							res.json(manifests);
-						}
+						repositories.map((repo) => {
+							console.log(repo);
+							if (installingApps.indexOf(repo) != -1) {
+								repocount--;
+							}
+							else {
+								var found = false;
+								for(var container of containers) {
+									if(container.Names.indexOf('/' + repo) != -1) {
+										repocount--;
+										found = true;
+										break;
+									}
+								}
+								if(!found) {
+									request.post({
+										'url': Config.storeUrl + '/app/get/',
+										'form': {'name': repo}
+									}, (err, data) => {
+
+										if (err) {
+											//do nothing
+											return;
+										}
+
+										body = JSON.parse(data.body);
+										if (typeof body.error == 'undefined' || body.error != 23) {
+											manifests.push(body);
+										}
+										repocount--;
+										if (repocount <= 0) {
+											res.json(manifests);
+										}
+									});
+								}
+							}
+						});
 					});
 				});
-
-			});
 		});
 
 		app.post('/install', (req, res) => {
