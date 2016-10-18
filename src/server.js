@@ -104,41 +104,42 @@ module.exports = {
 						var repocount = repositories.length;
 						var manifests = [];
 
-						repositories.map((repo) => {
-							console.log(repo);
+						function alreadyInstalled(repo) {
 							if (installingApps.indexOf(repo) != -1) {
+								return true;
+							}
+							for (var container of containers) {
+								if (container.Names.indexOf('/' + repo) != -1) {
+									return true;
+								}
+							}
+							return false;
+						}
+
+						repositories.map((repo) => {
+							if (alreadyInstalled(repo)) {
 								repocount--;
 							}
 							else {
-								var found = false;
-								for(var container of containers) {
-									if(container.Names.indexOf('/' + repo) != -1) {
-										repocount--;
-										found = true;
-										break;
+								request.post({
+									'url': Config.storeUrl + '/app/get/',
+									'form': {'name': repo}
+								}, (err, data) => {
+
+									if (err) {
+										//do nothing
+										return;
 									}
-								}
-								if(!found) {
-									request.post({
-										'url': Config.storeUrl + '/app/get/',
-										'form': {'name': repo}
-									}, (err, data) => {
 
-										if (err) {
-											//do nothing
-											return;
-										}
-
-										body = JSON.parse(data.body);
-										if (typeof body.error == 'undefined' || body.error != 23) {
-											manifests.push(body);
-										}
-										repocount--;
-										if (repocount <= 0) {
-											res.json(manifests);
-										}
-									});
-								}
+									body = JSON.parse(data.body);
+									if (typeof body.error == 'undefined' || body.error != 23) {
+										manifests.push(body);
+									}
+									repocount--;
+									if (repocount <= 0) {
+										res.json(manifests);
+									}
+								});
 							}
 						});
 					});
