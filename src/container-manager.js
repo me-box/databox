@@ -429,7 +429,7 @@ var launchDependencies = function (containerSLA) {
 					return getContrainerInfo(cont)
 				})
 				.then((info) => {
-					console.log('[' + containerSLA.name + "] Linking to existing "  + requiredType + " " + requiredName);
+					console.log('[' + containerSLA.name + "] Linking to existing " + requiredType + " " + requiredName);
 					info.name = requiredName;
 					resolve([info]);
 				})
@@ -509,10 +509,16 @@ var launchContainer = function (containerSLA) {
 				if ('datasources' in containerSLA) {
 					for (var datasource of containerSLA.datasources) {
 						var sensor = {
-							hostname: datasource.hostname,
-							api_url: datasource.api_url,
+							endpoint: datasource.endpoint,
 							sensor_id: datasource.sensor_id,
 						};
+						if (datasource.endpoint !== undefined) {
+							var index = datasource.endpoint.indexOf('/');
+							if (index != -1) {
+								sensor.hostname = sensor.endpoint.substr(0, index);
+								sensor.api_url = sensor.endpoint.substr(index);
+							}
+						}
 						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
 					}
 				}
@@ -582,18 +588,21 @@ var saveSLA = function (sla) {
 exports.saveSLA = saveSLA;
 
 exports.restoreContainers = function (slas) {
-	return new Promise((resolve, reject)=>{
+	return new Promise((resolve, reject)=> {
 		var infos = [];
 		var result = Promise.resolve();
 		slas.forEach(sla => {
-			console.log("Launching Container:: " + sla.name );
-			result = result.then((info) => { infos.push(info); return launchContainer(sla)} );
+			console.log("Launching Container:: " + sla.name);
+			result = result.then((info) => {
+				infos.push(info);
+				return launchContainer(sla)
+			});
 		});
 		result = result.then((info)=> {
-										infos.push(info); 
-										infos.shift(); //remove unneeded first item.
-										resolve(infos)
-									});
+			infos.push(info);
+			infos.shift(); //remove unneeded first item.
+			resolve(infos)
+		});
 		return result;
 	});
 };

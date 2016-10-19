@@ -19,13 +19,12 @@ html
 		link(rel="manifest", href="/icons/manifest.json")
 		link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
 		link(rel='stylesheet', href='/styles/databox.css')
-	body.mdl-layout.mdl-js-layout.mdl-layout--fixed-header
-		script(src='https://code.jquery.com/jquery-3.1.0.min.js')
-		script(src='https://cdn.jsdelivr.net/riot/2.6/riot.min.js')
+
 		script(src='/socket.io/socket.io.js')
 		script(src='/templates/app-list.js')
-		script(src='/templates/app-store.js')
+		script(src='https://code.jquery.com/jquery-3.1.0.min.js')
 		script(src='https://code.getmdl.io/1.2.1/material.min.js', defer)
+	body.mdl-layout.mdl-js-layout.mdl-layout--fixed-header
 		header.mdl-layout__header
 			div.mdl-layout__header-row
 				span.mdl-layout-title
@@ -39,19 +38,98 @@ html
 						input.mdl-textfield__input#searchText(type="text")
 			div.mdl-layout__tab-bar.mdl-js-ripple-effect
 				a.mdl-layout__tab.is-active(href="#apps")
-					| Installed
-				a.mdl-layout__tab(href="#store")
-					| App Store
+					| Apps
+				a.mdl-layout__tab(href="#drivers")
+					| Drivers
+				a.mdl-layout__tab(href="#system")
+					| System
 		main.mdl-layout__content
 			section.mdl-layout__tab-panel.is-active(id="apps")
-				app-list
-			section.mdl-layout__tab-panel(id="store")
-				app-store
+				div.mdl-typography--text-center
+					div.mdl-spinner.mdl-js-spinner.is-active
+			section.mdl-layout__tab-panel(id="drivers")
+				div.mdl-typography--text-center
+					div.mdl-spinner.mdl-js-spinner.is-active(if="{!loaded}")
+			section.mdl-layout__tab-panel(id="system")
+				div.mdl-typography--text-center
+					div.mdl-spinner.mdl-js-spinner.is-active
 		script.
-			var tags = riot.mount('*');
-
-			$('#searchText').on('input', function() {
-				for(var i = 0; i < tags.length; i++) {
-					tags[i].update({'filterString': $(this).val()});
-				}
+			apps = [];
+			req = null;
+			$('#searchText').on('input', function () {
+				var text = $(this).val();
+				updateAppList(apps.filter(function (app) {
+					return app.name.indexOf(text) != -1;
+				}));
 			});
+
+			function updateAppList(appList) {
+				var icons = {
+					"app": "extension",
+					"driver": "developer_board",
+					"store": "dns",
+					"other": "settings_applications"
+				}
+				$('#apps').html(template({
+					apps: appList.filter(function (app) {
+						return !('type' in app) || (app.type === 'app');
+					}),
+					icons: icons
+				}));
+				$('#drivers').html(template({
+					apps: appList.filter(function (app) {
+						return app.type === 'driver';
+					}),
+					icons: icons
+				}));
+				$('#system').html(template({
+					apps: appList.filter(function (app) {
+						return 'type' in app && app.type !== 'app' && app.type !== 'driver';
+					}),
+					icons: icons
+				}));
+				componentHandler.upgradeAllRegistered();
+			}
+
+			function reload(message) {
+				if (message != null) {
+					console.log(message.status + " " + message.from);
+				}
+				if (req != null) {
+					clearTimeout(req);
+				}
+				req = setTimeout(function () {
+					$.get("/list-apps", reloaded);
+				}, 200);
+			}
+
+			function reloaded(appList) {
+				appList.sort(function (app1, app2) {
+					var installed1 = ('container_id' in app1) || app1.status === 'installing';
+					var installed2 = ('container_id' in app2) || app2.status === 'installing';
+					if (installed1 && !installed2) {
+						return -1;
+					}
+					if (!installed1 && installed2) {
+						return 1;
+					}
+					return app1.name.localeCompare(app2.name);
+				});
+				apps = appList;
+				updateAppList(appList);
+			}
+
+			var socket = io.connect(window.location.protocol + '//' + window.location.host);
+			socket.on('docker-connect', function () {
+				console.log('connected');
+				reload();
+			});
+			socket.on('docker-disconnect', function () {
+				loaded = false;
+				console.log('disconnected');
+			});
+			socket.on('docker-create', reload);
+			socket.on('docker-start', reload);
+			socket.on('docker-stop', reload);
+			socket.on('docker-die', reload);
+			socket.on('docker-destroy', reload);

@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
-    "build": "riot --template pug src/www/templates && node-sass --output-style compressed src/www/styles/ -o src/www/styles/",
-    "watch": "riot --watch --template pug src/www/templates | node-sass --output-style compressed -w src/www/styles/ -o src/www/styles/",
+    "build": "node-sass --output-style compressed src/www/styles/ -o src/www/styles/ && pug -cD src/www/templates/",
+    "watch": "node-sass --output-style compressed -w src/www/styles/ -o src/www/styles/ |  pug -cwD src/www/templates/",
     "start": "node src/main.js",
     "killall": "docker kill $(docker ps -a -q)",
     "dockerclean": "docker kill $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi -f $(docker images -q)"
@@ -43,6 +43,6 @@
   },
   "devDependencies": {
     "node-sass": "^3.10.0",
-    "riot": "^2.6.3"
+    "pug-cli": "^1.0.0-alpha6"
   }
 }

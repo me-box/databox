@@ -12,7 +12,7 @@ module.exports = {
 	proxies: {},
 	launch: function (port, conman) {
 		var server = http.createServer(app);
-		var installingApps = [];
+		var installingApps = {};
 		io = io(server, {});
 
 		this.proxies['store'] = Config.storeUrl;
@@ -63,38 +63,39 @@ module.exports = {
 			res.render('index')
 		});
 		app.get('/install/:appname', (req, res) => {
-			var appname = req.params.appname;
-			res.render('install', {appname: appname})
+			res.render('install', {appname: req.params.appname})
 		});
 		app.get('/ui/:appname', (req, res) => {
-			var appname = req.params.appname;
-			res.render('ui', {appname: appname})
+			res.render('ui', {appname: req.params.appname})
 		});
 
-
-		app.get('/list-containers', (req, res) => {
+		app.get('/list-apps', (req, res) => {
+			var names = [];
+			var result = [];
 			conman.listContainers()
 				.then((containers) => {
-					for (var installingApp of installingApps) {
-						var appName = '/' + installingApp;
-						var found = false;
-						for (var installedApp of containers) {
-							if (installedApp.Names.indexOf(appName) != -1) {
-								found = true;
-							}
-						}
-						if (!found) {
-							containers.push({Names: [appName], State: "installing"});
+					for (var container of containers) {
+						var name = container.Names[0].substr(1);
+						names.push(name);
+						result.push({
+							name: name,
+							container_id: container.Id,
+							type: container.Labels['databox.type'] === undefined ? 'app' : container.Labels['databox.type'],
+							status: container.State
+						});
+					}
+
+					for (var installingApp in installingApps) {
+						if (names.indexOf(installingApp) === -1) {
+							names.push(installingApp);
+							result.push({
+								name: installingApp,
+								type: installingApps[installingApp],
+								status: 'installing'
+							});
 						}
 					}
-					res.json(containers);
-				});
-			//.catch()
-		});
 
-		app.get('/list-store', (req, res) => {
-			conman.listContainers()
-				.then((containers) => {
 					request('https://' + Config.registryUrl + '/v2/_catalog', (error, response, body) => {
 						if (error) {
 							res.json(error);
@@ -102,22 +103,8 @@ module.exports = {
 						}
 						var repositories = JSON.parse(body).repositories;
 						var repocount = repositories.length;
-						var manifests = [];
-
-						function alreadyInstalled(repo) {
-							if (installingApps.indexOf(repo) != -1) {
-								return true;
-							}
-							for (var container of containers) {
-								if (container.Names.indexOf('/' + repo) != -1) {
-									return true;
-								}
-							}
-							return false;
-						}
-
 						repositories.map((repo) => {
-							if (alreadyInstalled(repo)) {
+							if (names.indexOf(repo) != -1) {
 								repocount--;
 							}
 							else {
@@ -133,11 +120,16 @@ module.exports = {
 
 									body = JSON.parse(data.body);
 									if (typeof body.error == 'undefined' || body.error != 23) {
-										manifests.push(body);
+										result.push({
+											name: body.manifest.name,
+											type: body.manifest['databox-type'] === undefined ? 'app' : body.manifest['databox-type'],
+											status: 'uninstalled',
+											author: body.manifest.author
+										});
 									}
 									repocount--;
 									if (repocount <= 0) {
-										res.json(manifests);
+										res.json(result);
 									}
 								});
 							}
@@ -148,17 +140,15 @@ module.exports = {
 
 		app.post('/install', (req, res) => {
 			var sla = JSON.parse(req.body.sla);
-			installingApps.push(sla.name);
+			installingApps[sla.name] = sla['databox-type'] === undefined ? 'app' : sla['databox-type'];
 
 			io.emit('docker-create', sla.name);
 			conman.launchContainer(sla)
 				.then((containers) => {
 					console.log('[' + sla.name + '] Installed');
 					for (var container of containers) {
-						var index = installingApps.indexOf(container.name);
-						if (index != -1) {
-							installingApps.splice(index, 1)
-						}
+
+						delete installingApps[container.name];
 						this.proxies[container.name] = 'localhost:' + container.port;
 					}
 

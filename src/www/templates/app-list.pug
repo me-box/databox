@@ -1,0 +1,45 @@
+if apps.length === 0
+	div
+		| Empty
+else
+	ul.mdl-list
+		- var prevInstalled = false;
+		each app in apps
+			- var installed = ('container_id' in app) || app.status === 'installing';
+				if prevInstalled && !installed
+					hr
+				- prevInstalled = installed;
+				li.mdl-list__item.mdl-list__item--two-line
+					a.mdl-list__item-primary-content(href=('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name)
+						i.material-icons.mdl-list__item-icon(class=installed ? '' : 'mdl-color-text--grey-500')
+							= app.type in icons? icons[app.type] : icons['other']
+						span
+							= app.name
+						if installed
+							span.mdl-list__item-sub-title
+								= app.status
+						else
+							span.mdl-list__item-sub-title
+								= app.author
+					span.mdl-list__item-secondary-content
+						span.mdl-list__item-secondary-action
+							if 'container_id' in app
+								button.mdl-button.mdl-js-button.mdl-button--icon(onclick='restartApp("' + app.container_id + '")')
+									i.material-icons
+										| refresh
+								button.mdl-button.mdl-js-button.mdl-button--icon(
+									onclick='uninstallApp("' + app.container_id + '")'
+									disabled=('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store')
+								)
+									i.material-icons
+										| close
+							if app.status === 'installing'
+								div.mdl-spinner.mdl-js-spinner.is-active
+script.
+	function restartApp(container_id) {
+		$.post("/restart", {"id": container_id});
+	}
+
+	function uninstallApp(container_id) {
+		$.post("/uninstall", {"id": container_id});
+	}
