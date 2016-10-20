@@ -12,7 +12,7 @@ else
 				li.mdl-list__item.mdl-list__item--two-line
 					a.mdl-list__item-primary-content(href=('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name)
 						i.material-icons.mdl-list__item-icon(class=installed ? '' : 'mdl-color-text--grey-500')
-							= app.type in icons? icons[app.type] : icons['other']
+							= app.type in icons ? icons[app.type] : icons['other']
 						span
 							= app.name
 						if installed
@@ -24,12 +24,15 @@ else
 					span.mdl-list__item-secondary-content
 						span.mdl-list__item-secondary-action
 							if 'container_id' in app
-								button.mdl-button.mdl-js-button.mdl-button--icon(onclick='restartApp("' + app.container_id + '")')
+								button.mdl-button.mdl-js-button.mdl-button--icon(
+								onclick='restartApp("' + app.container_id + '")'
+								disabled=('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store')
+								)
 									i.material-icons
 										| refresh
 								button.mdl-button.mdl-js-button.mdl-button--icon(
-									onclick='uninstallApp("' + app.container_id + '")'
-									disabled=('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store')
+								onclick='uninstallApp("' + app.container_id + '")'
+								disabled=('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store')
 								)
 									i.material-icons
 										| close

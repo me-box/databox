@@ -22,7 +22,7 @@ if (prevInstalled && !installed) {
 pug_html = pug_html + "\u003Chr\u002F\u003E";
 }
 prevInstalled = installed;
-pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Ca" + (" class=\"mdl-list__item-primary-content\""+pug_attr("href", ('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name, true, false)) + "\u003E\u003Ci" + (pug_attr("class", pug_classes(["material-icons","mdl-list__item-icon",installed ? '' : 'mdl-color-text--grey-500'], [false,false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = app.type in icons? icons[app.type] : icons['other']) ? "" : pug_interp)) + "\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = app.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Ca" + (" class=\"mdl-list__item-primary-content\""+pug_attr("href", ('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name, true, false)) + "\u003E\u003Ci" + (pug_attr("class", pug_classes(["material-icons","mdl-list__item-icon",installed ? '' : 'mdl-color-text--grey-500'], [false,false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = app.type in icons ? icons[app.type] : icons['other']) ? "" : pug_interp)) + "\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = app.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
 if (installed) {
 pug_html = pug_html + "\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = app.status) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
 }
@@ -31,7 +31,7 @@ pug_html = pug_html + "\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (p
 }
 pug_html = pug_html + "\u003C\u002Fa\u003E\u003Cspan class=\"mdl-list__item-secondary-content\"\u003E\u003Cspan class=\"mdl-list__item-secondary-action\"\u003E";
 if ('container_id' in app) {
-pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'restartApp("' + app.container_id + '")', true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Erefresh\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'uninstallApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Eclose\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E";
+pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'restartApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Erefresh\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'uninstallApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Eclose\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E";
 }
 if (app.status === 'installing') {
 pug_html = pug_html + "\u003Cdiv class=\"mdl-spinner mdl-js-spinner is-active\"\u003E\u003C\u002Fdiv\u003E";
@@ -50,7 +50,7 @@ if (prevInstalled && !installed) {
 pug_html = pug_html + "\u003Chr\u002F\u003E";
 }
 prevInstalled = installed;
-pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Ca" + (" class=\"mdl-list__item-primary-content\""+pug_attr("href", ('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name, true, false)) + "\u003E\u003Ci" + (pug_attr("class", pug_classes(["material-icons","mdl-list__item-icon",installed ? '' : 'mdl-color-text--grey-500'], [false,false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = app.type in icons? icons[app.type] : icons['other']) ? "" : pug_interp)) + "\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = app.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Ca" + (" class=\"mdl-list__item-primary-content\""+pug_attr("href", ('container_id' in app) ? '/ui/' + app.name : '/install/' + app.name, true, false)) + "\u003E\u003Ci" + (pug_attr("class", pug_classes(["material-icons","mdl-list__item-icon",installed ? '' : 'mdl-color-text--grey-500'], [false,false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = app.type in icons ? icons[app.type] : icons['other']) ? "" : pug_interp)) + "\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = app.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
 if (installed) {
 pug_html = pug_html + "\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = app.status) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
 }
@@ -59,7 +59,7 @@ pug_html = pug_html + "\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (p
 }
 pug_html = pug_html + "\u003C\u002Fa\u003E\u003Cspan class=\"mdl-list__item-secondary-content\"\u003E\u003Cspan class=\"mdl-list__item-secondary-action\"\u003E";
 if ('container_id' in app) {
-pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'restartApp("' + app.container_id + '")', true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Erefresh\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'uninstallApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Eclose\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E";
+pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'restartApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Erefresh\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E\u003Cbutton" + (" class=\"mdl-button mdl-js-button mdl-button--icon\""+pug_attr("onclick", 'uninstallApp("' + app.container_id + '")', true, false)+pug_attr("disabled", ('type' in app && app.type !== 'driver' && app.type !== 'app' && app.type !== 'store'), true, false)) + "\u003E\u003Ci class=\"material-icons\"\u003Eclose\u003C\u002Fi\u003E\u003C\u002Fbutton\u003E";
 }
 if (app.status === 'installing') {
 pug_html = pug_html + "\u003Cdiv class=\"mdl-spinner mdl-js-spinner is-active\"\u003E\u003C\u002Fdiv\u003E";
