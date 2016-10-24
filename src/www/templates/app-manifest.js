@@ -148,14 +148,14 @@ else {
   if ('number' == typeof $$obj.length) {
       for (var pug_index4 = 0, $$l = $$obj.length; pug_index4 < $$l; pug_index4++) {
         var sensor = $$obj[pug_index4];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.id + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
       }
   } else {
     var $$l = 0;
     for (var pug_index4 in $$obj) {
       $$l++;
       var sensor = $$obj[pug_index4];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.id + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
     }
   }
 }).call(this);
@@ -183,14 +183,14 @@ else {
   if ('number' == typeof $$obj.length) {
       for (var pug_index5 = 0, $$l = $$obj.length; pug_index5 < $$l; pug_index5++) {
         var sensor = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.id + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
       }
   } else {
     var $$l = 0;
     for (var pug_index5 in $$obj) {
       $$l++;
       var sensor = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.id + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.type + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
     }
   }
 }).call(this);

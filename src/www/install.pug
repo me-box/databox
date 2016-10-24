@@ -42,9 +42,11 @@ html
 					$.get("/databox-directory/api/sensor"),
 					$.get("/databox-directory/api/sensor_type"),
 					$.get("/databox-directory/api/actuator"),
-					$.get("/databox-directory/api/actuator_type")
-			).done(function (datastores, sensorList, sensorTypes, actuatorList, actuatorTypes) {
+					$.get("/databox-directory/api/actuator_type"),
+					$.get("/databox-directory/api/controller")
+			).done(function (datastores, sensorList, sensorTypes, actuatorList, actuatorTypes, controllers) {
 				var combined = [];
+				var index = 0;
 				for (var sensor of sensorList[0]) {
 					for (var datastore of datastores[0]) {
 						if (sensor.datastore_id === datastore.id) {
@@ -57,12 +59,14 @@ html
 							sensor.type = sensorType.description;
 						}
 					}
+					sensor.index = index;
 					combined.push(sensor);
+					index ++;
 				}
 				for(var actuator of actuatorList[0]) {
-					for (var datastore of datastores[0]) {
-						if (actuator.datastore_id === datastore.id) {
-							actuator.endpoint = datastore.hostname + datastore.api_url;
+					for (var controller of controllers[0]) {
+						if (actuator.controller_id === controller.id) {
+							actuator.endpoint = controller.hostname + controller.api_url;
 						}
 					}
 
@@ -72,7 +76,9 @@ html
 							actuator.type = actuatorType.description;
 						}
 					}
+					actuator.index = index;
 					combined.push(actuator);
+					index ++;
 				}
 				sensors = combined;
 				console.log(JSON.stringify(combined));
@@ -89,18 +95,15 @@ html
 				}
 			}
 
-			function selectSensor(datasource_id, sensor_id) {
+			function selectSensor(datasource_id, sensor_index) {
 				for (var datasource of manifest.datasources) {
 					if (datasource.clientid === datasource_id) {
-						for (var sensor of sensors) {
-							if (sensor.id === sensor_id) {
-								datasource.endpoint = sensor.endpoint;
-								datasource.sensor_id = sensor.id;
-								datasource.sensor = sensor.description + ", " + sensor.location;
-								update();
-								return true;
-							}
-						}
+						var sensors = sensors[sensor_index];
+						datasource.endpoint = sensor.endpoint;
+						datasource.sensor_id = sensor.id;
+						datasource.sensor = sensor.description + ", " + sensor.location;
+						update();
+						return true;
 					}
 				}
 				return true;

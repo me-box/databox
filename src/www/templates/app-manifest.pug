@@ -92,7 +92,7 @@ div
 									| No sensors found
 							else
 								each sensor in getSensors(datasource.type)
-									li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '",' + sensor.id + ')')
+									li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '",' + sensor.index + ')')
 										= sensor.type + ', ' + sensor.location
 
 	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="installApp()", disabled=!isValid())
