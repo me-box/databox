@@ -98,12 +98,15 @@ html
 			function selectSensor(datasource_id, sensor_index) {
 				for (var datasource of manifest.datasources) {
 					if (datasource.clientid === datasource_id) {
-						var sensors = sensors[sensor_index];
-						datasource.endpoint = sensor.endpoint;
-						datasource.sensor_id = sensor.id;
-						datasource.sensor = sensor.description + ", " + sensor.location;
-						update();
-						return true;
+						for (var sensor of sensors) {
+							if (sensor.index === sensor_index) {
+								datasource.endpoint = sensor.endpoint;
+								datasource.sensor_id = sensor.id;
+								datasource.sensor = sensor.description + ", " + sensor.location;
+								update();
+								return true;
+							}
+						}
 					}
 				}
 				return true;
