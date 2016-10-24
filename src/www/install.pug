@@ -40,8 +40,10 @@ html
 			$.when(
 					$.get("/databox-directory/api/datastore"),
 					$.get("/databox-directory/api/sensor"),
-					$.get("/databox-directory/api/sensor_type")
-			).done(function (datastores, sensorList, sensorTypes) {
+					$.get("/databox-directory/api/sensor_type"),
+					$.get("/databox-directory/api/actuator"),
+					$.get("/databox-directory/api/actuator_type")
+			).done(function (datastores, sensorList, sensorTypes, actuatorList, actuatorTypes) {
 				var combined = [];
 				for (var sensor of sensorList[0]) {
 					for (var datastore of datastores[0]) {
@@ -57,7 +59,23 @@ html
 					}
 					combined.push(sensor);
 				}
+				for(var actuator of actuatorList[0]) {
+					for (var datastore of datastores[0]) {
+						if (actuator.datastore_id === datastore.id) {
+							actuator.endpoint = datastore.hostname + datastore.api_url;
+						}
+					}
+
+					for (var actuatorType of actuatorTypes[0]) {
+						actuator.sensor_type_id = actuator.actuator_type_id;
+						if (actuator.actuator_type_id === actuatorType.id) {
+							actuator.type = actuatorType.description;
+						}
+					}
+					combined.push(actuator);
+				}
 				sensors = combined;
+				console.log(JSON.stringify(combined));
 				update();
 			});
 
