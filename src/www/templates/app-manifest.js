@@ -4,12 +4,11 @@ function pug_classes_array(r,a){for(var s,e="",u="",c=Array.isArray(a),g=0;g<r.l
 function pug_classes_object(r){var a="",n="";for(var o in r)o&&r[o]&&pug_has_own_property.call(r,o)&&(a=a+n+o,n=" ");return a}
 function pug_escape(e){var a=""+e,t=pug_match_html.exec(a);if(!t)return e;var r,c,n,s="";for(r=t.index,c=0;r<a.length;r++){switch(a.charCodeAt(r)){case 34:n="&quot;";break;case 38:n="&amp;";break;case 60:n="&lt;";break;case 62:n="&gt;";break;default:continue}c!==r&&(s+=a.substring(c,r)),c=r+1,s+=n}return c!==r?s+a.substring(c,r):s}
 var pug_has_own_property=Object.prototype.hasOwnProperty;
-var pug_match_html=/["&<>]/;function template(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (console, manifest, sensors) {function getSensors(type) {
+var pug_match_html=/["&<>]/;function template(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (manifest, sensors) {function getSensors(type) {
 	if (type == null) {
 		return sensors;
 	}
 	else {
-		console.log("Sensors of " + type);
 		return sensors.filter(function (sensor) {
 			return sensor.type === type;
 		});
@@ -204,4 +203,4 @@ pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fli\u003E";
 
 pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fdiv\u003E";
 }
-pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-button--colored mdl-button--raised\""+" style=\"float: right\" onclick=\"installApp()\""+pug_attr("disabled", !isValid(), true, false)) + "\u003EInstall\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E";}.call(this,"console" in locals_for_with?locals_for_with.console:typeof console!=="undefined"?console:undefined,"manifest" in locals_for_with?locals_for_with.manifest:typeof manifest!=="undefined"?manifest:undefined,"sensors" in locals_for_with?locals_for_with.sensors:typeof sensors!=="undefined"?sensors:undefined));;return pug_html;}
+pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-button--colored mdl-button--raised\""+" style=\"float: right\" onclick=\"installApp()\""+pug_attr("disabled", !isValid(), true, false)) + "\u003EInstall\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E";}.call(this,"manifest" in locals_for_with?locals_for_with.manifest:typeof manifest!=="undefined"?manifest:undefined,"sensors" in locals_for_with?locals_for_with.sensors:typeof sensors!=="undefined"?sensors:undefined));;return pug_html;}
