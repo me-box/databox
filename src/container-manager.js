@@ -383,11 +383,11 @@ var configureApp = function (container) {
 var configureStore = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
-			.then(()=> {
-				return dockerHelper.connectToNetwork(container, 'databox-app-net')
-			})
-			.then(resolve(container))
-			.catch((err) => reject(err))
+		.then(()=> {
+			return dockerHelper.connectToNetwork(container, 'databox-app-net')
+		})
+		.then(resolve(container))
+		.catch((err) => reject(err))
 	});
 };
 
@@ -507,6 +507,16 @@ var launchContainer = function (containerSLA) {
 			.then((token) => {
 				arbiterToken = token;
 				config.Env.push("ARBITER_TOKEN=" + token);
+
+				if('volumes' in containerSLA) {
+					console.log('Adding volumes');
+					config.Volumes = {}
+					for(var vol of containerSLA['volumes']) {
+						config.Volumes[vol] = {};
+						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
+					}
+					config.Binds = binds;
+				}
 
 				if ('datasources' in containerSLA) {
 					for (var datasource of containerSLA.datasources) {
