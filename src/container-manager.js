@@ -18,6 +18,30 @@ if (process.arch == 'arm') {
 	ARCH = '-arm';
 }
 
+if(process.platform == 'darwin'){
+
+	//These are blank to prevent containers hanging. 
+	//Hardware passthrough is not yet supported on docker for mac
+	USB_PASSTHROUGH = {};
+
+	SERIAL_PASSTHROUGH = {};
+
+} else {
+
+	//These probably only work on Ubuntu
+	USB_PASSTHROUGH = {
+						PathOnHost: "/dev/bus/usb/001",
+						PathInContainer: "/dev/bus/usb/001",
+						CgroupPermissions: "mrw"
+					}
+
+	SERIAL_PASSTHROUGH = {
+							PathOnHost: "/dev/ttyACM0",
+							PathInContainer: "/dev/ttyACM0",
+							CgroupPermissions: "mrw"
+						}
+
+}
 
 exports.connect = function () {
 	return new Promise((resolve, reject) => docker.ping(function (err, data) {
@@ -540,11 +564,12 @@ var launchContainer = function (containerSLA) {
 						if (permmisions == 'usb') {
 							console.log("Adding USB hardware-permissions");
 							Config.Privileged = true;
-							config.Devices = [{
-								PathOnHost: "/dev/bus/usb/001",
-								PathInContainer: "/dev/bus/usb/001",
-								CgroupPermissions: "mrw"
-							}]
+							config.Devices = [USB_PASSTHROUGH]
+						}
+						if (permmisions == 'serial') {
+							console.log("Adding serial hardware-permissions");
+							Config.Privileged = true;
+							config.Devices = [SERIAL_PASSTHROUGH]
 						}
 					}
 				}
