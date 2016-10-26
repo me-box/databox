@@ -173,9 +173,11 @@ var startContainer = function (container) {
 				reject('startContainer:: ' + err);
 				return;
 			}
-			getContrainerInfo(container).then((info) => {
+			getContrainerInfo(container)
+			.then((info) => {
 				resolve(info);
-			});
+			})
+			.catch((err)=>{console.log(err); reject(err)});
 		})
 	});
 };
