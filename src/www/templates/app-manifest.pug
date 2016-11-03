@@ -1,0 +1,99 @@
+-
+	function getSensors(type) {
+		if (type == null) {
+			return sensors;
+		}
+		else {
+			return sensors.filter(function (sensor) {
+				return sensor.type === type;
+			});
+		}
+	}
+
+	function getDatasource(id) {
+		for(var datasource of manifest.datasources) {
+			if(datasource.clientid === id) {
+				return datasource;
+			}
+		}
+	}
+
+	function isValid() {
+		//if('datasources' in manifest) {
+		//	for (var datasource of manifest.datasources) {
+		//		if (datasource.endpoint == null) {
+		//			return false;
+		//		}
+		//	}
+		//}
+		return true;
+	}
+
+div
+	div.padded
+		= manifest.description
+	div.padded
+		div
+			= manifest.author
+		div
+			a(href=manifest.homepage)
+				= manifest.homepage
+	if 'packages' in manifest
+		div.mdl-grid
+			each pack in manifest.packages
+				div.mdl-cell.mdl-cell--4-col.package(onclick='togglePackage("' + pack.id + '")', class=(pack.required || pack.enabled) ? '' : 'transparent')
+					div.dark(style="display: flex; align-items: center")
+						div.mdl-typography--title.fill.padded
+							= pack.name
+						if pack.enabled || pack.required
+							div.badge.material-icons
+								| check
+					div.mdl-color--cyan-800.fill.padded
+						= pack.purpose
+					div.mdl-color--cyan-800.padded
+						= pack.benefits
+					div.exchange
+						| in exchange for
+					div.dark.padded
+						= pack.risks
+						each datasource in pack.datasources
+							div
+								= 'Access to ' + getDatasource(datasource).type
+					if pack.required
+						div.mdl-color--red-700.mdl-typography--text-center.padded
+							| Required
+					else if pack.enabled
+						div.mdl-color--red-700.mdl-typography--text-center.padded
+							= 'Disable ' + pack.name
+					else
+						div.mdl-color--red-700.mdl-typography--text-center.padded
+							= 'Enable ' + pack.name
+
+	if 'datasources' in manifest && manifest.datasources.length > 0
+		div.padded
+			div.padded.mdl-color--cyan-800.mdl-typography--subhead.mdl-color-text--white
+				| Datasources
+			ul.mdl-list
+				each datasource in manifest.datasources
+					li.mdl-list__item.mdl-list__item--two-line(id='datasource_' + datasource.clientid)
+						span.mdl-list__item-primary-content
+							i.material-icons.mdl-list__item-icon
+								| input
+							span
+								= datasource.name
+							span.mdl-list__item-sub-title
+								= datasource.sensor || "Unbound"
+						ul.mdl-menu.mdl-menu--bottom-left.mdl-js-menu.mdl-js-ripple-effect(for='datasource_' + datasource.clientid)
+							if sensors === null
+								li.mdl-menu__item(disabled)
+									| No sensors found
+							else if getSensors(datasource.type).length === 0
+								li.mdl-menu__item(disabled)
+									| No sensors found
+							else
+								each sensor in getSensors(datasource.type)
+									li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '",' + sensor.index + ')')
+										= sensor.type + ', ' + sensor.location
+
+	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="installApp()", disabled=!isValid())
+		| Install

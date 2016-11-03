@@ -1,0 +1,86 @@
+@import "../../../node_modules/material-design-lite/src/color-definitions";
+
+$trim-color-classes: false !default;
+
+// Use color primarily for emphasis. Choose colors that fit with
+// your brand and provide good contrast between visual components.
+$color-primary: $palette-cyan-800 !default;
+$color-primary-dark: $palette-grey-700 !default;
+$color-accent: $palette-red-700 !default;
+
+// Our primary is dark, so use $color-dark-contrast for overlaid text.
+$color-primary-contrast: $color-white !default;
+// Our accent is dark, so use $color-dark-contrast for overlaid text.
+$color-accent-contrast: $color-white !default;
+
+.mdl-layout__content {
+	padding: 16px;
+}
+
+.mdl-list__item--two-line {
+	user-select: none;
+	white-space: nowrap;
+}
+
+.mdl-list__item--two-line:hover {
+	background-color: #eee;
+}
+
+
+.dark {
+	background-color: #333;
+}
+
+.package_list {
+	display: flex;
+}
+
+.package {
+	display: flex;
+	flex-direction: column;
+	color: #FFF;
+	user-select: none;
+}
+
+.transparent {
+	opacity: 0.8;
+}
+
+.badge {
+	color: #FFF;
+	float: right;
+	padding-right: 16px;
+}
+
+.package_title {
+	flex: 1;
+	padding: 16px;
+	font-size: 16pt;
+}
+
+.fill {
+	-webkit-flex: 1;
+	-ms-flex: 1;
+	flex: 1;
+}
+
+.mdl-list__item:hover {
+}
+
+.mdl-menu.mdl-menu--bottom {
+	left: 0;
+	right: 0; }
+
+.padded {
+	padding: 16px;
+}
+
+.exchange {
+	text-align: center;
+	background: #333 url(../templates/sla.svg) no-repeat;
+	background-size: 100% 100%;
+	padding: 16px;
+	color: #000;
+}
+
+@import "../../../node_modules/material-design-lite/src/material-design-lite.scss";
