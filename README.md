@@ -2,7 +2,7 @@
 Databox OS container manager and dashboard server.
 
 ## Installation
-	git clone https://github.com/ktg/databox-container-manager.git
+	git clone https://github.com/me-box/databox-container-manager.git
 	cd databox-container-manager
 	npm install --production
 
