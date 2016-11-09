@@ -1,8 +1,8 @@
 
 {
-	"registryUrl": "registry.upintheclouds.org",
-  "storeUrl": "http://store.upintheclouds.org",
+	"registryUrl": "registry.iotdatabox.com",
+  	"storeUrl": "https://store.iotdatabox.com",
 	"registryUrl__": "amar.io:5000",
 	"storeUrl__": "https://datashop.amar.io",
-  "serverPort": 8080
+  	"serverPort": 8080
 }
