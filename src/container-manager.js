@@ -560,13 +560,13 @@ var launchContainer = function (containerSLA) {
 				}
 
 				if ('hardware-permissions' in containerSLA) {
-					for (var permmisions of containerSLA['hardware-permissions']) {
-						if (permmisions == 'usb') {
+					for (var permissions of containerSLA['hardware-permissions']) {
+						if (permissions == 'usb') {
 							console.log("Adding USB hardware-permissions");
 							Config.Privileged = true;
 							config.Devices = [USB_PASSTHROUGH]
 						}
-						if (permmisions == 'serial') {
+						if (permissions == 'serial') {
 							console.log("Adding serial hardware-permissions");
 							Config.Privileged = true;
 							config.Devices = [SERIAL_PASSTHROUGH]
