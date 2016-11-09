@@ -514,8 +514,8 @@ var launchContainer = function (containerSLA) {
 
 		launchDependencies(containerSLA)
 			.then((dependencies) => {
-				for (var dependecyList of dependencies) {
-					for (var dependency of dependecyList) {
+				for (var dependencyList of dependencies) {
+					for (var dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
 						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
 						launched.push(dependency);
