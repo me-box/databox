@@ -446,7 +446,10 @@ var updateArbiter = function (data) {
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
-		var requiredName = containerSLA['resource-requirements'][requiredType] + ARCH;
+		
+		var rootContainerName = containerSLA['resource-requirements'][requiredType]; 
+		var requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
+		
 		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
 		promises.push(new Promise((resolve, reject) => {
@@ -455,7 +458,7 @@ var launchDependencies = function (containerSLA) {
 					return getContrainerInfo(cont)
 				})
 				.then((info) => {
-					console.log('[' + containerSLA.name + "] Linking to existing " + requiredType + " " + requiredName);
+					console.log('[' + requiredName + "] Linking to existing " + requiredType + " " + requiredName);
 					info.name = requiredName;
 					resolve([info]);
 				})
@@ -465,13 +468,18 @@ var launchDependencies = function (containerSLA) {
 					//Look for an SLA to use. If one is not provided then, look for one stored in the DB.
 					//If no SLA can be found db.getSLA() will reject its promise and stop the container
 					//installing.
-					db.getSLA(requiredName)
+					db.getSLA(rootContainerName)
 						.then((sla) => {
 							if (sla != null) {
+								sla.localContainerName = requiredName;
 								return launchContainer(sla);
 							}
 							else {
-								return launchContainer({name: requiredName})
+								sla = {
+										name: rootContainerName,
+										localContainerName: requiredName
+									}
+								return launchContainer(sla)
 							}
 						})
 						.then((infos)=> {
@@ -492,13 +500,21 @@ var launchDependencies = function (containerSLA) {
 
 var launchContainer = function (containerSLA) {
 	var name = repoTagToName(containerSLA.name) + ARCH;
+
+	//set the local name of the container. Containers launched as dependencies 
+	//have their local name set to [rootContainerName]-[dependentContainerName]
+	if(!("localContainerName" in containerSLA)) {
+		containerSLA.localContainerName = name;
+	}
+
 	console.log('[' + name + '] Launching');
 	var arbiterToken = null;
 	var config = {
-		'name': name,
+		'name': containerSLA.localContainerName,
 		'Image': Config.registryUrl + '/' + name + ":latest",
 		'Env': [
 			"DATABOX_IP=" + ip,
+			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
 			"DATABOX_DIRECTORY_ENDPOINT=" + DATABOX_DIRECTORY_ENDPOINT,
 			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
 			"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
