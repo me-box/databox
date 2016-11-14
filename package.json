@@ -39,7 +39,7 @@
     "pug": "^2.0.0-beta6",
     "request": "^2.69.0",
     "socket.io": "^1.5.0",
-    "ursa": "^0.9.4"
+    "ursa-purejs": "0.0.3"
   },
   "devDependencies": {
     "node-sass": "^3.10.0",
