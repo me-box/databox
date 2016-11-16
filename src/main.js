@@ -58,3 +58,6 @@ conman.connect()
 		var stack = new Error().stack;
 		console.log(stack);
 	});
+
+var app = server.app;
+module.exports = app;

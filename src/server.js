@@ -10,6 +10,7 @@ var app = express();
 
 module.exports = {
 	proxies: {},
+	app: app,
 	launch: function (port, conman) {
 		var server = http.createServer(app);
 		var installingApps = {};

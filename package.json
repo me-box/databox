@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
     "build": "node-sass --output-style compressed src/www/styles/ -o src/www/styles/ && pug -cD src/www/templates/",
     "watch": "node-sass --output-style compressed -w src/www/styles/ -o src/www/styles/ |  pug -cwD src/www/templates/",
     "start": "node src/main.js",
@@ -11,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yousefamar/databox-container-manager.git"
+    "url": "git+https://github.com/me-box/databox-container-manager.git"
   },
   "keywords": [
     "docker",
@@ -25,20 +26,23 @@
   "author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yousefamar/databox-container-manager-js/issues"
+    "url": "https://github.com/me-box/databox-container-manager-js/issues"
   },
-  "homepage": "https://github.com/yousefamar/databox-container-manager-js#readme",
+  "homepage": "https://github.com/me-box/databox-container-manager-js#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
     "docker-events": "^0.0.2",
     "dockerode": "^2.3.1",
     "express": "^4.14.0",
     "material-design-lite": "^1.2.1",
+    "mocha": "^3.1.2",
     "nedb": "^1.8.0",
     "promise": "^7.1.1",
     "pug": "^2.0.0-beta6",
     "request": "^2.69.0",
+    "should": "^11.1.1",
     "socket.io": "^1.5.0",
+    "supertest": "^2.0.1",
     "ursa": "^0.9.4"
   },
   "devDependencies": {
