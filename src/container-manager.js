@@ -533,7 +533,7 @@ var launchContainer = function (containerSLA) {
 				for (var dependencyList of dependencies) {
 					for (var dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
-						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
+						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
 						launched.push(dependency);
 					}
 				}
