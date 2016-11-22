@@ -1,6 +1,8 @@
+/*jshint esversion: 6 */
+
 var Promise = require('promise');
 var Config = require('./config.json');
-var ursa = require('ursa-purejs');
+var ursa = require('ursa');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
@@ -170,7 +172,7 @@ var generatingCMkeyPair = function () {
 	return new Promise((resolve, reject) => {
 		//Generating CM Key Pair
 		console.log('Generating CM key pair');
-		keyPair = ursa.generatePrivateKey();
+		keyPair = ursa.generatePrivateKey(2048,65537);
 		var publicKey = keyPair.toPublicPem('base64');
 		resolve({'keyPair': keyPair, 'publicKey': publicKey});
 	});
@@ -293,6 +295,7 @@ exports.launchArbiter = function () {
 						setTimeout(() => {
 							request.get("http://localhost:" + Arbiter.port + "/status", untilActive);
 						}, 1000);
+						console.log("Waiting for Arbiter ....");
 					}
 				};
 				untilActive({});
