@@ -6,6 +6,7 @@ var ursa = require('ursa');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
+var https = require('https');
 
 var db = require('./include/container-manager-db.js');
 var dockerHelper = require('./include/container-manager-docker-helper.js');
@@ -256,6 +257,17 @@ exports.removeContainer = function (cont) {
 var arbiterName = '';
 var DATABOX_ARBITER_ENDPOINT = null;
 var DATABOX_ARBITER_PORT = 8080;
+//A https agent that will not reject self signed certs
+//TODO: limit this to only work for the arbiter
+var agentOptions;
+var arbiterAgent;
+agentOptions = {
+	port: DATABOX_ARBITER_PORT,
+	path: '/',
+	rejectUnauthorized: false
+};
+arbiterAgent = new https.Agent(agentOptions);
+
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-arbiter" + ARCH;
@@ -286,14 +298,18 @@ exports.launchArbiter = function () {
 			})
 			.then((Arbiter) => {
 				var untilActive = function (error, response, body) {
+					if(error) {
+						console.log(error);
+					}
+					console.log(body);
 					if (body === 'active') {
 						console.log("[databox-arbiter] Launched");
-						DATABOX_ARBITER_ENDPOINT = 'http://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
+						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
 						resolve({'name': Arbiter.name, port: Arbiter.port});
 					}
 					else {
 						setTimeout(() => {
-							request.get("http://localhost:" + Arbiter.port + "/status", untilActive);
+							request({'url':"https://"+Arbiter.ip+":" + Arbiter.port + "/status", 'method':'GET', 'agent':arbiterAgent}, untilActive);
 						}, 1000);
 						console.log("Waiting for Arbiter ....");
 					}
