@@ -12,6 +12,14 @@ var docker = dockerHelper.getDocker();
 
 var ip = '127.0.0.1';
 
+//setup dev env 
+if(process.env.DATABOX_DEV == 1) {
+
+	Config.registryUrl =  Config.registryUrl_dev;
+  	Config.storeUrl = Config.storeUrl_dev;
+	console.log("Using dev server::", Config);
+}
+
 //ARCH to append -amd to the end of a container name if running on arm
 var ARCH = '';
 if (process.arch == 'arm') {
