@@ -446,26 +446,26 @@ var updateArbiter = function (data) {
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
-				return dockerHelper.inspectContainer(Arbiter)
+				return getContrainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
-				var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
-				request.post(
-					{
-						url: "http://localhost:" + port + "/update",
-						form: data
-					}
-					,
+				var options = {
+						url: "https://"+arbiterInfo.ip+":" + arbiterInfo.port + "/cm/upsert-container-info",
+						method:'POST',
+						form: data,
+						agent:arbiterAgent
+					};
+				request(
+					options,
 					function (err, response, body) {
 						if (err) {
 							reject(err);
 							return;
 						}
 						resolve(JSON.parse(body));
-					}
-				)
+					});
 			})
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
 
