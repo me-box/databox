@@ -3,7 +3,7 @@ var supertest = require("supertest")(app);
 var should = require('should');
 
 describe( "basic tests", function() {
-    this.timeout(30000);
+    this.timeout(35000);
 
     before(function(done) {
             setTimeout(done,25000);
