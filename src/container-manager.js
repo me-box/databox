@@ -1,6 +1,6 @@
 var Promise = require('promise');
 var Config = require('./config.json');
-var ursa = require('ursa');
+var ursa = require('ursa-purejs');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
