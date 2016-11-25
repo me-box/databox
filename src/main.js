@@ -23,13 +23,6 @@ httpsHelper.init()
 		console.log('[databox-arbiter] Launching');
 		return conman.launchArbiter(httpsHelper);
 	})
-
-	.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
-
-		console.log('[databox-directory] Launching');
-		return conman.launchDirectory(httpsHelper);
-	})
 	
 	/*.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;

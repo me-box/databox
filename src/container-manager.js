@@ -337,43 +337,6 @@ exports.launchArbiter = function () {
 	});
 };
 
-var directoryName = null;
-var DATABOX_DIRECTORY_ENDPOINT = null;
-var DATABOX_DIRECTORY_PORT = 3000;
-exports.launchDirectory = function () {
-	return new Promise((resolve, reject) => {
-		var name = "databox-directory" + ARCH;
-		directoryName = name;
-		pullImage(name + ":latest")
-			.then(() => {
-				return dockerHelper.createContainer(
-					{
-						'name': name,
-						'Image': Config.registryUrl + "/" + name + ":latest",
-						'PublishAllPorts': true
-					}
-				);
-			})
-			.then((directory) => {
-				return startContainer(directory);
-			})
-			.then((directory) => {
-				return dockerHelper.connectToNetwork(directory, 'databox-driver-net');
-			})
-			.then((directory) => {
-				return dockerHelper.connectToNetwork(directory, 'databox-app-net');
-			})
-			.then((directory) => {
-				DATABOX_DIRECTORY_ENDPOINT = 'http://' + directory.ip + ':' + DATABOX_DIRECTORY_PORT + '/api';
-				resolve(directory);
-			})
-			.catch((err) => {
-				console.log("Error creating Directory");
-				reject(err);
-			});
-
-	});
-};
 
 var notificationsName = null;
 var DATABOX_NOTIFICATIONS_ENDPOINT = null;
@@ -381,7 +344,6 @@ var DATABOX_NOTIFICATIONS_PORT = 8080;
 exports.launchNotifications = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-notifications" + ARCH;
-		directoryName = name;
 		pullImage(name + ":latest")
 			.then(() => {
 				return dockerHelper.createContainer(
@@ -553,13 +515,12 @@ var launchContainer = function (containerSLA) {
 		'Env': [
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
-			"DATABOX_DIRECTORY_ENDPOINT=" + DATABOX_DIRECTORY_ENDPOINT,
-			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
-			"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
+			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT
+			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
 		'NetworkingConfig': {
-			'Links': [directoryName, arbiterName]
+			'Links': [arbiterName]
 		}
 	};
 	var launched = [];
