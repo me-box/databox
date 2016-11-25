@@ -2,7 +2,6 @@
 
 var Promise = require('promise');
 var Config = require('./config.json');
-var ursa = require('ursa');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
@@ -168,17 +167,6 @@ var pullImage = function (imageName) {
 };
 exports.pullImage = pullImage;
 
-var keyPair = null;
-var generatingCMkeyPair = function () {
-	return new Promise((resolve, reject) => {
-		//Generating CM Key Pair
-		console.log('Generating CM key pair');
-		keyPair = ursa.generatePrivateKey(2048,65537);
-		var publicKey = keyPair.toPublicPem('base64');
-		resolve({'keyPair': keyPair, 'publicKey': publicKey});
-	});
-};
-
 var getContrainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
 		.then((info) => {
@@ -255,6 +243,7 @@ exports.removeContainer = function (cont) {
 };
 
 var arbiterName = '';
+var arbiterKey = null;
 var DATABOX_ARBITER_ENDPOINT = null;
 var DATABOX_ARBITER_PORT = 8080;
 //A https agent that will not reject self signed certs
@@ -274,16 +263,16 @@ exports.launchArbiter = function () {
 		arbiterName = name;
 		pullImage(name + ":latest")
 			.then(() => {
-				return generatingCMkeyPair()
+				return generateArbiterToken();
 			})
-			.then(keys => {
-
+			.then((key) => {
+				arbiterKey = key;
 				return dockerHelper.createContainer(
 					{
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': ["CM_PUB_KEY=" + keys['publicKey']]
+						'Env': ["CM_KEY=" + key]
 					}
 				);
 			})
@@ -453,7 +442,10 @@ var updateArbiter = function (data) {
 						url: "https://"+arbiterInfo.ip+":" + arbiterInfo.port + "/cm/upsert-container-info",
 						method:'POST',
 						form: data,
-						agent:arbiterAgent
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
 					};
 				request(
 					options,
@@ -643,11 +635,9 @@ var launchContainer = function (containerSLA) {
 			.then((container) => {
 				console.log('[' + name + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: name, token: arbiterToken, type: container.type});
+				var update = JSON.stringify({name: name, key: arbiterToken, type: container.type});
 
-				var sig = keyPair.hashAndSign('md5', new Buffer(update)).toString('base64');
-
-				return updateArbiter({data: update, sig});
+				return updateArbiter({ data: update });
 			})
 			.then(() => {
 				resolve(launched);

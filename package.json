@@ -42,8 +42,7 @@
     "request": "^2.69.0",
     "should": "^11.1.1",
     "socket.io": "^1.5.0",
-    "supertest": "^2.0.1",
-    "ursa-purejs": "0.0.3"
+    "supertest": "^2.0.1"
   },
   "devDependencies": {
     "node-sass": "^3.10.0",
