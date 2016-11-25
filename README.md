@@ -6,6 +6,10 @@ Databox OS container manager and dashboard server.
 	cd databox-container-manager
 	npm install --production
 
+	For now the arbier IP must be in you /etc/hosts file
+
+	echo "172.17.0.2     databox-arbiter" | sudo tee -a /etc/hosts
+
 ## Usage
 	npm start
 

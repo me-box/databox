@@ -1,39 +1,46 @@
+/*jshint esversion: 6 */
+
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
 var server = require('./server.js');
 
+var httpsHelper = require('./include/containter-manger-https-helper');
 
-conman.connect()
+httpsHelper.init()
+	.then(cert => {
+		conman.setHttpsHelper(httpsHelper);
+		return conman.connect();
+	})
 	.then(data => {
-		return conman.killAll(data)
+		return conman.killAll(data);
 	})
 
 	.then(() => {
-		return conman.initNetworks()
+		return conman.initNetworks();
 	})
 
 	.then(() => {
 		console.log('[databox-arbiter] Launching');
-		return conman.launchArbiter();
+		return conman.launchArbiter(httpsHelper);
 	})
 
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log('[databox-directory] Launching');
-		return conman.launchDirectory();
+		return conman.launchDirectory(httpsHelper);
 	})
 	
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log('[databox-notification] Launching');
-		return conman.launchNotifications();
+		return conman.launchNotifications(httpsHelper);
 	})
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
-		console.log("Starting Server!!");
+		console.log("Starting UI Server!!");
 		return server.launch(Config.serverPort, conman);
 	})
 	.then(() => {
@@ -41,7 +48,7 @@ conman.connect()
 		return conman.getActiveSLAs();
 	})
 	.then(slas => {
-		return conman.restoreContainers(slas);
+		return conman.restoreContainers(slas, httpsHelper);
 	})
 	.then(infos => {
 		for (var containers of infos) {
@@ -50,7 +57,7 @@ conman.connect()
 			}
 		}
 
-		console.log("--------- Done launching saved containers ----------")
+		console.log("--------- Done launching saved containers ----------");
 	})
 	.catch(err => {
 		console.log('ERROR ENDS UP HERE');

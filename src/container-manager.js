@@ -44,15 +44,26 @@ if(process.platform == 'darwin'){
 						PathOnHost: "/dev/bus/usb/001",
 						PathInContainer: "/dev/bus/usb/001",
 						CgroupPermissions: "mrw"
-					}
+					};
 
 	SERIAL_PASSTHROUGH = {
 							PathOnHost: "/dev/ttyACM0",
 							PathInContainer: "/dev/ttyACM0",
 							CgroupPermissions: "mrw"
-						}
+						};
 
 }
+
+
+var arbiterAgent; //An https agent that will not reject certs signed by the CM
+var httpsHelper;
+exports.setHttpsHelper = function (helper) {
+ 	httpsHelper = helper;
+	var agentOptions = {
+		ca: httpsHelper.getRootCert()
+	};
+	arbiterAgent = new https.Agent(agentOptions);
+};
 
 exports.connect = function () {
 	return new Promise((resolve, reject) => docker.ping(function (err, data) {
@@ -96,12 +107,12 @@ exports.killAll = function () {
 				return Promise.all(ids);
 			})
 			.then((data) => {
-				resolve()
+				resolve();
 			})
 			.catch(err => {
 				consol.log("[killAll-2]" + err);
-				reject(err)
-			})
+				reject(err);
+			});
 	});
 };
 
@@ -135,10 +146,10 @@ exports.initNetworks = function () {
 
 			})
 			.then((networks) => {
-				resolve(networks)
+				resolve(networks);
 			});
 	})
-		.catch(err => reject(err))
+		.catch(err => reject(err));
 };
 
 
@@ -249,46 +260,46 @@ exports.removeContainer = function (cont) {
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
-				})
+				});
 			});
 	});
 };
 
 var arbiterName = '';
 var DATABOX_ARBITER_ENDPOINT = null;
+var DATABOX_ARBITER_ENDPOINT_IP = null;
 var DATABOX_ARBITER_PORT = 8080;
-//A https agent that will not reject self signed certs
-//TODO: limit this to only work for the arbiter
-var agentOptions;
-var arbiterAgent;
-agentOptions = {
-	port: DATABOX_ARBITER_PORT,
-	path: '/',
-	rejectUnauthorized: false
-};
-arbiterAgent = new https.Agent(agentOptions);
-
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-arbiter" + ARCH;
 		arbiterName = name;
 		pullImage(name + ":latest")
 			.then(() => {
-				return generatingCMkeyPair()
+				var proms = [
+					httpsHelper.createClientCert(name),
+					generatingCMkeyPair()
+				];
+				return Promise.all(proms);
 			})
-			.then(keys => {
-
+			.then((keysArray) => {
+				httpsPem = keysArray[0];
+				keys = keysArray[1];
 				return dockerHelper.createContainer(
 					{
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': ["CM_PUB_KEY=" + keys['publicKey']]
+						'Env': [
+								"CM_PUB_KEY=" + keys.publicKey,
+								"CM_HTTPS_CA_ROOT_CERT=" + httpsPem.cert,
+								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
+								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
+							   ]
 					}
 				);
 			})
 			.then((Arbiter) => {
-				return startContainer(Arbiter)
+				return startContainer(Arbiter);
 			})
 			.then((Arbiter) => {
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-driver-net');
@@ -300,16 +311,18 @@ exports.launchArbiter = function () {
 				var untilActive = function (error, response, body) {
 					if(error) {
 						console.log(error);
+						console.log("Did you add " + Arbiter.name + " " + Arbiter.ip + " to your /etc/hosts file?");
 					}
 					console.log(body);
 					if (body === 'active') {
 						console.log("[databox-arbiter] Launched");
-						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
+						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT + '/api';
+						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
 						resolve({'name': Arbiter.name, port: Arbiter.port});
 					}
 					else {
 						setTimeout(() => {
-							request({'url':"https://"+Arbiter.ip+":" + Arbiter.port + "/status", 'method':'GET', 'agent':arbiterAgent}, untilActive);
+							request({'url':"https://"+Arbiter.name+":" + DATABOX_ARBITER_PORT + "/status", 'method':'GET', 'agent':arbiterAgent}, untilActive);
 						}, 1000);
 						console.log("Waiting for Arbiter ....");
 					}
@@ -318,7 +331,7 @@ exports.launchArbiter = function () {
 			})
 			.catch((err) => {
 				console.log("Error creating Arbiter");
-				reject(err)
+				reject(err);
 			});
 
 	});
