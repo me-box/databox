@@ -31,12 +31,12 @@ httpsHelper.init()
 		return conman.launchDirectory(httpsHelper);
 	})
 	
-	.then(info => {
+	/*.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log('[databox-notification] Launching');
 		return conman.launchNotifications(httpsHelper);
-	})
+	})*/
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
