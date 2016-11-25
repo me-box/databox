@@ -291,7 +291,7 @@ exports.launchArbiter = function () {
 						'PublishAllPorts': true,
 						'Env': [
 								"CM_PUB_KEY=" + keys.publicKey,
-								"CM_HTTPS_CA_ROOT_CERT=" + httpsPem.cert,
+								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
 								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
 								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
 							   ]
@@ -316,8 +316,8 @@ exports.launchArbiter = function () {
 					console.log(body);
 					if (body === 'active') {
 						console.log("[databox-arbiter] Launched");
-						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT + '/api';
-						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
+						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
+						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
 						resolve({'name': Arbiter.name, port: Arbiter.port});
 					}
 					else {
@@ -355,7 +355,7 @@ exports.launchDirectory = function () {
 				);
 			})
 			.then((directory) => {
-				return startContainer(directory)
+				return startContainer(directory);
 			})
 			.then((directory) => {
 				return dockerHelper.connectToNetwork(directory, 'databox-driver-net');
@@ -369,7 +369,7 @@ exports.launchDirectory = function () {
 			})
 			.catch((err) => {
 				console.log("Error creating Directory");
-				reject(err)
+				reject(err);
 			});
 
 	});
@@ -407,7 +407,7 @@ exports.launchNotifications = function () {
 			})
 			.catch((err) => {
 				console.log("Error creating notifications");
-				reject(err)
+				reject(err);
 			});
 
 	});
@@ -423,7 +423,7 @@ var generateArbiterToken = function () {
 		crypto.randomBytes(32, function (err, buffer) {
 			if (err) reject(err);
 			var token = buffer.toString('base64');
-			resolve(token)
+			resolve(token);
 		});
 	});
 };
@@ -432,7 +432,7 @@ var configureDriver = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 			.then(resolve(container))
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
 
@@ -440,7 +440,7 @@ var configureApp = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-app-net')
 			.then(resolve(container))
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
 
@@ -448,10 +448,10 @@ var configureStore = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 		.then(()=> {
-			return dockerHelper.connectToNetwork(container, 'databox-app-net')
+			return dockerHelper.connectToNetwork(container, 'databox-app-net');
 		})
 		.then(resolve(container))
-		.catch((err) => reject(err))
+		.catch((err) => reject(err));
 	});
 };
 
@@ -463,7 +463,7 @@ var updateArbiter = function (data) {
 			})
 			.then((arbiterInfo) => {
 				var options = {
-						url: "https://"+arbiterInfo.ip+":" + arbiterInfo.port + "/cm/upsert-container-info",
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/upsert-container-info",
 						method:'POST',
 						form: data,
 						agent:arbiterAgent
@@ -510,7 +510,7 @@ var launchDependencies = function (containerSLA) {
 					//installing.
 					db.getSLA(rootContainerName)
 						.then((sla) => {
-							if (sla != null) {
+							if (sla !== null) {
 								sla.localContainerName = requiredName;
 								return launchContainer(sla);
 							}
@@ -518,8 +518,8 @@ var launchDependencies = function (containerSLA) {
 								sla = {
 										name: rootContainerName,
 										localContainerName: requiredName
-									}
-								return launchContainer(sla)
+									};
+								return launchContainer(sla);
 							}
 						})
 						.then((infos)=> {
@@ -529,10 +529,8 @@ var launchDependencies = function (containerSLA) {
 							//install failed Give up :-(
 							console.log("Required container could not be installed!" + err);
 							return new Promise.reject("Required container could not be installed!" + err);
-						})
-
-
-				})
+						});
+				});
 		}));
 	}
 	return new Promise.all(promises);
@@ -573,7 +571,7 @@ var launchContainer = function (containerSLA) {
 				for (var dependencyList of dependencies) {
 					for (var dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
-						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
+						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'https://' + dependency.name + ':8080/api');
 						launched.push(dependency);
 					}
 				}
@@ -581,16 +579,24 @@ var launchContainer = function (containerSLA) {
 				return pullImage(name + ":latest");
 			})
 			.then(() => {
-				console.log('[' + name + '] Generating Arbiter token');
-				return generateArbiterToken();
+				console.log('[' + containerSLA.localContainerName + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(containerSLA.localContainerName),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
 			})
-			.then((token) => {
-				arbiterToken = token;
-				config.Env.push("ARBITER_TOKEN=" + token);
-
+			.then((tokens) => {
+				httpsPem = tokens[0];
+				arbiterToken = tokens[1];
+				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
+				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
+				config.Env.push("HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate);
+				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
+							   
 				if('volumes' in containerSLA) {
 					console.log('Adding volumes');
-					config.Volumes = {}
+					config.Volumes = {};
 					for(var vol of containerSLA['volumes']) {
 						config.Volumes[vol] = {};
 						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
@@ -620,12 +626,12 @@ var launchContainer = function (containerSLA) {
 						if (permissions == 'usb') {
 							console.log("Adding USB hardware-permissions");
 							Config.Privileged = true;
-							config.Devices = [USB_PASSTHROUGH]
+							config.Devices = [USB_PASSTHROUGH];
 						}
 						if (permissions == 'serial') {
 							console.log("Adding serial hardware-permissions");
 							Config.Privileged = true;
-							config.Devices = [SERIAL_PASSTHROUGH]
+							config.Devices = [SERIAL_PASSTHROUGH];
 						}
 					}
 				}
@@ -666,7 +672,7 @@ var launchContainer = function (containerSLA) {
 				resolve(launched);
 			})
 			.catch((err) => {
-				console.log("[" + name + "] ERROR Launcing: " + err);
+				console.log("[" + name + "] ERROR Launching: " + err);
 				reject(err);
 			});
 	});
@@ -688,13 +694,13 @@ exports.restoreContainers = function (slas) {
 			console.log("Launching Container:: " + sla.name);
 			result = result.then((info) => {
 				infos.push(info);
-				return launchContainer(sla)
+				return launchContainer(sla);
 			});
 		});
 		result = result.then((info)=> {
 			infos.push(info);
 			infos.shift(); //remove unneeded first item.
-			resolve(infos)
+			resolve(infos);
 		});
 		return result;
 	});
