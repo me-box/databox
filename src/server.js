@@ -129,12 +129,12 @@ module.exports = {
 										});
 									}
 									repocount--;
-									if (repocount <= 0) {
-										res.json(result);
-									}
 								});
 							}
 						});
+						if (repocount <= 0) {
+							res.json(result);
+						}
 					});
 				});
 		});
