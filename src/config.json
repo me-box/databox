@@ -2,7 +2,7 @@
 {
 	"registryUrl": "registry.iotdatabox.com",
   	"storeUrl": "https://store.iotdatabox.com",
-	"registryUrl_dev": "amar.io:5000",
+	"registryUrl_dev": "databox.amar.io",
 	"storeUrl_dev": "https://datashop.amar.io",
   	"serverPort": 8080
 }
