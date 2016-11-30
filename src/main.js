@@ -51,6 +51,7 @@ httpsHelper.init()
 		}
 
 		console.log("--------- Done launching saved containers ----------");
+		console.log("Databox UI can be assessed at http://127.0.0.1:"+Config.serverPort);
 	})
 	.catch(err => {
 		console.log('ERROR ENDS UP HERE');
