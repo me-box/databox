@@ -2,13 +2,37 @@
 Databox OS container manager and dashboard server.
 
 ## Installation
-	git clone https://github.com/me-box/databox-container-manager.git
-	cd databox-container-manager
-	npm install --production
 
-	For now the arbier IP must be in you /etc/hosts file
+###Linux
+    Install docker https://docs.docker.com/engine/installation/linux/
+		Install nodejs https://nodejs.org/en/download/
 
-	echo "172.17.0.2     databox-arbiter" | sudo tee -a /etc/hosts
+		For now the arbier IP must be in you hosts file
+
+	  echo "172.17.0.2     databox-arbiter" | sudo tee -a /etc/hosts
+
+###OSX
+    Install docker https://docs.docker.com/docker-for-mac/
+		Install nodejs https://nodejs.org/en/download/
+
+		For now the arbier IP must be in you hosts file
+
+    edit /private/etc/hosts and add 172.17.0.2 databox-arbiter
+
+###Windows
+		Install docker https://docs.docker.com/docker-for-windows/ (The old Docker Toolbox is not supported)
+		Install nodejs https://nodejs.org/en/download/
+
+		For now the arbier IP must be in you hosts file
+
+	  edit :\Windows\System32\Drivers\etc\hosts and add 172.17.0.2 databox-arbiter
+
+###All
+
+     git clone https://github.com/me-box/databox-container-manager.git
+	   cd databox-container-manager
+	   npm install --production
+
 
 ## Usage
 	npm start
