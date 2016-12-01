@@ -3,7 +3,7 @@
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
 var server = require('./server.js');
-
+var fs = require('fs');
 var httpsHelper = require('./include/containter-manger-https-helper');
 
 httpsHelper.init()
@@ -17,6 +17,20 @@ httpsHelper.init()
 
 	.then(() => {
 		return conman.initNetworks();
+	})
+
+	.then(() => {
+		
+		const devSeedScript = './updateLocalRegistey.sh';
+		console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
+		var script = "";
+		for(img of Config.localRegistrySeedImages) {
+			script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" databox.registry:5000/"+img+" && docker push databox.registry:5000/"+img+"\n";
+		}
+		fs.writeFileSync(devSeedScript, script);
+
+		console.log('['+Config.localRegistryName+'] Launching');
+		return conman.launchLocalRegistry();
 	})
 
 	.then(() => {
@@ -34,7 +48,7 @@ httpsHelper.init()
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting UI Server!!");
-		return server.launch(Config.serverPort, conman);
+		return server.launch(Config.serverPort, conman, httpsHelper);
 	})
 	.then(() => {
 		console.log("--------- Launching saved containers ----------");
@@ -51,7 +65,7 @@ httpsHelper.init()
 		}
 
 		console.log("--------- Done launching saved containers ----------");
-		console.log("Databox UI can be assessed at http://127.0.0.1:"+Config.serverPort);
+		console.log("Databox UI can be accessed at http://127.0.0.1:"+Config.serverPort);
 	})
 	.catch(err => {
 		console.log('ERROR ENDS UP HERE');

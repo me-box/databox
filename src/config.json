@@ -2,7 +2,10 @@
 {
 	"registryUrl": "registry.iotdatabox.com",
   	"storeUrl": "https://store.iotdatabox.com",
-	"registryUrl_dev": "databox.amar.io",
-	"storeUrl_dev": "https://datashop.amar.io",
-  	"serverPort": 8080
+	"registryUrl_dev": "databox.registry:5000",
+	"storeUrl_dev": "https://store.iotdatabox.com",
+  	"serverPort": 8080,
+	"localRegistryName":"databox-local-registry",
+	"localRegistryImage":"toshdatabox/databox-local-registry",
+	"localRegistrySeedImages": ["databox-arbiter","databox-store-blob","databox-driver-twitter-stream"]
 }

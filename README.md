@@ -9,7 +9,8 @@ Databox OS container manager and dashboard server.
 
 		For now the arbier IP must be in you hosts file
 
-	  echo "172.17.0.2     databox-arbiter" | sudo tee -a /etc/hosts
+	  echo "172.17.0.3     databox-arbiter" | sudo tee -a /etc/hosts
+	  echo "172.17.0.2     databox.registry" | sudo tee -a /etc/hosts
 
 ###OSX
     Install docker https://docs.docker.com/docker-for-mac/

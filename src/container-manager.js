@@ -125,6 +125,30 @@ exports.initNetworks = function () {
 		.catch(err => reject(err));
 };
 
+var pullDockerIOImage = function (imageName) {
+	return new Promise((resolve, reject) => {
+		//Pull latest Arbiter image
+		var parts = imageName.split(':');
+		var name = parts[0];
+		var version = parts[1];
+		console.log('[' + name + '] Pulling ' + version + ' image');
+		docker.pull( imageName, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(";->");
+			});
+		});
+	});
+};
 
 var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
@@ -223,6 +247,41 @@ exports.removeContainer = function (cont) {
 						.then(resolve(info))
 						.catch((err) => reject(err));
 				});
+			});
+	});
+};
+
+exports.launchLocalRegistry = function() {
+	return new Promise((resolve, reject) => {
+		var name = Config.localRegistryName + ARCH;
+		pullDockerIOImage(Config.localRegistryImage + ":latest")
+		    .then(() => {
+				return httpsHelper.createClientCert(Config.registryUrl_dev.replace(':5000',''));
+			})
+			.then((httpsCerts) => {
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.localRegistryImage + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
+									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+							   ],
+						"Binds":["/tmp/databoxregistry:/var/lib/registry"]
+					}
+				);
+			})
+			.then((Reg) => {
+				return startContainer(Reg);
+			})
+			.then(() => {
+				console.log("waiting for local registery ....");
+				setTimeout(resolve,2000);
+			})
+			.catch((error)=>{
+				console.log("[]");
+				reject(error);
 			});
 	});
 };
