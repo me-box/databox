@@ -4,7 +4,7 @@
   	"storeUrl": "https://store.iotdatabox.com",
 	"registryUrl_dev": "databox.registry:5000",
 	"storeUrl_dev": "https://store.iotdatabox.com",
-  	"serverPort": 8080,
+  	"serverPort": 8989,
 	"localRegistryName":"databox-local-registry",
 	"localRegistryImage":"toshdatabox/databox-local-registry",
 	"localRegistrySeedImages": ["databox-arbiter","databox-store-blob","databox-driver-twitter-stream"]

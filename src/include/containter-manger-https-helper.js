@@ -45,12 +45,22 @@ var init = function() {
                         "\n###################### INSTALL INSTRUCTIONS ######################\n" +
                         "\n"+
                         "\n"+
+                        " You will need to add some lines to you hosts file (only do this once)\n"+
+                        " \t Ubuntu: \n" +
+                        " \t\t echo \"172.17.0.3     databox-arbiter\" | sudo tee -a /etc/hosts \n" +
+	                    " \t\t echo \"172.17.0.2     databox.registry\" | sudo tee -a /etc/hosts \n" +
+                        " \t MAC OSX: \n" +
+                        " \t\t echo \"127.0.0.1     databox-arbiter\" | sudo tee -a /etc/hosts \n" +
+	                    " \t\t echo \"127.0.0.1     databox.registry\" | sudo tee -a /etc/hosts \n" +
+                        "\n"+
                         " You will need to add the container manager CA to the docker keychain \n"+
                         "\n"+
                         " \t Ubuntu: sudo install -m 044 -D "+devCAPath+" /etc/docker/certs.d/"+Config.registryUrl_dev+"/ca.crt \n"+
+                        " \t MAC OSX: sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "+devCAPath+"ca.crt \n"+
                         "\n"+
                         "Then restart docker:\n"+
                         "\n \t Ubuntu: sudo service docker restart \n"+
+                        "\n \t MAC OSX:: use the gui! \n"+
                         "Then restart the container manager:\n"+
                         "\n \t DATABOX_DEV=1 npm start \n"+
                         "Then seed the local docker registery with the demo images:\n"+

@@ -18,15 +18,17 @@ Databox OS container manager and dashboard server.
 
 		For now the arbier IP must be in you hosts file
 
-    edit /private/etc/hosts and add 172.17.0.2 databox-arbiter
+    edit /etc/hosts and add 127.0.0.1 databox-arbiter
+    edit /etc/hosts and add 127.0.0.1 databox.registry
 
 ###Windows
 		Install docker https://docs.docker.com/docker-for-windows/ (The old Docker Toolbox is not supported)
 		Install nodejs https://nodejs.org/en/download/
 
-		For now the arbier IP must be in you hosts file
+		For now the arbiter IP must be in you hosts file
 
-	  edit :\Windows\System32\Drivers\etc\hosts and add 172.17.0.2 databox-arbiter
+	  edit :\Windows\System32\Drivers\etc\hosts and add 127.0.0.1 databox-arbiter
+	  edit :\Windows\System32\Drivers\etc\hosts and add 127.0.0.1 databox.registry
 
 ###All
 

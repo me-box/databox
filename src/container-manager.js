@@ -15,7 +15,8 @@ var docker = dockerHelper.getDocker();
 var ip = '127.0.0.1';
 
 //setup dev env 
-if(process.env.DATABOX_DEV == 1) {
+var DATABOX_DEV = process.env.DATABOX_DEV
+if(DATABOX_DEV == 1) {
 
 	Config.registryUrl =  Config.registryUrl_dev;
   	Config.storeUrl = Config.storeUrl_dev;
@@ -268,7 +269,8 @@ exports.launchLocalRegistry = function() {
 									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
 									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
 							   ],
-						"Binds":["/tmp/databoxregistry:/var/lib/registry"]
+						'Binds':["/tmp/databoxregistry:/var/lib/registry"],
+						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
 					}
 				);
 			})
@@ -290,7 +292,7 @@ var arbiterName = '';
 var arbiterKey = null;
 var DATABOX_ARBITER_ENDPOINT = null;
 var DATABOX_ARBITER_ENDPOINT_IP = null;
-var DATABOX_ARBITER_PORT = 8080;
+var DATABOX_ARBITER_PORT = '8080';
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-arbiter" + ARCH;
@@ -316,7 +318,8 @@ exports.launchArbiter = function () {
 								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
 								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
 								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
-							   ]
+							   ],
+						'PortBindings': {'8080/tcp': [{ HostPort: DATABOX_ARBITER_PORT }]} //expose ports for the mac
 					}
 				);
 			})
@@ -352,7 +355,13 @@ exports.launchArbiter = function () {
 				untilActive({});
 			})
 			.catch((err) => {
-				console.log("Error creating Arbiter");
+				if(DATABOX_DEV) {
+					console.log(
+						"#################### Error creating Arbiter ######################" +
+						"Have you seeded the local docker registery with the arbiter and demo images ? try running \n"+
+						"\n \t sh ./updateLocalRegistery.sh \n"
+					);
+				}
 				reject(err);
 			});
 
