@@ -631,9 +631,9 @@ var launchContainer = function (containerSLA) {
 				}
 			})
 			.then((container) => {
-				console.log('[' + name + '] Passing token to Arbiter');
+				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: name, key: arbiterToken, type: container.type});
+				var update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
 
 				return updateArbiter({ data: update });
 			})
