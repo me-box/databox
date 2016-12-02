@@ -5,6 +5,8 @@ var forge = require('node-forge');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
 
+var DATABOX_DEV = process.env.DATABOX_DEV
+
 var attrs = [{ name: 'commonName', value: 'databox' }];
 var config = { days: 365, keySize: 2048, days: 3650, algorithm: 'sha256' };
 var rootPems;
@@ -12,14 +14,17 @@ var rootPems;
 const devCertPath = './certs/certs.json';
 const devCAPath = './certs/containerManager.crt';
 
-//Generate the CM root cert at startup
+//Generate the CM root cert at startup.
+//If in DEV mode we need to use the same certs at restart because the docker demon has to trust the container manger CA to verify 
+//the local registery. If we are not in dev mode then the certs are generated at each restart of the container manger.
 var init = function() {
     return new Promise( (resolve, reject) =>  {
 
         
         jsonfile.readFile(devCertPath, function (err, obj) {
             
-            if(err === null) {
+            //return cached certs if we have then and are in DEV mode
+            if(err === null && DATABOX_DEV) {
                 rootPems = obj;
                 resolve({rootCAcert:rootPems.cert});
                 return;
@@ -31,26 +36,29 @@ var init = function() {
                 }
                 rootPems = pems;
                 
-                jsonfile.writeFileSync(devCertPath, rootPems);
-                fs.writeFileSync(devCAPath, rootPems.cert);             
+                //Cash the certs in dev mode. These are new certs so display the update instructions and exit.
+                if(DATABOX_DEV) {
+                    jsonfile.writeFileSync(devCertPath, rootPems);
+                    fs.writeFileSync(devCAPath, rootPems.cert);             
 
-                reject( 
-                    "-----------------------------------------------\n" +
-                    "\n"+
-                    "\n"+
-                    " You will need to add the container manager CA to the docker keychain \n"+
-                    "\n"+
-                    " \t sudo install -m 044 -D "+devCAPath+" /etc/docker/certs.d/"+Config.registryUrl_dev+"/ca.crt\n"+
-                    "\n"+
-                    "Then restart docker:\n"+
-                    "\n \t sudo service docker restart \n"+
-                    "Then restart the container manager:\n"+
-                    "\n \t DATABOX_DEV=1 npm start"+
-                    "Then run docker:\n"+
-                    "\n \t sh ./updateLocalRegistey.sh"+
+                    reject( 
+                        "\n###################### INSTALL INSTRUCTIONS ######################\n" +
+                        "\n"+
+                        "\n"+
+                        " You will need to add the container manager CA to the docker keychain \n"+
+                        "\n"+
+                        " \t Ubuntu: sudo install -m 044 -D "+devCAPath+" /etc/docker/certs.d/"+Config.registryUrl_dev+"/ca.crt \n"+
+                        "\n"+
+                        "Then restart docker:\n"+
+                        "\n \t Ubuntu: sudo service docker restart \n"+
+                        "Then restart the container manager:\n"+
+                        "\n \t DATABOX_DEV=1 npm start \n"+
+                        "Then seed the local docker registery with the demo images:\n"+
+                        "\n \t sh ./updateLocalRegistery.sh \n"+
+                        "\n#################### END INSTALL INSTRUCTIONS #####################\n"
+                    );
+                }
 
-                    "-----------------------------------------------\n"
-                );
                 resolve({rootCAcert:rootPems.cert});
             });
         });

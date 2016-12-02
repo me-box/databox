@@ -6,6 +6,8 @@ var server = require('./server.js');
 var fs = require('fs');
 var httpsHelper = require('./include/containter-manger-https-helper');
 
+var DATABOX_DEV = process.env.DATABOX_DEV
+
 httpsHelper.init()
 	.then(cert => {
 		conman.setHttpsHelper(httpsHelper);
@@ -20,17 +22,18 @@ httpsHelper.init()
 	})
 
 	.then(() => {
-		
-		const devSeedScript = './updateLocalRegistey.sh';
-		console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
-		var script = "";
-		for(img of Config.localRegistrySeedImages) {
-			script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" databox.registry:5000/"+img+" && docker push databox.registry:5000/"+img+"\n";
-		}
-		fs.writeFileSync(devSeedScript, script);
+		if(DATABOX_DEV) {
+			const devSeedScript = './updateLocalRegistey.sh';
+			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
+			var script = "";
+			for(img of Config.localRegistrySeedImages) {
+				script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" databox.registry:5000/"+img+" && docker push databox.registry:5000/"+img+"\n";
+			}
+			fs.writeFileSync(devSeedScript, script);
 
-		console.log('['+Config.localRegistryName+'] Launching');
-		return conman.launchLocalRegistry();
+			console.log('['+Config.localRegistryName+'] Launching');
+			return conman.launchLocalRegistry();
+		}
 	})
 
 	.then(() => {
