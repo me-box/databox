@@ -8,33 +8,15 @@ Databox OS container manager and dashboard server.
 Install docker https://docs.docker.com/engine/installation/linux/
 Install nodejs https://nodejs.org/en/download/
 
-
-		For now the arbier IP must be in you hosts file
-
-			echo "172.17.0.3     databox-arbiter" | sudo tee -a /etc/hosts
-			echo "172.17.0.2     databox.registry" | sudo tee -a /etc/hosts
-
 ###OSX
 
 Install docker https://docs.docker.com/docker-for-mac/
 Install nodejs https://nodejs.org/en/download/
 
-
-		For now the arbier IP must be in you hosts file
-
-   		 edit /etc/hosts and add 127.0.0.1 databox-arbiter
-   		 edit /etc/hosts and add 127.0.0.1 databox.registry
-
 ###Windows
 
 Install docker https://docs.docker.com/docker-for-windows/ (The old Docker Toolbox is not supported)
 Install nodejs https://nodejs.org/en/download/
-
-
-				For now the arbiter IP must be in you hosts file
-
-				edit :\Windows\System32\Drivers\etc\hosts and add 127.0.0.1 databox-arbiter
-			  edit :\Windows\System32\Drivers\etc\hosts and add 127.0.0.1 databox.registry
 
 ###All
 
@@ -42,6 +24,9 @@ Install nodejs https://nodejs.org/en/download/
 			cd databox-container-manager
 			npm install --production
 
+To update your hosts file with arbiter and registry IP, run the following with root permissions:
+
+			npm run sethosts
 
 ## Usage
 
