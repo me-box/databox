@@ -15,7 +15,8 @@ var docker = dockerHelper.getDocker();
 var ip = '127.0.0.1';
 
 //setup dev env 
-if(process.env.DATABOX_DEV == 1) {
+var DATABOX_DEV = process.env.DATABOX_DEV
+if(DATABOX_DEV == 1) {
 
 	Config.registryUrl =  Config.registryUrl_dev;
   	Config.storeUrl = Config.storeUrl_dev;
@@ -125,6 +126,30 @@ exports.initNetworks = function () {
 		.catch(err => reject(err));
 };
 
+var pullDockerIOImage = function (imageName) {
+	return new Promise((resolve, reject) => {
+		//Pull latest Arbiter image
+		var parts = imageName.split(':');
+		var name = parts[0];
+		var version = parts[1];
+		console.log('[' + name + '] Pulling ' + version + ' image');
+		docker.pull( imageName, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(";->");
+			});
+		});
+	});
+};
 
 var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
@@ -227,11 +252,47 @@ exports.removeContainer = function (cont) {
 	});
 };
 
+exports.launchLocalRegistry = function() {
+	return new Promise((resolve, reject) => {
+		var name = Config.localRegistryName + ARCH;
+		pullDockerIOImage(Config.localRegistryImage + ":latest")
+		    .then(() => {
+				return httpsHelper.createClientCert(Config.registryUrl_dev.replace(':5000',''));
+			})
+			.then((httpsCerts) => {
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.localRegistryImage + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
+									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+							   ],
+						'Binds':["/tmp/databoxregistry:/var/lib/registry"],
+						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
+					}
+				);
+			})
+			.then((Reg) => {
+				return startContainer(Reg);
+			})
+			.then(() => {
+				console.log("waiting for local registery ....");
+				setTimeout(resolve,2000);
+			})
+			.catch((error)=>{
+				console.log("[]");
+				reject(error);
+			});
+	});
+};
+
 var arbiterName = '';
 var arbiterKey = null;
 var DATABOX_ARBITER_ENDPOINT = null;
 var DATABOX_ARBITER_ENDPOINT_IP = null;
-var DATABOX_ARBITER_PORT = 8080;
+var DATABOX_ARBITER_PORT = '8080';
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-arbiter" + ARCH;
@@ -257,7 +318,8 @@ exports.launchArbiter = function () {
 								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
 								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
 								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
-							   ]
+							   ],
+						'PortBindings': {'8080/tcp': [{ HostPort: DATABOX_ARBITER_PORT }]} //expose ports for the mac
 					}
 				);
 			})
@@ -293,7 +355,13 @@ exports.launchArbiter = function () {
 				untilActive({});
 			})
 			.catch((err) => {
-				console.log("Error creating Arbiter");
+				if(DATABOX_DEV) {
+					console.log(
+						"#################### Error creating Arbiter ######################" +
+						"Have you seeded the local docker registery with the arbiter and demo images ? try running \n"+
+						"\n \t sh ./updateLocalRegistery.sh \n"
+					);
+				}
 				reject(err);
 			});
 
@@ -572,9 +640,9 @@ var launchContainer = function (containerSLA) {
 				}
 			})
 			.then((container) => {
-				console.log('[' + name + '] Passing token to Arbiter');
+				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: name, key: arbiterToken, type: container.type});
+				var update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
 
 				return updateArbiter({ data: update });
 			})

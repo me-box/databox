@@ -1,5 +1,6 @@
 var Config = require('./config.json');
 var http = require('http');
+var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
@@ -11,7 +12,14 @@ var app = express();
 module.exports = {
 	proxies: {},
 	app: app,
-	launch: function (port, conman) {
+	launch: function (port, conman, httpsHelper) {
+		
+		//A https agent that trusts the CM
+		var agentOptions = {
+			ca: httpsHelper.getRootCert()
+		};
+		var databoxAgent = new https.Agent(agentOptions);
+		
 		var server = http.createServer(app);
 		var installingApps = {};
 		io = io(server, {});
@@ -97,7 +105,7 @@ module.exports = {
 						}
 					}
 
-					request('https://' + Config.registryUrl + '/v2/_catalog', (error, response, body) => {
+					request({'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent}, (error, response, body) => {
 						if (error) {
 							res.json(error);
 							return

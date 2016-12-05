@@ -37,3 +37,5 @@ node_modules
 .vscode
 #sla db
 sladatastore.db
+certs/*
+updateLocalRegistey.sh
