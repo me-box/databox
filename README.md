@@ -5,26 +5,26 @@ Databox OS container manager and dashboard server.
 
 ###Linux
 
-Install docker https://docs.docker.com/engine/installation/linux/
-Install nodejs https://nodejs.org/en/download/
+Install docker https://docs.docker.com/engine/installation/linux/  
+Install nodejs https://nodejs.org/en/download/  
 
-###OSX
+###MacOS
 
-Install docker https://docs.docker.com/docker-for-mac/
-Install nodejs https://nodejs.org/en/download/
+Install docker https://docs.docker.com/docker-for-mac/  
+Install nodejs https://nodejs.org/en/download/  
 
-###Windows
+###Windows (untested)
 
 Install docker https://docs.docker.com/docker-for-windows/ (The old Docker Toolbox is not supported)
-Install nodejs https://nodejs.org/en/download/
+Install nodejs https://nodejs.org/en/download/  
 
 ###All
 
-			git clone https://github.com/me-box/databox-container-manager.git
-			cd databox-container-manager
-			npm install --production
+			git clone https://github.com/me-box/databox-container-manager.git  
+			cd databox-container-manager  
+			npm install --production  
 
-To update your hosts file with arbiter and registry IP, run the following with root permissions:
+To update your hosts file with arbiter and registry IP, run the following with root permissions:  
 
 			npm run sethosts
 
@@ -36,8 +36,8 @@ In production mode (remote docker registery and remote app store)
 
 In development (local docker registery and local App store)
 
-    DATABOX_DEV=1 npm start
-	Note: in dev mode some extra configuration is required. Follow the on screen instructions.  
+    DATABOX_DEV=1 npm start  
+	Note: in dev mode some extra configuration is required. Follow the on screen instructions.   
 
 Default port is 8989, but can be overridden using the PORT environment variable, i.e.:
 
