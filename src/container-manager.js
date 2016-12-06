@@ -357,9 +357,10 @@ exports.launchArbiter = function () {
 			.catch((err) => {
 				if(DATABOX_DEV) {
 					console.log(
-						"#################### Error creating Arbiter ######################" +
+						"\n#################### Error creating Arbiter ######################\n\n" +
 						"Have you seeded the local docker registery with the arbiter and demo images ? try running \n"+
-						"\n \t sh ./updateLocalRegistery.sh \n"
+						"\n \t sh ./updateLocalRegistery.sh \n" +
+						"#################### Error creating Arbiter ######################\n\n"
 					);
 				}
 				reject(err);

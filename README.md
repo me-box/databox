@@ -36,8 +36,7 @@ In production mode (remote docker registery and remote app store)
 
 In development (local docker registery and local App store)
 
-  DATABOX_DEV=1 npm start
-
+    DATABOX_DEV=1 npm start
 	Note: in dev mode some extra configuration is required. Follow the on screen instructions.  
 
 Default port is 8989, but can be overridden using the PORT environment variable, i.e.:
