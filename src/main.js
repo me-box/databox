@@ -23,7 +23,7 @@ httpsHelper.init()
 
 	.then(() => {
 		if(DATABOX_DEV) {
-			const devSeedScript = './updateLocalRegistey.sh';
+			const devSeedScript = './updateLocalRegistery.sh';
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
@@ -32,7 +32,10 @@ httpsHelper.init()
 			fs.writeFileSync(devSeedScript, script);
 
 			console.log('['+Config.localRegistryName+'] Launching');
+			
+			//launch in-order to preserve IPs
 			return conman.launchLocalRegistry();
+						
 		}
 	})
 
@@ -41,18 +44,27 @@ httpsHelper.init()
 		return conman.launchArbiter(httpsHelper);
 	})
 	
-	/*.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
-
-		console.log('[databox-notification] Launching');
-		return conman.launchNotifications(httpsHelper);
-	})*/
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting UI Server!!");
 		return server.launch(Config.serverPort, conman, httpsHelper);
 	})
+	
+	.then(() => {
+		if(DATABOX_DEV) {
+			//launch in-order to preserve IPs
+			console.log('['+Config.localAppStoreName+'] Launching');
+			return conman.launchLocalAppStore();
+		}
+	})
+
+	/*.then(info => {
+		server.proxies[info.name] = 'localhost:' + info.port;
+
+		console.log('[databox-notification] Launching');
+		return conman.launchNotifications(httpsHelper);
+	})*/
 	.then(() => {
 		console.log("--------- Launching saved containers ----------");
 		return conman.getActiveSLAs();
@@ -71,7 +83,6 @@ httpsHelper.init()
 		console.log("Databox UI can be accessed at http://127.0.0.1:"+Config.serverPort);
 	})
 	.catch(err => {
-		console.log('ERROR ENDS UP HERE');
 		console.log(err);
 		var stack = new Error().stack;
 		console.log(stack);

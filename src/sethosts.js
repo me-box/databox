@@ -2,7 +2,8 @@ var hostile = require('hostile');
 
 var hosts = [
 	'databox.registry',
-	'databox-arbiter'
+	'databox-arbiter',
+	'databox.store'
 ];
 
 var p = Promise.resolve();
