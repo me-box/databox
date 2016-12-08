@@ -34,11 +34,8 @@ httpsHelper.init()
 			console.log('['+Config.localRegistryName+'] Launching');
 			
 			//launch in-order to preserve IPs
-			conman.launchLocalRegistry()
-			.then(() => {
-				console.log('['+Config.localAppStoreName+'] Launching');
-				return conman.launchLocalAppStore();
-			});			
+			return conman.launchLocalRegistry();
+						
 		}
 	})
 
@@ -47,18 +44,27 @@ httpsHelper.init()
 		return conman.launchArbiter(httpsHelper);
 	})
 	
-	/*.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
-
-		console.log('[databox-notification] Launching');
-		return conman.launchNotifications(httpsHelper);
-	})*/
 	.then(info => {
 		server.proxies[info.name] = 'localhost:' + info.port;
 
 		console.log("Starting UI Server!!");
 		return server.launch(Config.serverPort, conman, httpsHelper);
 	})
+	
+	.then(() => {
+		if(DATABOX_DEV) {
+			//launch in-order to preserve IPs
+			console.log('['+Config.localAppStoreName+'] Launching');
+			return conman.launchLocalAppStore();
+		}
+	})
+
+	/*.then(info => {
+		server.proxies[info.name] = 'localhost:' + info.port;
+
+		console.log('[databox-notification] Launching');
+		return conman.launchNotifications(httpsHelper);
+	})*/
 	.then(() => {
 		console.log("--------- Launching saved containers ----------");
 		return conman.getActiveSLAs();

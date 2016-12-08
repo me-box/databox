@@ -255,39 +255,41 @@ exports.removeContainer = function (cont) {
 exports.launchLocalAppStore = function() {
 	return new Promise((resolve, reject) => {
 		var name = Config.localAppStoreName + ARCH;
-		pullDockerIOImage(Config.localAppStoreImage + ":latest")
+		pullImage(Config.localAppStoreName + ":latest")
 		    .then(() => {
-				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('https://',''));
+				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('http://','').replace('8080',''));
 			})
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
 					{
 						'name': name,
-						'Image': Config.localAppStoreImage + ":latest",
+						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
 						'Env': [
 									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
 									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
-									"LOCAL_MODE=1" //force local mode to disable login 
+									"LOCAL_MODE=1", //force local mode to disable login 
+									"PORT=8181"
 							   ],
 						//'Binds':["/tmp/databoxAppStore:/database"],
-						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
+						'PortBindings': {'8181/tcp': [{ HostPort: '8181' }]} //expose ports for the mac
 					}
 				);
 			})
-			.then((Reg) => {
-				return startContainer(Reg);
+			.then((appStore) => {
+				return startContainer(appStore);
 			})
 			.then(() => {
-				console.log("waiting for local registery ....");
+				console.log("waiting for local app store ....");
 				setTimeout(resolve,2000);
 			})
 			.catch((error)=>{
-				console.log("[]");
+				console.log("[launchLocalAppStore]",error);
 				reject(error);
 			});
 	});
-}
+};
+
 exports.launchLocalRegistry = function() {
 	return new Promise((resolve, reject) => {
 		var name = Config.localRegistryName + ARCH;
