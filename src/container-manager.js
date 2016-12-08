@@ -15,7 +15,7 @@ var docker = dockerHelper.getDocker();
 var ip = '127.0.0.1';
 
 //setup dev env 
-var DATABOX_DEV = process.env.DATABOX_DEV
+var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 
 	Config.registryUrl =  Config.registryUrl_dev;
@@ -23,7 +23,7 @@ if(DATABOX_DEV == 1) {
 	console.log("Using dev server::", Config);
 }
 
-//ARCH to append -amd to the end of a container name if running on arm
+//ARCH to append -arm to the end of a container name if running on arm
 var ARCH = '';
 if (process.arch == 'arm') {
 	ARCH = '-arm';
@@ -116,7 +116,7 @@ exports.initNetworks = function () {
 					.catch(err => {
 						console.log("initNetworks::" + err);
 						reject(err);
-					})
+					});
 
 			})
 			.then((networks) => {
@@ -172,12 +172,12 @@ var pullImage = function (imageName) {
 				}
 				resolve(";->");
 			});
-		})
+		});
 	});
 };
 exports.pullImage = pullImage;
 
-var getContrainerInfo = function (container) {
+var getContainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
 		.then((info) => {
 			var response = {
@@ -206,12 +206,12 @@ var startContainer = function (container) {
 				reject('startContainer:: ' + err);
 				return;
 			}
-			getContrainerInfo(container)
+			getContainerInfo(container)
 			.then((info) => {
 				resolve(info);
 			})
 			.catch((err)=>{console.log(err); reject(err)});
-		})
+		});
 	});
 };
 exports.startContainer = startContainer;
@@ -425,7 +425,7 @@ exports.launchNotifications = function () {
 				);
 			})
 			.then((notifications) => {
-				return startContainer(notifications)
+				return startContainer(notifications);
 			})
 			.then((notifications) => {
 				return dockerHelper.connectToNetwork(notifications, 'databox-driver-net');
@@ -491,7 +491,7 @@ var updateArbiter = function (data) {
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
-				return getContrainerInfo(Arbiter);
+				return getContainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
 				var options = {
@@ -530,7 +530,7 @@ var launchDependencies = function (containerSLA) {
 		promises.push(new Promise((resolve, reject) => {
 			getContainer(requiredName)
 				.then((cont) => {
-					return getContrainerInfo(cont)
+					return getContainerInfo(cont);
 				})
 				.then((info) => {
 					console.log('[' + requiredName + "] Linking to existing " + requiredType + " " + requiredName);
