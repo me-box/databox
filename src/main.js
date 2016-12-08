@@ -32,7 +32,13 @@ httpsHelper.init()
 			fs.writeFileSync(devSeedScript, script);
 
 			console.log('['+Config.localRegistryName+'] Launching');
-			return conman.launchLocalRegistry();
+			
+			//launch in-order to preserve IPs
+			conman.launchLocalRegistry()
+			.then(() => {
+				console.log('['+Config.localAppStoreName+'] Launching');
+				return conman.launchLocalAppStore();
+			});			
 		}
 	})
 
@@ -71,7 +77,6 @@ httpsHelper.init()
 		console.log("Databox UI can be accessed at http://127.0.0.1:"+Config.serverPort);
 	})
 	.catch(err => {
-		console.log('ERROR ENDS UP HERE');
 		console.log(err);
 		var stack = new Error().stack;
 		console.log(stack);

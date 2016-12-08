@@ -252,6 +252,42 @@ exports.removeContainer = function (cont) {
 	});
 };
 
+exports.launchLocalAppStore = function() {
+	return new Promise((resolve, reject) => {
+		var name = Config.localAppStoreName + ARCH;
+		pullDockerIOImage(Config.localAppStoreImage + ":latest")
+		    .then(() => {
+				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('https://',''));
+			})
+			.then((httpsCerts) => {
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.localAppStoreImage + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
+									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+									"LOCAL_MODE=1" //force local mode to disable login 
+							   ],
+						//'Binds':["/tmp/databoxAppStore:/database"],
+						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
+					}
+				);
+			})
+			.then((Reg) => {
+				return startContainer(Reg);
+			})
+			.then(() => {
+				console.log("waiting for local registery ....");
+				setTimeout(resolve,2000);
+			})
+			.catch((error)=>{
+				console.log("[]");
+				reject(error);
+			});
+	});
+}
 exports.launchLocalRegistry = function() {
 	return new Promise((resolve, reject) => {
 		var name = Config.localRegistryName + ARCH;
