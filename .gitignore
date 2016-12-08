@@ -38,4 +38,4 @@ node_modules
 #sla db
 sladatastore.db
 certs/*
-updateLocalRegistey.sh
+updateLocalRegistery.sh

@@ -23,7 +23,7 @@ httpsHelper.init()
 
 	.then(() => {
 		if(DATABOX_DEV) {
-			const devSeedScript = './updateLocalRegistey.sh';
+			const devSeedScript = './updateLocalRegistery.sh';
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
