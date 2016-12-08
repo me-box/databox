@@ -271,7 +271,7 @@ exports.launchLocalAppStore = function() {
 									"LOCAL_MODE=1", //force local mode to disable login 
 									"PORT=8181"
 							   ],
-						//'Binds':["/tmp/databoxAppStore:/database"],
+						'Binds':["/tmp/databoxAppStore:/data/db"],
 						'PortBindings': {'8181/tcp': [{ HostPort: '8181' }]} //expose ports for the mac
 					}
 				);
