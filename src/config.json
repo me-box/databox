@@ -3,7 +3,7 @@
 	"registryUrl": "registry.iotdatabox.com",
   	"storeUrl": "https://store.iotdatabox.com",
 	"registryUrl_dev": "databox.registry:5000",
-	"storeUrl_dev": "https://databox.store",
+	"storeUrl_dev": "http://databox.store",
   	"serverPort": 8989,
 	"localRegistryName":"databox-local-registry",
 	"localRegistryImage":"toshdatabox/databox-local-registry",
