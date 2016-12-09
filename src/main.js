@@ -45,7 +45,7 @@ httpsHelper.init()
 	})
 	
 	.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
+		server.proxies[info.name] = info.name + ':' + info.port;
 
 		console.log("Starting UI Server!!");
 		return server.launch(Config.serverPort, conman, httpsHelper);
@@ -60,7 +60,7 @@ httpsHelper.init()
 	})
 
 	/*.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
+		server.proxies[info.name] = container.name+':' + info.port;
 
 		console.log('[databox-notification] Launching');
 		return conman.launchNotifications(httpsHelper);
@@ -73,9 +73,10 @@ httpsHelper.init()
 		return conman.restoreContainers(slas, httpsHelper);
 	})
 	.then(infos => {
+		console.log(infos);
 		for (var containers of infos) {
 			for (var container of containers) {
-				server.proxies[container.name] = 'localhost:' + container.port;
+				server.proxies[container.name] = container.name+':' + container.port;
 			}
 		}
 
