@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 var Docker = require('dockerode');
 var DockerEvents = require('docker-events');
 

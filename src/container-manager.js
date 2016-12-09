@@ -1,6 +1,5 @@
 /*jshint esversion: 6 */
 
-var Promise = require('promise');
 var Config = require('./config.json');
 var os = require('os');
 var crypto = require('crypto');
@@ -557,8 +556,8 @@ var launchDependencies = function (containerSLA) {
 								return launchContainer(sla);
 							}
 						})
-						.then((infos)=> {
-							resolve(infos);
+						.then((info)=> {
+							resolve(info);
 						})
 						.catch((err) => {
 							//install failed Give up :-(
@@ -568,7 +567,7 @@ var launchDependencies = function (containerSLA) {
 				});
 		}));
 	}
-	return new Promise.all(promises);
+	return Promise.all(promises);
 };
 
 var launchContainer = function (containerSLA) {
