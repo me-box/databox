@@ -328,7 +328,6 @@ exports.launchLocalRegistry = function() {
 
 var arbiterName = '';
 var arbiterKey = null;
-exports.arbiterKey = arbiterKey;
 var DATABOX_ARBITER_ENDPOINT = null;
 var DATABOX_ARBITER_ENDPOINT_IP = null;
 var DATABOX_ARBITER_PORT = '8080';
