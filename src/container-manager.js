@@ -382,7 +382,7 @@ exports.launchArbiter = function () {
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
 						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
-						resolve({'name': Arbiter.name, port: Arbiter.port});
+						resolve({'name': Arbiter.name, 'port': Arbiter.port, 'CM_KEY': arbiterKey, });
 					}
 					else {
 						setTimeout(() => {

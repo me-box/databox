@@ -1,9 +1,12 @@
+/*jshint esversion: 6 */
+
 var Config = require('./config.json');
 var http = require('http');
 var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
+var databoxRequestPromise = require('./lib/databox-request-promise.js');
 var io = require('socket.io');
 var url = require('url');
 
@@ -32,12 +35,6 @@ module.exports = {
 	proxies: {},
 	app: app,
 	launch: function (port, conman, httpsHelper) {
-		
-		//A https agent that trusts the CM
-		var agentOptions = {
-			ca: httpsHelper.getRootCert()
-		};
-		var databoxAgent = new https.Agent(agentOptions);
 		
 		var server = http.createServer(app);
 		var installingApps = {};
@@ -71,31 +68,30 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				return req
-					.pipe(request({
-						uri:proxyURL,
-						'method':'GET', 
-						'agent':databoxAgent, 
-						'headers': {
-							'x-api-key': conman.arbiterKey
-						}
-					}))
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					})
-					.pipe(res)
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					});
+				
+				databoxRequestPromise({uri:proxyURL,'method':'GET'})
+				.then((resolvedRequest)=>{
+					
+					return req.pipe(resolvedRequest)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.pipe(res)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.on('end',()=>{next();});
+				});
+			} else {
+				next();
 			}
-			next();
 		});
 
 		// Needs to be after the proxy
 		app.use(bodyParser.urlencoded({extended: false}));
 
 		app.get('/', (req, res) => {
-			res.render('index')
+			res.render('index');
 		});
 		app.get('/install/:appname', (req, res) => {
 			res.render('install', {appname: req.params.appname})
@@ -131,10 +127,11 @@ module.exports = {
 						}
 					}
 
+					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
 					request({'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent}, (error, response, body) => {
 						if (error) {
 							res.json(error);
-							return
+							return;
 						}
 						var repositories = JSON.parse(body).repositories;
 						var repocount = repositories.length;
@@ -198,10 +195,10 @@ module.exports = {
 			//console.log("Restarting " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container) => {
-					return conman.stopContainer(container)
+					return conman.stopContainer(container);
 				})
 				.then((container) => {
-					return conman.startContainer(container)
+					return conman.startContainer(container);
 				})
 				.then((container) => {
 					console.log('[' + container.name + '] Restarted');
@@ -210,7 +207,7 @@ module.exports = {
 				.catch((err)=> {
 					console.log(err);
 					res.json(err);
-				})
+				});
 		});
 
 
@@ -218,10 +215,10 @@ module.exports = {
 			//console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container)=> {
-					return conman.stopContainer(container)
+					return conman.stopContainer(container);
 				})
 				.then((container)=> {
-					return conman.removeContainer(container)
+					return conman.removeContainer(container);
 				})
 				.then((info)=> {
 					var name = info.Name;
