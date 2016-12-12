@@ -280,7 +280,7 @@ exports.launchLocalAppStore = function() {
 			})
 			.then(() => {
 				console.log("waiting for local app store ....");
-				setTimeout(resolve,2000);
+				setTimeout(resolve,3000);
 			})
 			.catch((error)=>{
 				console.log("[launchLocalAppStore]",error);

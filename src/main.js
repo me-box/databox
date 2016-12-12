@@ -5,6 +5,7 @@ var Config = require('./config.json');
 var fs = require('fs');
 var httpsHelper = require('./include/containter-manger-https-helper');
 var DATABOX_DEV = process.env.DATABOX_DEV
+var request = require('request');
 
 var containerMangerUIServer = null;
 
@@ -61,9 +62,6 @@ httpsHelper.init()
 		//set up the arbitor proxy
 		containerMangerUIServer.proxies[info.name] = info.name + ':' + info.port;
 		
-		//start the CM UI
-		console.log("Starting UI Server!!");
-		return containerMangerUIServer.launch(Config.serverPort, conman, httpsHelper);
 	})
 	
 	.then(() => {
@@ -74,6 +72,39 @@ httpsHelper.init()
 		}
 	})
 
+	.then(()=>{
+		if(DATABOX_DEV) {
+			proms = Config.localAppStoreSeedManifests.map((url)=>{
+				return new Promise(function(resolve, reject) {
+					request.get(url,(error,response,body)=>{
+						if(error) {
+							console.log("[seeding manifest] Failed to get manifest from" + url, error);
+						}
+						request.post({
+							uri: Config.storeUrl_dev + "/app/post",
+							method: "POST",
+							form: {"manifest": body}
+						}, (error,response,body) => {
+							if(error) {
+								console.log("[seeding manifest] Failed to POST manifest " + url, error);
+							} else {
+								console.log("[seeding manifest]" + url + " SUCCESS ", error);
+								resolve();
+							}
+						});
+					});
+				});
+			});
+			console.log(proms);
+			return Promise.all(proms);
+		}
+	})
+
+	.then(()=>{
+		//start the CM UI
+		console.log("Starting UI Server!!");
+		return containerMangerUIServer.launch(Config.serverPort, conman, httpsHelper);
+	})
 	/*.then(info => {
 		containerMangerUIServer.proxies[info.name] = container.name+':' + info.port;
 
