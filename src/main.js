@@ -28,7 +28,7 @@ httpsHelper.init()
 
 	.then(() => {
 		if(DATABOX_DEV) {
-			const devSeedScript = './updateLocalRegistery.sh';
+			const devSeedScript = './updateLocalRegistry.sh';
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
@@ -88,14 +88,13 @@ httpsHelper.init()
 							if(error) {
 								console.log("[seeding manifest] Failed to POST manifest " + url, error);
 							} else {
-								console.log("[seeding manifest]" + url + " SUCCESS ", error);
+								console.log("[seeding manifest]" + url + " SUCCESS ");
 								resolve();
 							}
 						});
 					});
 				});
 			});
-			console.log(proms);
 			return Promise.all(proms);
 		}
 	})

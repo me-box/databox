@@ -107,7 +107,6 @@ module.exports = {
 
 			conman.listContainers()
 				.then((containers) => {
-					console.log("[list-apps] containers ", containers);
 					for (var container of containers) {
 						var name = container.Names[0].substr(1);
 						names.push(name);
@@ -133,14 +132,12 @@ module.exports = {
 
 					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
 					var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
-					console.log("[list-apps] registery request",options);
 					request(options, (error, response, body) => {
 						if (error) {
 							res.json(error);
-							console.log("[list-apps] Error:: ",error);
 							return;
 						}
-						console.log("[list-apps] 1",body);
+
 						var repositories = JSON.parse(body).repositories;
 						var repocount = repositories.length;
 						repositories.map((repo) => {
@@ -155,10 +152,8 @@ module.exports = {
 
 									if (err) {
 										//do nothing
-										console.log("[list-apps] Error:: ",err);
 										return;
 									}
-									console.log("[list-apps] 2",body);
 
 									body = JSON.parse(data.body);
 									if (typeof body.error == 'undefined' || body.error != 23) {
