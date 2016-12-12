@@ -74,28 +74,34 @@ httpsHelper.init()
 
 	.then(()=>{
 		if(DATABOX_DEV) {
-			proms = Config.localAppStoreSeedManifests.map((url)=>{
-				return new Promise(function(resolve, reject) {
-					request.get(url,(error,response,body)=>{
-						if(error) {
-							console.log("[seeding manifest] Failed to get manifest from" + url, error);
-						}
-						request.post({
-							uri: Config.storeUrl_dev + "/app/post",
-							method: "POST",
-							form: {"manifest": body}
-						}, (error,response,body) => {
+			var req = request.defaults({jar: true});
+			req.get(Config.storeUrl_dev,(error,response,body)=>{
+				if(error) {
+					console.log("[seeding manifest] get app store root to log in", error);
+				}
+				proms = Config.localAppStoreSeedManifests.map((url)=>{
+					return new Promise(function(resolve, reject) {
+						req.get(url,(error,response,body)=>{
 							if(error) {
-								console.log("[seeding manifest] Failed to POST manifest " + url, error);
-							} else {
-								console.log("[seeding manifest]" + url + " SUCCESS ");
-								resolve();
+								console.log("[seeding manifest] Failed to get manifest from" + url, error);
 							}
+							req.post({
+								uri: Config.storeUrl_dev + "/app/post",
+								method: "POST",
+								form: {"manifest": body}
+							}, (error,response,body) => {
+								if(error) {
+									console.log("[seeding manifest] Failed to POST manifest " + url, error);
+								} else {
+									console.log("[seeding manifest]" + url + " SUCCESS ",body);
+									resolve();
+								}
+							});
 						});
 					});
 				});
+				return Promise.all(proms);
 			});
-			return Promise.all(proms);
 		}
 	})
 
