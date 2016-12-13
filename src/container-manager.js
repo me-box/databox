@@ -213,7 +213,7 @@ exports.stopContainer = function (cont) {
 				return;
 			}
 			resolve(cont);
-		})
+		});
 	});
 };
 
@@ -308,7 +308,7 @@ exports.launchLocalRegistry = function() {
 				setTimeout(resolve,2000);
 			})
 			.catch((error)=>{
-				console.log("[]");
+				console.log("[launchLocalRegistry]",error);
 				reject(error);
 			});
 	});
@@ -384,8 +384,8 @@ exports.launchArbiter = function () {
 				if(DATABOX_DEV) {
 					console.log(
 						"\n#################### Error creating Arbiter ######################\n\n" +
-						"Have you seeded the local docker registery with the arbiter and demo images ? try running \n"+
-						"\n \t sh ./updateLocalRegistery.sh \n" +
+						"Have you seeded the local docker registry with the arbiter and demo images ? try running \n"+
+						"\n \t sh ./updateLocalRegistry.sh \n" +
 						"#################### Error creating Arbiter ######################\n\n"
 					);
 				}

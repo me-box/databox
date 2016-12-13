@@ -12,12 +12,13 @@ var containerMangerUIServer = null;
 httpsHelper.init()
 	.then(cert => {
 		
-		//Put the CA pubic key into this processes env var so lib that work in containers also work in the CM
+		//Put the CA pubic key into this processes env var so libs that work in containers also work in the CM
 		process.env['CM_HTTPS_CA_ROOT_CERT'] = httpsHelper.getRootCert();
 
 		conman.setHttpsHelper(httpsHelper);
 		return conman.connect();
 	})
+	
 	.then(data => {
 		return conman.killAll(data);
 	})
@@ -51,7 +52,7 @@ httpsHelper.init()
 	
 	.then(info => {
 
-		//set env vars in this process so lib that work in containers also work in the CM 
+		//set env vars in this process so libs that work in containers also work in the CM 
 		process.env['DATABOX_ARBITER_ENDPOINT'] = 'https://' + info.name + ':' + info.port;
 		process.env['ARBITER_TOKEN'] = info.CM_KEY;
 		process.env['CM_KEY'] = info.CM_KEY;
@@ -59,7 +60,7 @@ httpsHelper.init()
 		//require here so env vars are set!
 		containerMangerUIServer = require('./server.js');
 
-		//set up the arbitor proxy
+		//set up the arbiter proxy
 		containerMangerUIServer.proxies[info.name] = info.name + ':' + info.port;
 		
 	})
