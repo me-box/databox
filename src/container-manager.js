@@ -125,56 +125,45 @@ exports.initNetworks = function () {
 		.catch(err => reject(err));
 };
 
+//Pull latest image from any repo defaults to dockerIO
 var pullDockerIOImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		//Pull latest Arbiter image
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
 		console.log('[' + name + '] Pulling ' + version + ' image');
-		docker.pull( imageName, (err, stream) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			stream.pipe(process.stdout);
-			docker.modem.followProgress(stream, (err, output) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(";->");
-			});
-		});
+		dockerImagePull(imageName, resolve,reject);
 	});
 };
 
+//Pull latest image from Config.registryUrl
 var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		//Pull latest Arbiter image
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
 		console.log('[' + name + '] Pulling ' + version + ' image');
-		docker.pull(Config.registryUrl + "/" + imageName, (err, stream) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			stream.pipe(process.stdout);
-			docker.modem.followProgress(stream, (err, output) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(";->");
-			});
-		});
+		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
 	});
 };
 exports.pullImage = pullImage;
+
+var dockerImagePull = function (image,resolve,reject) {
+	docker.pull(image, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(";->");
+			});
+		});
+};
 
 var getContainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
@@ -315,7 +304,7 @@ exports.launchLocalRegistry = function() {
 				return startContainer(Reg);
 			})
 			.then(() => {
-				console.log("waiting for local registery ....");
+				console.log("waiting for local register ....");
 				setTimeout(resolve,2000);
 			})
 			.catch((error)=>{
