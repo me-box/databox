@@ -30,11 +30,11 @@ To update your hosts file with arbiter and registry IP, run the following with r
 
 ## Usage
 
-In production mode (remote docker registery and remote app store)
+In production mode (remote docker registry and remote app store)
 
 	npm start
 
-In development (local docker registery and local App store)
+In development (local docker registry and local App store)
 
     DATABOX_DEV=1 npm start  
 	Note: in dev mode some extra configuration is required. Follow the on screen instructions.   

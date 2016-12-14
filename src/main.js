@@ -2,17 +2,23 @@
 
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
-var server = require('./server.js');
 var fs = require('fs');
 var httpsHelper = require('./include/containter-manger-https-helper');
-
 var DATABOX_DEV = process.env.DATABOX_DEV
+var request = require('request');
+
+var containerMangerUIServer = null;
 
 httpsHelper.init()
 	.then(cert => {
+		
+		//Put the CA pubic key into this processes env var so libs that work in containers also work in the CM
+		process.env['CM_HTTPS_CA_ROOT_CERT'] = httpsHelper.getRootCert();
+
 		conman.setHttpsHelper(httpsHelper);
 		return conman.connect();
 	})
+	
 	.then(data => {
 		return conman.killAll(data);
 	})
@@ -23,7 +29,7 @@ httpsHelper.init()
 
 	.then(() => {
 		if(DATABOX_DEV) {
-			const devSeedScript = './updateLocalRegistery.sh';
+			const devSeedScript = './updateLocalRegistry.sh';
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
@@ -45,10 +51,18 @@ httpsHelper.init()
 	})
 	
 	.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
 
-		console.log("Starting UI Server!!");
-		return server.launch(Config.serverPort, conman, httpsHelper);
+		//set env vars in this process so libs that work in containers also work in the CM 
+		process.env['DATABOX_ARBITER_ENDPOINT'] = 'https://' + info.name + ':' + info.port;
+		process.env['ARBITER_TOKEN'] = info.CM_KEY;
+		process.env['CM_KEY'] = info.CM_KEY;
+
+		//require here so env vars are set!
+		containerMangerUIServer = require('./server.js');
+
+		//set up the arbiter proxy
+		containerMangerUIServer.proxies[info.name] = info.name + ':' + info.port;
+		
 	})
 	
 	.then(() => {
@@ -59,8 +73,46 @@ httpsHelper.init()
 		}
 	})
 
+	.then(()=>{
+		if(DATABOX_DEV) {
+			var req = request.defaults({jar: true});
+			req.get(Config.storeUrl_dev,(error,response,body)=>{
+				if(error) {
+					console.log("[seeding manifest] get app store root to log in", error);
+				}
+				proms = Config.localAppStoreSeedManifests.map((url)=>{
+					return new Promise(function(resolve, reject) {
+						req.get(url,(error,response,body)=>{
+							if(error) {
+								console.log("[seeding manifest] Failed to get manifest from" + url, error);
+							}
+							req.post({
+								uri: Config.storeUrl_dev + "/app/post",
+								method: "POST",
+								form: {"manifest": body}
+							}, (error,response,body) => {
+								if(error) {
+									console.log("[seeding manifest] Failed to POST manifest " + url, error);
+								} else {
+									console.log("[seeding manifest]" + url + " SUCCESS ",body);
+									resolve();
+								}
+							});
+						});
+					});
+				});
+				return Promise.all(proms);
+			});
+		}
+	})
+
+	.then(()=>{
+		//start the CM UI
+		console.log("Starting UI Server!!");
+		return containerMangerUIServer.launch(Config.serverPort, conman, httpsHelper);
+	})
 	/*.then(info => {
-		server.proxies[info.name] = 'localhost:' + info.port;
+		containerMangerUIServer.proxies[info.name] = container.name+':' + info.port;
 
 		console.log('[databox-notification] Launching');
 		return conman.launchNotifications(httpsHelper);
@@ -73,14 +125,21 @@ httpsHelper.init()
 		return conman.restoreContainers(slas, httpsHelper);
 	})
 	.then(infos => {
+		console.log(infos);
 		for (var containers of infos) {
 			for (var container of containers) {
-				server.proxies[container.name] = 'localhost:' + container.port;
+				containerMangerUIServer.proxies[container.name] = container.name+':' + container.port;
 			}
 		}
 
 		console.log("--------- Done launching saved containers ----------");
 		console.log("Databox UI can be accessed at http://127.0.0.1:"+Config.serverPort);
+	})
+	.then(()=>{
+
+		var app = containerMangerUIServer.app;
+		module.exports = app;
+
 	})
 	.catch(err => {
 		console.log(err);
@@ -88,5 +147,3 @@ httpsHelper.init()
 		console.log(stack);
 	});
 
-var app = server.app;
-module.exports = app;

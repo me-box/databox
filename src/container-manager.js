@@ -1,6 +1,5 @@
 /*jshint esversion: 6 */
 
-var Promise = require('promise');
 var Config = require('./config.json');
 var os = require('os');
 var crypto = require('crypto');
@@ -126,56 +125,45 @@ exports.initNetworks = function () {
 		.catch(err => reject(err));
 };
 
+//Pull latest image from any repo defaults to dockerIO
 var pullDockerIOImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		//Pull latest Arbiter image
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
 		console.log('[' + name + '] Pulling ' + version + ' image');
-		docker.pull( imageName, (err, stream) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			stream.pipe(process.stdout);
-			docker.modem.followProgress(stream, (err, output) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(";->");
-			});
-		});
+		dockerImagePull(imageName, resolve,reject);
 	});
 };
 
+//Pull latest image from Config.registryUrl
 var pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		//Pull latest Arbiter image
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
 		console.log('[' + name + '] Pulling ' + version + ' image');
-		docker.pull(Config.registryUrl + "/" + imageName, (err, stream) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			stream.pipe(process.stdout);
-			docker.modem.followProgress(stream, (err, output) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(";->");
-			});
-		});
+		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
 	});
 };
 exports.pullImage = pullImage;
+
+var dockerImagePull = function (image,resolve,reject) {
+	docker.pull(image, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(";->");
+			});
+		});
+};
 
 var getContainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
@@ -225,7 +213,7 @@ exports.stopContainer = function (cont) {
 				return;
 			}
 			resolve(cont);
-		})
+		});
 	});
 };
 
@@ -281,7 +269,7 @@ exports.launchLocalAppStore = function() {
 			})
 			.then(() => {
 				console.log("waiting for local app store ....");
-				setTimeout(resolve,2000);
+				setTimeout(resolve,3000);
 			})
 			.catch((error)=>{
 				console.log("[launchLocalAppStore]",error);
@@ -316,11 +304,11 @@ exports.launchLocalRegistry = function() {
 				return startContainer(Reg);
 			})
 			.then(() => {
-				console.log("waiting for local registery ....");
+				console.log("waiting for local register ....");
 				setTimeout(resolve,2000);
 			})
 			.catch((error)=>{
-				console.log("[]");
+				console.log("[launchLocalRegistry]",error);
 				reject(error);
 			});
 	});
@@ -381,7 +369,7 @@ exports.launchArbiter = function () {
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
 						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
-						resolve({'name': Arbiter.name, port: Arbiter.port});
+						resolve({'name': Arbiter.name, 'port': Arbiter.port, 'CM_KEY': arbiterKey, });
 					}
 					else {
 						setTimeout(() => {
@@ -396,8 +384,8 @@ exports.launchArbiter = function () {
 				if(DATABOX_DEV) {
 					console.log(
 						"\n#################### Error creating Arbiter ######################\n\n" +
-						"Have you seeded the local docker registery with the arbiter and demo images ? try running \n"+
-						"\n \t sh ./updateLocalRegistery.sh \n" +
+						"Have you seeded the local docker registry with the arbiter and demo images ? try running \n"+
+						"\n \t sh ./updateLocalRegistry.sh \n" +
 						"#################### Error creating Arbiter ######################\n\n"
 					);
 				}
@@ -557,8 +545,8 @@ var launchDependencies = function (containerSLA) {
 								return launchContainer(sla);
 							}
 						})
-						.then((infos)=> {
-							resolve(infos);
+						.then((info)=> {
+							resolve(info);
 						})
 						.catch((err) => {
 							//install failed Give up :-(
@@ -568,7 +556,7 @@ var launchDependencies = function (containerSLA) {
 				});
 		}));
 	}
-	return new Promise.all(promises);
+	return Promise.all(promises);
 };
 
 var launchContainer = function (containerSLA) {

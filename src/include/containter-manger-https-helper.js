@@ -16,14 +16,14 @@ const devCAPath = './certs/containerManager.crt';
 
 //Generate the CM root cert at startup.
 //If in DEV mode we need to use the same certs at restart because the docker demon has to trust the container manger CA to verify 
-//the local registery. If we are not in dev mode then the certs are generated at each restart of the container manger.
+//the local registry. If we are not in dev mode then the certs are generated at each restart of the container manger.
 var init = function() {
     return new Promise( (resolve, reject) =>  {
 
         
         jsonfile.readFile(devCertPath, function (err, obj) {
             
-            //return cached certs if we have then and are in DEV mode
+            //return cached certs if we have them and are in DEV mode
             if(err === null && DATABOX_DEV) {
                 rootPems = obj;
                 resolve({rootCAcert:rootPems.cert});
@@ -58,8 +58,8 @@ var init = function() {
                         "\n \t MAC OSX:: use the gui! \n"+
                         "Then restart the container manager:\n"+
                         "\n \t DATABOX_DEV=1 npm start \n"+
-                        "Then seed the local docker registery with the demo images:\n"+
-                        "\n \t sh ./updateLocalRegistery.sh \n"+
+                        "Then seed the local docker registry with the demo images:\n"+
+                        "\n \t sh ./updateLocalRegistry.sh \n"+
                         "\n#################### END INSTALL INSTRUCTIONS #####################\n"
                     );
                 }
