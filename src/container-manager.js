@@ -103,7 +103,8 @@ exports.initNetworks = function () {
 			.then(networks => {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net'),
-					dockerHelper.getNetwork(networks, 'databox-app-net')
+					dockerHelper.getNetwork(networks, 'databox-app-net'),
+					dockerHelper.getNetwork(networks, 'databox-cloud-net')
 				];
 
 				return Promise.all(requiredNets)
@@ -265,6 +266,9 @@ exports.launchLocalAppStore = function() {
 				);
 			})
 			.then((appStore) => {
+				return dockerHelper.connectToNetwork(appStore, 'databox-cloud-net');
+			})
+			.then((appStore) => {
 				return startContainer(appStore);
 			})
 			.then(() => {
@@ -299,6 +303,9 @@ exports.launchLocalRegistry = function() {
 						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
 					}
 				);
+			})
+			.then((Reg) => {
+				return dockerHelper.connectToNetwork(Reg, 'databox-cloud-net');
 			})
 			.then((Reg) => {
 				return startContainer(Reg);
