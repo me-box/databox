@@ -15,7 +15,7 @@ var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
-var databoxRequest = require('./lib/databox-request.js');
+var databoxRequestPromise = require('./lib/databox-request-promise.js');
 var databoxAgent = require('./lib/databox-https-agent.js');
 var io = require('socket.io');
 var url = require('url');
@@ -78,18 +78,21 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				return req
-					.pipe(databoxRequest({'uri':proxyURL}))
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					})
-					.pipe(res)
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					})
-					.on('end',()=>{
-						next();
-					});
+				databoxRequestPromise({uri:proxyURL,'method':'GET'})
+				.then((resolvedRequest)=>{
+					
+					return req.pipe(resolvedRequest)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.pipe(res)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.on('end',()=>{
+								next();
+							});
+				});
 
 			} else {
 				next();
