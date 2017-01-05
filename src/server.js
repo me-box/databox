@@ -1,12 +1,21 @@
 /*jshint esversion: 6 */
 
 var Config = require('./config.json');
+//setup dev env 
+var DATABOX_DEV = process.env.DATABOX_DEV;
+if(DATABOX_DEV == 1) {
+
+	Config.registryUrl =  Config.registryUrl_dev;
+  	Config.storeUrl = Config.storeUrl_dev;
+	console.log("Using dev server::", Config);
+}
+
 var http = require('http');
 var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
-var databoxRequestPromise = require('./lib/databox-request-promise.js');
+var databoxRequest = require('./lib/databox-request.js');
 var databoxAgent = require('./lib/databox-https-agent.js');
 var io = require('socket.io');
 var url = require('url');
@@ -69,20 +78,19 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				
-				databoxRequestPromise({uri:proxyURL,'method':'GET'})
-				.then((resolvedRequest)=>{
-					
-					return req.pipe(resolvedRequest)
-							.on('error', (e) => {
-								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-							})
-							.pipe(res)
-							.on('error', (e) => {
-								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-							})
-							.on('end',()=>{next();});
-				});
+				return req
+					.pipe(databoxRequest({'uri':proxyURL}))
+					.on('error', (e) => {
+						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+					})
+					.pipe(res)
+					.on('error', (e) => {
+						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+					})
+					.on('end',()=>{
+						next();
+					});
+
 			} else {
 				next();
 			}
@@ -152,6 +160,7 @@ module.exports = {
 
 									if (err) {
 										//do nothing
+										console.log("[store/app/get/] ERROR::", err);
 										return;
 									}
 
