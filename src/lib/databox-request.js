@@ -37,7 +37,7 @@ module.exports = function (options,callback) {
   var isRequestToArbiter = DATABOX_ARBITER_ENDPOINT.indexOf(host) !== -1;
 
   //request to an external site or dev component 
-  var isExternalRequest = host.indexOf('.').length !== -1;
+  var isExternalRequest = host.indexOf('.') !== -1;
 
 
   if(protocol == "https:") {
