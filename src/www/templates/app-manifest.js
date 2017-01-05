@@ -48,6 +48,7 @@ if (pack.enabled || pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"badge material-icons\"\u003Echeck\u003C\u002Fdiv\u003E";
 }
 pug_html = pug_html + ("\u003C\u002Fdiv\u003E\u003Cdiv class=\"mdl-color--cyan-800 fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.purpose) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E\u003Cdiv class=\"mdl-color--cyan-800 padded\"\u003E" + (pug_escape(null == (pug_interp = pack.benefits) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E\u003Cdiv class=\"exchange\"\u003Ein exchange for\u003C\u002Fdiv\u003E\u003Cdiv class=\"dark padded\"\u003E" + (pug_escape(null == (pug_interp = pack.risks) ? "" : pug_interp)));
+if ('datasources' in pack) {
 // iterate pack.datasources
 ;(function(){
   var $$obj = pack.datasources;
@@ -66,6 +67,7 @@ pug_html = pug_html + "\u003Cdiv\u003E" + (pug_escape(null == (pug_interp = 'Acc
   }
 }).call(this);
 
+}
 pug_html = pug_html + "\u003C\u002Fdiv\u003E";
 if (pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"mdl-color--red-700 mdl-typography--text-center padded\"\u003ERequired\u003C\u002Fdiv\u003E";
@@ -89,6 +91,7 @@ if (pack.enabled || pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"badge material-icons\"\u003Echeck\u003C\u002Fdiv\u003E";
 }
 pug_html = pug_html + ("\u003C\u002Fdiv\u003E\u003Cdiv class=\"mdl-color--cyan-800 fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.purpose) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E\u003Cdiv class=\"mdl-color--cyan-800 padded\"\u003E" + (pug_escape(null == (pug_interp = pack.benefits) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E\u003Cdiv class=\"exchange\"\u003Ein exchange for\u003C\u002Fdiv\u003E\u003Cdiv class=\"dark padded\"\u003E" + (pug_escape(null == (pug_interp = pack.risks) ? "" : pug_interp)));
+if ('datasources' in pack) {
 // iterate pack.datasources
 ;(function(){
   var $$obj = pack.datasources;
@@ -107,6 +110,7 @@ pug_html = pug_html + "\u003Cdiv\u003E" + (pug_escape(null == (pug_interp = 'Acc
   }
 }).call(this);
 
+}
 pug_html = pug_html + "\u003C\u002Fdiv\u003E";
 if (pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"mdl-color--red-700 mdl-typography--text-center padded\"\u003ERequired\u003C\u002Fdiv\u003E";
