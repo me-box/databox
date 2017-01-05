@@ -8,6 +8,7 @@ const macaroonCache = require('./databox-macaroon-cache.js');
 //Databox ENV vars
 //
 const DATABOX_ARBITER_ENDPOINT = process.env.DATABOX_ARBITER_ENDPOINT || "https://databox-arbiter:8080";
+const ARBITER_TOKEN   = process.env.ARBITER_TOKEN;
 
 /**
  * This module wraps the node request module https://github.com/request/request and adds:
