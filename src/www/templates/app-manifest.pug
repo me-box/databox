@@ -56,9 +56,10 @@ div
 						| in exchange for
 					div.dark.padded
 						= pack.risks
-						each datasource in pack.datasources
-							div
-								= 'Access to ' + getDatasource(datasource).type
+						if 'datasources' in pack
+							each datasource in pack.datasources
+								div
+									= 'Access to ' + getDatasource(datasource).type
 					if pack.required
 						div.mdl-color--red-700.mdl-typography--text-center.padded
 							| Required
