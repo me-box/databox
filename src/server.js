@@ -78,7 +78,7 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				databoxRequestPromise({uri:proxyURL,'method':'GET'})
+				databoxRequestPromise({uri:proxyURL})
 				.then((resolvedRequest)=>{
 					
 					return req.pipe(resolvedRequest)
