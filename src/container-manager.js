@@ -566,8 +566,8 @@ var launchDependencies = function (containerSLA) {
 	return Promise.all(promises);
 };
 
-var launchContainer = function (containerSLA) {
-	var name = repoTagToName(containerSLA.name) + ARCH;
+let launchContainer = function (containerSLA) {
+	let name = repoTagToName(containerSLA.name) + ARCH;
 
 	//set the local name of the container. Containers launched as dependencies 
 	//have their local name set to [rootContainerName]-[dependentContainerName]
@@ -576,8 +576,8 @@ var launchContainer = function (containerSLA) {
 	}
 
 	console.log('[' + name + '] Launching');
-	var arbiterToken = null;
-	var config = {
+	let arbiterToken = null;
+	let config = {
 		'name': containerSLA.localContainerName,
 		'Image': Config.registryUrl + '/' + name + ":latest",
 		'Env': [
@@ -591,14 +591,14 @@ var launchContainer = function (containerSLA) {
 			'Links': [arbiterName]
 		}
 	};
-	var launched = [];
+	let launched = [];
 
 	return new Promise((resolve, reject) => {
 
 		launchDependencies(containerSLA)
 			.then((dependencies) => {
-				for (var dependencyList of dependencies) {
-					for (var dependency of dependencyList) {
+				for (let dependencyList of dependencies) {
+					for (let dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
 						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'https://' + dependency.name + ':8080');
 						launched.push(dependency);
@@ -616,7 +616,7 @@ var launchContainer = function (containerSLA) {
 				return Promise.all(proms);
 			})
 			.then((tokens) => {
-				httpsPem = tokens[0];
+				let httpsPem = tokens[0];
 				arbiterToken = tokens[1];
 				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
 				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
@@ -624,9 +624,10 @@ var launchContainer = function (containerSLA) {
 				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
 							   
 				if('volumes' in containerSLA) {
+					let binds = [];
 					console.log('Adding volumes');
 					config.Volumes = {};
-					for(var vol of containerSLA['volumes']) {
+					for(let vol of containerSLA['volumes']) {
 						config.Volumes[vol] = {};
 						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
 					}
@@ -634,13 +635,13 @@ var launchContainer = function (containerSLA) {
 				}
 
 				if ('datasources' in containerSLA) {
-					for (var datasource of containerSLA.datasources) {
-						var sensor = {
+					for (let datasource of containerSLA.datasources) {
+						let sensor = {
 							endpoint: datasource.endpoint,
 							sensor_id: datasource.sensor_id,
 						};
 						if (datasource.endpoint !== undefined) {
-							var index = datasource.endpoint.indexOf('/');
+							let index = datasource.endpoint.indexOf('/');
 							if (index != -1) {
 								sensor.hostname = sensor.endpoint.substr(0, index);
 								sensor.api_url = sensor.endpoint.substr(index);
@@ -651,8 +652,8 @@ var launchContainer = function (containerSLA) {
 				}
 
 				if ('packages' in containerSLA) {
-					for (var manifestPackage of containerSLA.packages) {
-						var packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
+					for (let manifestPackage of containerSLA.packages) {
+						let packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
 						config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
 					}
 				}
@@ -676,7 +677,7 @@ var launchContainer = function (containerSLA) {
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
+				let update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
 
 				return updateArbiter({ data: update });
 			})
