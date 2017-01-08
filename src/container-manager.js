@@ -65,6 +65,28 @@ var listContainers = function () {
 };
 exports.listContainers = listContainers;
 
+var getOwnContainer = function () {
+	return new Promise((resolve, reject) => {
+		docker.listContainers({all: true, filters: {"label": ["databox.type=container-manager"]}},
+			(err, containers) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				if (containers.length !== 1) {
+					reject("More than one Container Manager running!");
+					return;
+				}
+				getContainer(containers[0].Id).then((container) => resolve(container));
+			}
+		);
+	});
+};
+exports.getOwnContainer = getOwnContainer;
+
+exports.connectToCMArbiterNetwork = function (container) {
+	return dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net');
+}
 
 exports.killAll = function () {
 	return new Promise((resolve, reject) => {
@@ -104,7 +126,8 @@ exports.initNetworks = function () {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net'),
 					dockerHelper.getNetwork(networks, 'databox-app-net'),
-					dockerHelper.getNetwork(networks, 'databox-cloud-net')
+					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net')
 				];
 
 				return Promise.all(requiredNets)
@@ -364,6 +387,9 @@ exports.launchArbiter = function () {
 			})
 			.then((Arbiter) => {
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-app-net');
+			})
+			.then((Arbiter) => {
+				return dockerHelper.connectToNetwork(Arbiter, 'databox-cm-arbiter-net');
 			})
 			.then((Arbiter) => {
 				var untilActive = function (error, response, body) {

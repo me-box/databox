@@ -1,4 +1,4 @@
-
+#FROM node:argon
 FROM node:alpine
 
 #RUN apk update && apk add ca-certificates wget unzip
@@ -16,6 +16,8 @@ RUN mkdir /slaStore && mkdir /certs
 RUN npm install --production
 
 VOLUME ["/slaStore","/certs"]
+
+LABEL databox.type="container-manager"
 
 EXPOSE 8989
 
