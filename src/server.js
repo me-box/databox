@@ -199,7 +199,7 @@ module.exports = {
 					for (var container of containers) {
 
 						delete installingApps[container.name];
-						this.proxies[container.name] = 'localhost:' + container.port;
+						this.proxies[container.name] = container.name + ':' + container.port;
 					}
 
 					res.json(containers);
@@ -220,7 +220,7 @@ module.exports = {
 				})
 				.then((container) => {
 					console.log('[' + container.name + '] Restarted');
-					this.proxies[container.name] = 'localhost:' + container.port;
+					this.proxies[container.name] = container.name + ':' + container.port;
 				})
 				.catch((err)=> {
 					console.log(err);
