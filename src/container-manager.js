@@ -396,6 +396,57 @@ exports.launchArbiter = function () {
 };
 
 
+var DATABOX_LOGSTORE_ENDPOINT = null;
+var DATABOX_LOGSTORE_PORT = 8080;
+exports.launchLogStore = function () {
+
+	return new Promise((resolve, reject) => {
+		var name = "databox-logstore" + ARCH;
+		pullImage(name + ":latest")
+			.then(() => {
+				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(name),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
+			})
+			.then((tokens) => {
+				let httpsPem = tokens[0];
+				arbiterToken = tokens[1];
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.registryUrl + '/' + name + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"ARBITER_TOKEN=" + arbiterToken,
+									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
+									"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
+									"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert
+							   ],
+						'Binds':["/tmp/databoxLogs:/database"],
+					}
+				);
+			})
+			.then((logstore) => {
+				return startContainer(logstore);
+			})
+			.then((logstore) => {
+				return dockerHelper.connectToNetwork(logstore, 'databox-driver-net');
+			})
+			.then((logstore) => {
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + logstore.ip + ':' + DATABOX_LOGSTORE_PORT;
+				resolve(logstore);
+			})
+			.catch((err) => {
+				console.log("Error creating databox-logstore");
+				reject(err);
+			});
+
+	});
+};
+
 var notificationsName = null;
 var DATABOX_NOTIFICATIONS_ENDPOINT = null;
 var DATABOX_NOTIFICATIONS_PORT = 8080;
@@ -576,7 +627,8 @@ let launchContainer = function (containerSLA) {
 		'Env': [
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
-			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT
+			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT //TODO only expose this to stores 
 			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,

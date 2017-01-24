@@ -74,6 +74,10 @@ httpsHelper.init()
 	})
 
 	.then(()=>{
+		return conman.launchLogStore();
+	})
+	
+	.then(()=>{
 		if(DATABOX_DEV) {
 			var req = request.defaults({jar: true});
 			req.get(Config.storeUrl_dev,(error,response,body)=>{
