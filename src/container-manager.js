@@ -13,7 +13,7 @@ var docker = dockerHelper.getDocker();
 
 var ip = '127.0.0.1';
 
-//setup dev env 
+//setup dev env
 var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 
@@ -256,7 +256,7 @@ exports.launchLocalAppStore = function() {
 						'Env': [
 									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
 									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
-									"LOCAL_MODE=1", //force local mode to disable login 
+									"LOCAL_MODE=1", //force local mode to disable login
 									"PORT=8181"
 							   ],
 						'Binds':["/tmp/databoxAppStore:/data/db"],
@@ -509,10 +509,10 @@ var updateArbiter = function (data) {
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
-		
-		var rootContainerName = containerSLA['resource-requirements'][requiredType]; 
+
+		var rootContainerName = containerSLA['resource-requirements'][requiredType];
 		var requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
-		
+
 		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
 		promises.push(new Promise((resolve, reject) => {
@@ -562,7 +562,7 @@ var launchDependencies = function (containerSLA) {
 let launchContainer = function (containerSLA) {
 	let name = repoTagToName(containerSLA.name) + ARCH;
 
-	//set the local name of the container. Containers launched as dependencies 
+	//set the local name of the container. Containers launched as dependencies
 	//have their local name set to [rootContainerName]-[dependentContainerName]
 	if(!("localContainerName" in containerSLA)) {
 		containerSLA.localContainerName = name;
@@ -615,14 +615,14 @@ let launchContainer = function (containerSLA) {
 				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
 				config.Env.push("HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate);
 				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
-							   
+
 				if('volumes' in containerSLA) {
 					let binds = [];
 					console.log('Adding volumes');
 					config.Volumes = {};
 					for(let vol of containerSLA['volumes']) {
 						config.Volumes[vol] = {};
-						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
+						binds.push(name+"-"+vol.replace('/','')+":"+vol);
 					}
 					config.Binds = binds;
 				}
