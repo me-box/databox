@@ -436,7 +436,14 @@ exports.launchLogStore = function () {
 				return dockerHelper.connectToNetwork(logstore, 'databox-driver-net');
 			})
 			.then((logstore) => {
-				DATABOX_LOGSTORE_ENDPOINT = 'https://' + logstore.ip + ':' + DATABOX_LOGSTORE_PORT;
+				console.log('[' + name + '] Passing token to Arbiter');
+
+				var update = JSON.stringify({name: name, key: arbiterToken, type: logstore.type});
+
+				return updateArbiter({ data: update });
+			})
+			.then((logstore) => {
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
 				resolve(logstore);
 			})
 			.catch((err) => {
@@ -628,7 +635,7 @@ let launchContainer = function (containerSLA) {
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
 			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
-			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT //TODO only expose this to stores 
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName //TODO only expose this to stores 
 			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
