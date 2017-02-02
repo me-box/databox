@@ -13,7 +13,7 @@ var docker = dockerHelper.getDocker();
 
 var ip = '127.0.0.1';
 
-//setup dev env 
+//setup dev env
 var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 
@@ -280,7 +280,7 @@ exports.launchLocalAppStore = function() {
 						'Env': [
 									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
 									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
-									"LOCAL_MODE=1", //force local mode to disable login 
+									"LOCAL_MODE=1", //force local mode to disable login
 									"PORT=8181"
 							   ],
 						'Binds':["/tmp/databoxAppStore:/data/db"],
@@ -429,6 +429,64 @@ exports.launchArbiter = function () {
 };
 
 
+var DATABOX_LOGSTORE_ENDPOINT = null;
+var DATABOX_LOGSTORE_PORT = 8080;
+exports.launchLogStore = function () {
+
+	return new Promise((resolve, reject) => {
+		var name = "databox-logstore" + ARCH;
+		pullImage(name + ":latest")
+			.then(() => {
+				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(name),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
+			})
+			.then((tokens) => {
+				let httpsPem = tokens[0];
+				arbiterToken = tokens[1];
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.registryUrl + '/' + name + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"ARBITER_TOKEN=" + arbiterToken,
+									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
+									"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
+									"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert
+							   ],
+						'Binds':["/tmp/databoxLogs:/database"],
+					}
+				);
+			})
+			.then((logstore) => {
+				return startContainer(logstore);
+			})
+			.then((logstore) => {
+				return dockerHelper.connectToNetwork(logstore, 'databox-driver-net');
+			})
+			.then((logstore) => {
+				console.log('[' + name + '] Passing token to Arbiter');
+
+				var update = JSON.stringify({name: name, key: arbiterToken, type: logstore.type});
+
+				return updateArbiter({ data: update });
+			})
+			.then((logstore) => {
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
+				resolve(logstore);
+			})
+			.catch((err) => {
+				console.log("Error creating databox-logstore");
+				reject(err);
+			});
+
+	});
+};
+
 var notificationsName = null;
 var DATABOX_NOTIFICATIONS_ENDPOINT = null;
 var DATABOX_NOTIFICATIONS_PORT = 8080;
@@ -542,10 +600,10 @@ var updateArbiter = function (data) {
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
-		
-		var rootContainerName = containerSLA['resource-requirements'][requiredType]; 
+
+		var rootContainerName = containerSLA['resource-requirements'][requiredType];
 		var requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
-		
+
 		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
 		promises.push(new Promise((resolve, reject) => {
@@ -595,7 +653,7 @@ var launchDependencies = function (containerSLA) {
 let launchContainer = function (containerSLA) {
 	let name = repoTagToName(containerSLA.name) + ARCH;
 
-	//set the local name of the container. Containers launched as dependencies 
+	//set the local name of the container. Containers launched as dependencies
 	//have their local name set to [rootContainerName]-[dependentContainerName]
 	if(!("localContainerName" in containerSLA)) {
 		containerSLA.localContainerName = name;
@@ -609,7 +667,8 @@ let launchContainer = function (containerSLA) {
 		'Env': [
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
-			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT
+			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName //TODO only expose this to stores 
 			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
@@ -648,14 +707,14 @@ let launchContainer = function (containerSLA) {
 				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
 				config.Env.push("HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate);
 				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
-							   
+
 				if('volumes' in containerSLA) {
 					let binds = [];
 					console.log('Adding volumes');
 					config.Volumes = {};
 					for(let vol of containerSLA['volumes']) {
 						config.Volumes[vol] = {};
-						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
+						binds.push(name+"-"+vol.replace('/','')+":"+vol);
 					}
 					config.Binds = binds;
 				}

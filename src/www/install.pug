@@ -29,14 +29,59 @@ html
 		script.
 			var manifest = null;
 			var sensors = null;
+			var mappings = {
+				"urn:X-databox:rels:hasDescription": "description",
+				"urn:X-databox:rels:hasType": "type",
+				"urn:X-databox:rels:hasLocation": "location",
+				"urn:X-databox:rels:hasDatasourceid": "id"
+			}
 
 			$.post("/store/app/get/", {'name': '#{appname}'}, function (data) {
 				manifest = data.manifest;
-				if ('packages' in manifest && manifest.packages.length == 1) {
+				if ('packages' in manifest && manifest.packages.length > 0) {
 					manifest.packages[0].enabled = true;
 				}
+				if('datasources' in manifest && manifest.datasources.length > 0) {
+					$.get("/databox-arbiter/cat", function (data) {
+						if ('items' in data) {
+							for (var item of data.items) {
+								var link = document.createElement("a");
+								link.href = item.href;
+								openCatalogue("/" + link.hostname + "/cat")
+							}
+						}
+					});
+				}
+
 				update();
 			});
+
+			function openCatalogue(url) {
+				$.get(url, function (data) {
+					if ('items' in data) {
+						for (var item of data.items) {
+							var sensor = {};
+							sensor.endpoint = url;
+							if ('item-metadata' in item) {
+								for (var metadata of item['item-metadata']) {
+									if (metadata.rel in mappings) {
+										var mapped = mappings[metadata.rel];
+										sensor[mapped] = metadata.val;
+									}
+								}
+							}
+							console.log(sensor);
+							if (sensors == null) {
+								sensors = [sensor];
+							}
+							else {
+								sensors.push(sensor);
+							}
+							update();
+						}
+					}
+				});
+			}
 
 			function update() {
 				if (manifest != null) {
@@ -65,14 +110,10 @@ html
 				return true;
 			}
 
-			function togglePackage(id) {
-				for (pack of manifest.packages) {
-					if (id === pack.id) {
-						pack.enabled = !pack.enabled;
-						update();
-						return true;
-					}
-				}
+			function togglePackage(index) {
+				var pack = manifest.packages[index];
+				pack.enabled = !pack.enabled;
+				update();
 				return true;
 			}
 

@@ -3,7 +3,7 @@
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
 var fs = require('fs');
-var httpsHelper = require('./include/containter-manger-https-helper');
+var httpsHelper = require('./include/container-manger-https-helper');
 var DATABOX_DEV = process.env.DATABOX_DEV
 var request = require('request');
 
@@ -81,6 +81,10 @@ httpsHelper.init()
 		}
 	})
 
+	.then(()=>{
+		return conman.launchLogStore();
+	})
+	
 	.then(()=>{
 		if(DATABOX_DEV) {
 			var req = request.defaults({jar: true});
