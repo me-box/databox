@@ -27,13 +27,21 @@ httpsHelper.init()
 		return conman.initNetworks();
 	})
 
+	// Connect self to CM-Arbiter network
+	.then(() => {
+		return conman.getOwnContainer();
+	})
+	.then((containerManagerContainer) => {
+		return conman.connectToCMArbiterNet(containerManagerContainer);
+	})
+
 	.then(() => {
 		if(DATABOX_DEV) {
 			const devSeedScript = './updateLocalRegistry.sh';
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
-				script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" databox.registry:5000/"+img+" && docker push databox.registry:5000/"+img+"\n";
+				script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" "+ Config.registryUrl +"/"+img+" && docker push "+ Config.registryUrl +"/"+img+"\n";
 			}
 			fs.writeFileSync(devSeedScript, script);
 

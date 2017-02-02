@@ -1,6 +1,15 @@
 /*jshint esversion: 6 */
 
 var Config = require('./config.json');
+//setup dev env 
+var DATABOX_DEV = process.env.DATABOX_DEV;
+if(DATABOX_DEV == 1) {
+
+	Config.registryUrl =  Config.registryUrl_dev;
+  	Config.storeUrl = Config.storeUrl_dev;
+	console.log("Using dev server::", Config);
+}
+
 var http = require('http');
 var https = require('https');
 var express = require('express');
@@ -69,8 +78,7 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				
-				databoxRequestPromise({uri:proxyURL,'method':'GET'})
+				databoxRequestPromise({uri:proxyURL})
 				.then((resolvedRequest)=>{
 					
 					return req.pipe(resolvedRequest)
@@ -81,8 +89,11 @@ module.exports = {
 							.on('error', (e) => {
 								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
 							})
-							.on('end',()=>{next();});
+							.on('end',()=>{
+								next();
+							});
 				});
+
 			} else {
 				next();
 			}
@@ -152,6 +163,7 @@ module.exports = {
 
 									if (err) {
 										//do nothing
+										console.log("[store/app/get/] ERROR::", err);
 										return;
 									}
 

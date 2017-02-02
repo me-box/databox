@@ -8,6 +8,7 @@ const macaroonCache = require('./databox-macaroon-cache.js');
 //Databox ENV vars
 //
 const DATABOX_ARBITER_ENDPOINT = process.env.DATABOX_ARBITER_ENDPOINT || "https://databox-arbiter:8080";
+const ARBITER_TOKEN   = process.env.ARBITER_TOKEN;
 
 /**
  * This module wraps the node request module https://github.com/request/request and adds:
@@ -21,8 +22,8 @@ const DATABOX_ARBITER_ENDPOINT = process.env.DATABOX_ARBITER_ENDPOINT || "https:
  */
 module.exports = function (options,callback) {
 
-  //use the databox https agent
-  options.agent = httpsAgent;
+  // TODO handle case where options is a string e.g https://www.some-url.com
+
 
   //
   // Workout the host and path of the request
@@ -30,13 +31,32 @@ module.exports = function (options,callback) {
   var urlObject = url.parse(options.uri);
   var path = urlObject.pathname;
   var host = urlObject.hostname;
-  
+  var protocol = urlObject.protocol;
+
   //request to arbiter do not need a macaroon but do need the ARBITER_TOKEN
   var isRequestToArbiter = DATABOX_ARBITER_ENDPOINT.indexOf(host) !== -1;
+
+  //request to an external site or dev component 
+  var isExternalRequest = host.indexOf('.') !== -1;
+
+
+  if(protocol == "https:") {
+     //use the databox https agent
+     options.agent = httpsAgent;
+  }
+
   if(isRequestToArbiter) {
       options.headers = {'X-Api-Key': ARBITER_TOKEN};
       //do the request and call back when done
-      console.log("[databox-request] " + options.uri);
+      console.log("[databox-request] RequestToArbiter " + options.uri);
+      return request(options,callback);
+  } else if (isExternalRequest) {
+      //
+      // we don't need a macaroon for an external request
+      //
+      // TODO::EXTERNAL REQUEST SHOULD BE ROOTED THROUGH THE DATABOX WHITELISTING PROXY THING (when its been written!!)
+      options.headers = {};
+      console.log("[databox-request] ExternalRequest " + options.uri);
       return request(options,callback);
   } else {
       //
@@ -61,7 +81,5 @@ module.exports = function (options,callback) {
               return;
           }
       });
-      
   }
-
 };

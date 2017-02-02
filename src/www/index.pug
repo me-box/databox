@@ -39,6 +39,8 @@ html
 			div.mdl-layout__tab-bar.mdl-js-ripple-effect
 				a.mdl-layout__tab.is-active(href="#apps")
 					| Apps
+				a.mdl-layout__tab(href="#stores")
+					| Stores
 				a.mdl-layout__tab(href="#drivers")
 					| Drivers
 				a.mdl-layout__tab(href="#system")
@@ -47,6 +49,8 @@ html
 			section.mdl-layout__tab-panel.is-active(id="apps")
 				div.mdl-typography--text-center
 					div.mdl-spinner.mdl-js-spinner.is-active
+			section.mdl-layout__tab-panel(id="stores")
+				div.mdl-typography--text-center
 			section.mdl-layout__tab-panel(id="drivers")
 				div.mdl-typography--text-center
 					div.mdl-spinner.mdl-js-spinner.is-active(if="{!loaded}")
@@ -82,9 +86,15 @@ html
 					}),
 					icons: icons
 				}));
+				$('#stores').html(template({
+					apps: appList.filter(function (app) {
+						return app.type === 'store';
+					}),
+					icons: icons
+				}));
 				$('#system').html(template({
 					apps: appList.filter(function (app) {
-						return 'type' in app && app.type !== 'app' && app.type !== 'driver';
+						return 'type' in app && app.type !== 'app' && app.type !== 'driver' && app.type !== 'store';
 					}),
 					icons: icons
 				}));
