@@ -16,6 +16,7 @@ docker create \
 	-v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`:/cm \
         --name databox-cm \
+	--label databox.type=container-manager \
         -e "DATABOX_DEV=1" \
 	-p 8989:8989 \
         -t mhart/alpine-node npm --prefix /cm start

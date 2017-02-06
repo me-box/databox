@@ -1,6 +1,9 @@
 -
 	function getSensors(type) {
-		if (type == null) {
+		if (sensors == null) {
+			return [];
+		}
+		else if (type == null) {
 			return sensors;
 		}
 		else {
@@ -40,8 +43,8 @@ div
 				= manifest.homepage
 	if 'packages' in manifest
 		div.mdl-grid
-			each pack in manifest.packages
-				div.mdl-cell.mdl-cell--4-col.package(onclick='togglePackage("' + pack.id + '")', class=(pack.required || pack.enabled) ? '' : 'transparent')
+			each pack, index in manifest.packages
+				div.mdl-cell.mdl-cell--4-col.package(onclick='togglePackage(' + index + ')', class=(pack.required || pack.enabled) ? '' : 'transparent')
 					div.dark(style="display: flex; align-items: center")
 						div.mdl-typography--title.fill.padded
 							= pack.name
@@ -56,9 +59,10 @@ div
 						| in exchange for
 					div.dark.padded
 						= pack.risks
-						each datasource in pack.datasources
-							div
-								= 'Access to ' + getDatasource(datasource).type
+						if 'datasources' in pack
+							each datasource in pack.datasources
+								div
+									= 'Access to ' + getDatasource(datasource).type
 					if pack.required
 						div.mdl-color--red-700.mdl-typography--text-center.padded
 							| Required
@@ -84,16 +88,12 @@ div
 							span.mdl-list__item-sub-title
 								= datasource.sensor || "Unbound"
 						ul.mdl-menu.mdl-menu--bottom-left.mdl-js-menu.mdl-js-ripple-effect(for='datasource_' + datasource.clientid)
-							if sensors === null
-								li.mdl-menu__item(disabled)
-									| No sensors found
-							else if getSensors(datasource.type).length === 0
-								li.mdl-menu__item(disabled)
-									| No sensors found
+							each sensor in getSensors(datasource.type)
+								li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '",' + sensor.index + ')')
+									= sensor.description + ', ' + sensor.location
 							else
-								each sensor in getSensors(datasource.type)
-									li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '",' + sensor.index + ')')
-										= sensor.type + ', ' + sensor.location
+								li.mdl-menu__item(disabled)
+									| No sensors found
 
 	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="installApp()", disabled=!isValid())
 		| Install

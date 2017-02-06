@@ -29,59 +29,59 @@ html
 		script.
 			var manifest = null;
 			var sensors = null;
+			var mappings = {
+				"urn:X-databox:rels:hasDescription": "description",
+				"urn:X-databox:rels:hasType": "type",
+				"urn:X-databox:rels:hasLocation": "location",
+				"urn:X-databox:rels:hasDatasourceid": "id"
+			}
 
 			$.post("/store/app/get/", {'name': '#{appname}'}, function (data) {
 				manifest = data.manifest;
-				if ('packages' in manifest && manifest.packages.length == 1) {
+				if ('packages' in manifest && manifest.packages.length > 0) {
 					manifest.packages[0].enabled = true;
 				}
+				if('datasources' in manifest && manifest.datasources.length > 0) {
+					$.get("/databox-arbiter/cat", function (data) {
+						if ('items' in data) {
+							for (var item of data.items) {
+								var link = document.createElement("a");
+								link.href = item.href;
+								openCatalogue("/" + link.hostname + "/cat")
+							}
+						}
+					});
+				}
+
 				update();
 			});
-			$.when(
-					$.get("/databox-directory/api/datastore"),
-					$.get("/databox-directory/api/sensor"),
-					$.get("/databox-directory/api/sensor_type"),
-					$.get("/databox-directory/api/actuator"),
-					$.get("/databox-directory/api/actuator_type")
-			).done(function (datastores, sensorList, sensorTypes, actuatorList, actuatorTypes) {
-				var combined = [];
-				var index = 0;
-				for (var sensor of sensorList[0]) {
-					for (var datastore of datastores[0]) {
-						if (sensor.datastore_id === datastore.id) {
-							sensor.endpoint = datastore.hostname + datastore.api_url;
-						}
-					}
 
-					for (var sensorType of sensorTypes[0]) {
-						if (sensor.sensor_type_id === sensorType.id) {
-							sensor.type = sensorType.description;
+			function openCatalogue(url) {
+				$.get(url, function (data) {
+					if ('items' in data) {
+						for (var item of data.items) {
+							var sensor = {};
+							sensor.endpoint = url;
+							if ('item-metadata' in item) {
+								for (var metadata of item['item-metadata']) {
+									if (metadata.rel in mappings) {
+										var mapped = mappings[metadata.rel];
+										sensor[mapped] = metadata.val;
+									}
+								}
+							}
+							console.log(sensor);
+							if (sensors == null) {
+								sensors = [sensor];
+							}
+							else {
+								sensors.push(sensor);
+							}
+							update();
 						}
 					}
-					sensor.index = index;
-					combined.push(sensor);
-					index ++;
-				}
-				for(var actuator of actuatorList[0]) {
-					for (var controller of datastores[0]) {
-						if (actuator.controller_id === controller.id) {
-							actuator.endpoint = controller.hostname + controller.api_url;
-						}
-					}
-
-					for (var actuatorType of actuatorTypes[0]) {
-						actuator.sensor_type_id = actuator.actuator_type_id;
-						if (actuator.actuator_type_id === actuatorType.id) {
-							actuator.type = actuatorType.description;
-						}
-					}
-					actuator.index = index;
-					combined.push(actuator);
-					index ++;
-				}
-				sensors = combined;
-				update();
-			});
+				});
+			}
 
 			function update() {
 				if (manifest != null) {
@@ -110,14 +110,10 @@ html
 				return true;
 			}
 
-			function togglePackage(id) {
-				for (pack of manifest.packages) {
-					if (id === pack.id) {
-						pack.enabled = !pack.enabled;
-						update();
-						return true;
-					}
-				}
+			function togglePackage(index) {
+				var pack = manifest.packages[index];
+				pack.enabled = !pack.enabled;
+				update();
 				return true;
 			}
 
