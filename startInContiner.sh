@@ -1,11 +1,20 @@
 #!/bin/bash
 
 docker kill databox-cm
+docker kill  databox-resolver
 docker rm databox-cm
+docker rm databox-resolver
+
+
+docker run -d --name databox-resolver \
+	 --hostname resolvable  \
+	 -v /var/run/docker.sock:/tmp/docker.sock \
+	 -v /etc/resolv.conf:/tmp/resolv.conf \
+	 mgood/resolvable
 
 docker create \
 	-v /var/run/docker.sock:/var/run/docker.sock \
-        -v /home/tosh/databox/databox-container-manager:/cm \
+        -v `pwd`:/cm \
         --name databox-cm \
         -e "DATABOX_DEV=1" \
 	-p 8989:8989 \

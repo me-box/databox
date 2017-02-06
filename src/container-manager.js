@@ -251,6 +251,7 @@ exports.launchLocalAppStore = function() {
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
@@ -292,6 +293,7 @@ exports.launchLocalRegistry = function() {
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.localRegistryImage + ":latest",
 						'PublishAllPorts': true,
@@ -311,8 +313,8 @@ exports.launchLocalRegistry = function() {
 				return startContainer(Reg);
 			})
 			.then(() => {
-				console.log("waiting for local register ....");
-				setTimeout(resolve,2000);
+				console.log("waiting for local registry ....");
+				setTimeout(resolve,5000);
 			})
 			.catch((error)=>{
 				console.log("[launchLocalRegistry]",error);
@@ -343,6 +345,7 @@ exports.launchArbiter = function () {
 				arbiterKey = keysArray[1];
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,

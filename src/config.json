@@ -1,4 +1,3 @@
-
 {
 	"registryUrl": "registry.iotdatabox.com",
   	"storeUrl": "https://store.iotdatabox.com",
@@ -8,7 +7,7 @@
 	"localRegistryName":"databox-local-registry",
 	"localRegistryImage":"toshdatabox/databox-local-registry",
 	"localAppStoreName":"databox-app-server",
-	"localRegistrySeedImages": ["databox-arbiter","databox-app-server","databox-store-blob","databox-driver-twitter-stream","databox-app-twitter-sentiment"],
+	"localRegistrySeedImages": ["databox-arbiter","databox-logstore","databox-app-server","databox-store-blob","databox-driver-twitter-stream","databox-app-twitter-sentiment"],
 	"localAppStoreSeedManifests": [
 									"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/Hypercat/databox-manifest.json",
 									"https://raw.githubusercontent.com/me-box/databox-store-blob/Hypercat/databox-manifest.json",

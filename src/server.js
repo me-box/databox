@@ -19,7 +19,7 @@ var app = express();
 // It it enables the  container manager UI to proxy over https to any docker container
 // along as it knows the docker assigned port that the service is running on. 
 // N.B this effects all dns lookups by the container manager!!
-var dns = require('dns');
+/*var dns = require('dns');
 var origLookup = dns.lookup
 dns.lookup = function (domain, options, callback) {
 	origLookup(domain, options, function(err, address, family){
@@ -30,7 +30,7 @@ dns.lookup = function (domain, options, callback) {
 			callback(err, address, family);
 		}
 	});
-};
+};*/
 
 module.exports = {
 	proxies: {},
