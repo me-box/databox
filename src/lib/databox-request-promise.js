@@ -37,7 +37,7 @@ module.exports = function (options,callback) {
 
         //request to an external site or dev component 
         //TODO: Lets not hard code these!! 
-        var isExternalRequest = host.indexOf('.') !== -1 || host.indexOf("databox-local-registry") || host.indexOf("databox-app-server");
+        var isExternalRequest = host.indexOf('.') !== -1 || host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1;
         
         if(protocol == "https:") {
             //use the databox https agent
