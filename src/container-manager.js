@@ -480,9 +480,9 @@ exports.launchLogStore = function () {
 			.then((logstore) => {
 				console.log('[' + name + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: name, key: arbiterToken, type: logstore.type});
+				var update = {name: name, key: arbiterToken, type: logstore.type};
 
-				return updateArbiter({ data: update });
+				return updateArbiter(update);
 			})
 			.then((logstore) => {
 				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
@@ -770,10 +770,8 @@ let launchContainer = function (containerSLA) {
 			})
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
-
-				let update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
-
-				return updateArbiter({ data: update });
+				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
+				return updateArbiter(update);
 			})
 			.then(() => {
 				resolve(launched);
