@@ -604,7 +604,7 @@ var updateArbiter = function (data) {
 			.catch((err) => reject(err));
 	});
 };
-
+exports.updateArbiter = updateArbiter;
 
 var launchDependencies = function (containerSLA) {
 	var promises = [];

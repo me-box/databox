@@ -70,6 +70,11 @@ httpsHelper.init()
 
 		//set up the arbiter proxy
 		containerMangerUIServer.proxies[info.name] = info.name + ':' + info.port;
+
+		//register the CM for token minting
+		console.log('[databox-container-manager] Passing token to Arbiter');
+		var update = {name: 'databox-container-manager', key: info.CM_KEY, type: 'CM'};
+		return conman.updateArbiter(update);
 		
 	})
 	
