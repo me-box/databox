@@ -1,4 +1,4 @@
-var Promise = require('promise');
+/*jshint esversion: 6 */
 
 //local storage of SLA 
 var Datastore = require('nedb');

@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 var Docker = require('dockerode');
 var DockerEvents = require('docker-events');
 
@@ -6,11 +8,11 @@ var dockerEmitter = new DockerEvents({docker:docker});
 
 exports.getDockerEmitter = function () {
   return dockerEmitter;
-}
+};
 
 exports.getDocker = function () {
     return docker;
-}
+};
 
 //kill a container without updating the slastore 
 exports.kill = function (id) {

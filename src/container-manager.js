@@ -1,11 +1,10 @@
 /*jshint esversion: 6 */
 
-var Promise = require('promise');
 var Config = require('./config.json');
-var ursa = require('ursa');
 var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
+var https = require('https');
 
 var db = require('./include/container-manager-db.js');
 var dockerHelper = require('./include/container-manager-docker-helper.js');
@@ -14,44 +13,30 @@ var docker = dockerHelper.getDocker();
 
 var ip = '127.0.0.1';
 
-//setup dev env 
-if(process.env.DATABOX_DEV == 1) {
+//setup dev env
+var DATABOX_DEV = process.env.DATABOX_DEV;
+if(DATABOX_DEV == 1) {
 
 	Config.registryUrl =  Config.registryUrl_dev;
   	Config.storeUrl = Config.storeUrl_dev;
 	console.log("Using dev server::", Config);
 }
 
-//ARCH to append -amd to the end of a container name if running on arm
+//ARCH to append -arm to the end of a container name if running on arm
 var ARCH = '';
 if (process.arch == 'arm') {
 	ARCH = '-arm';
 }
 
-if(process.platform == 'darwin'){
-
-	//These are blank to prevent containers hanging. 
-	//Hardware passthrough is not yet supported on docker for mac
-	USB_PASSTHROUGH = {};
-
-	SERIAL_PASSTHROUGH = {};
-
-} else {
-
-	//These probably only work on Ubuntu
-	USB_PASSTHROUGH = {
-						PathOnHost: "/dev/bus/usb/001",
-						PathInContainer: "/dev/bus/usb/001",
-						CgroupPermissions: "mrw"
-					}
-
-	SERIAL_PASSTHROUGH = {
-							PathOnHost: "/dev/ttyACM0",
-							PathInContainer: "/dev/ttyACM0",
-							CgroupPermissions: "mrw"
-						}
-
-}
+var arbiterAgent; //An https agent that will not reject certs signed by the CM
+var httpsHelper;
+exports.setHttpsHelper = function (helper) {
+ 	httpsHelper = helper;
+	var agentOptions = {
+		ca: httpsHelper.getRootCert()
+	};
+	arbiterAgent = new https.Agent(agentOptions);
+};
 
 exports.connect = function () {
 	return new Promise((resolve, reject) => docker.ping(function (err, data) {
@@ -80,6 +65,34 @@ var listContainers = function () {
 };
 exports.listContainers = listContainers;
 
+var getOwnContainer = function () {
+	return new Promise((resolve, reject) => {
+		docker.listContainers({all: true, filters: {"label": ["databox.type=container-manager"]}},
+			(err, containers) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				containers = containers.filter((cont)=>{ return cont.State === 'running'; });
+				console.log(containers)
+				if (containers.length !== 1) {
+					reject("More than one Container Manager running!");
+					return;
+				}
+				getContainer(containers[0].Id)
+					.then((container) => resolve(container))
+					.catch((err)=>{
+						reject(err);
+					});
+			}
+		);
+	});
+};
+exports.getOwnContainer = getOwnContainer;
+
+exports.connectToCMArbiterNetwork = function (container) {
+	return dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net');
+};
 
 exports.killAll = function () {
 	return new Promise((resolve, reject) => {
@@ -87,20 +100,22 @@ exports.killAll = function () {
 			.then(containers => {
 				ids = [];
 				for (var container of containers) {
-					var name = repoTagToName(container.Image);
-					console.log('[' + name + '] Uninstalling');
-					ids.push(dockerHelper.kill(container.Id));
-					ids.push(dockerHelper.remove(container.Id));
+					if(container.Labels['databox.type'] != 'container-manager') {
+						var name = repoTagToName(container.Image);
+						console.log('[' + name + '] Uninstalling');
+						ids.push(dockerHelper.kill(container.Id));
+						ids.push(dockerHelper.remove(container.Id));
+					}
 				}
 				return Promise.all(ids);
 			})
 			.then((data) => {
-				resolve()
+				resolve();
 			})
 			.catch(err => {
-				consol.log("[killAll-2]" + err);
-				reject(err)
-			})
+				console.log("[killAll-2]" + err);
+				reject(err);
+			});
 	});
 };
 
@@ -118,7 +133,9 @@ exports.initNetworks = function () {
 			.then(networks => {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net'),
-					dockerHelper.getNetwork(networks, 'databox-app-net')
+					dockerHelper.getNetwork(networks, 'databox-app-net'),
+					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net')
 				];
 
 				return Promise.all(requiredNets)
@@ -130,30 +147,45 @@ exports.initNetworks = function () {
 					.catch(err => {
 						console.log("initNetworks::" + err);
 						reject(err);
-					})
+					});
 
 			})
 			.then((networks) => {
-				resolve(networks)
+				resolve(networks);
 			});
 	})
-		.catch(err => reject(err))
+		.catch(err => reject(err));
 };
 
-
-var pullImage = function (imageName) {
+//Pull latest image from any repo defaults to dockerIO
+var pullDockerIOImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		//Pull latest Arbiter image
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
 		console.log('[' + name + '] Pulling ' + version + ' image');
-		docker.pull(Config.registryUrl + "/" + imageName, (err, stream) => {
+		dockerImagePull(imageName, resolve,reject);
+	});
+};
+
+//Pull latest image from Config.registryUrl
+var pullImage = function (imageName) {
+	return new Promise((resolve, reject) => {
+		var parts = imageName.split(':');
+		var name = parts[0];
+		var version = parts[1];
+		console.log('[' + name + '] Pulling ' + version + ' image');
+		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
+	});
+};
+exports.pullImage = pullImage;
+
+var dockerImagePull = function (image,resolve,reject) {
+	docker.pull(image, (err, stream) => {
 			if (err) {
 				reject(err);
 				return;
 			}
-
 			stream.pipe(process.stdout);
 			docker.modem.followProgress(stream, (err, output) => {
 				if (err) {
@@ -162,23 +194,10 @@ var pullImage = function (imageName) {
 				}
 				resolve(";->");
 			});
-		})
-	});
-};
-exports.pullImage = pullImage;
-
-var keyPair = null;
-var generatingCMkeyPair = function () {
-	return new Promise((resolve, reject) => {
-		//Generating CM Key Pair
-		console.log('Generating CM key pair');
-		keyPair = ursa.generatePrivateKey(2048,65537);
-		var publicKey = keyPair.toPublicPem('base64');
-		resolve({'keyPair': keyPair, 'publicKey': publicKey});
-	});
+		});
 };
 
-var getContrainerInfo = function (container) {
+var getContainerInfo = function (container) {
 	return dockerHelper.inspectContainer(container)
 		.then((info) => {
 			var response = {
@@ -190,7 +209,8 @@ var getContrainerInfo = function (container) {
 				response.ip = info.NetworkSettings.IPAddress;
 				if ('Ports' in info.NetworkSettings) {
 					for (var portName in info.NetworkSettings.Ports) {
-						response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						//response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						response.port = portName.replace('/tcp','');
 						break;
 					}
 				}
@@ -207,12 +227,12 @@ var startContainer = function (container) {
 				reject('startContainer:: ' + err);
 				return;
 			}
-			getContrainerInfo(container)
+			getContainerInfo(container)
 			.then((info) => {
 				resolve(info);
 			})
 			.catch((err)=>{console.log(err); reject(err)});
-		})
+		});
 	});
 };
 exports.startContainer = startContainer;
@@ -226,7 +246,7 @@ exports.stopContainer = function (cont) {
 				return;
 			}
 			resolve(cont);
-		})
+		});
 	});
 };
 
@@ -248,35 +268,131 @@ exports.removeContainer = function (cont) {
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
-				})
+				});
+			});
+	});
+};
+
+exports.launchLocalAppStore = function() {
+	return new Promise((resolve, reject) => {
+		var name = Config.localAppStoreName + ARCH;
+		pullImage(Config.localAppStoreName + ":latest")
+		    .then(() => {
+				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('http://','').replace('8080',''));
+			})
+			.then((httpsCerts) => {
+				return dockerHelper.createContainer(
+					{
+						'hostname': name,
+						'name': name,
+						'Image': Config.registryUrl + "/" + name + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
+									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+									"LOCAL_MODE=1", //force local mode to disable login
+									"PORT=8181"
+							   ],
+						'Binds':["/tmp/databoxAppStore:/data/db"],
+						'PortBindings': {'8181/tcp': [{ HostPort: '8181' }]} //expose ports for the mac
+					}
+				);
+			})
+			.then((appStore) => {
+				return dockerHelper.connectToNetwork(appStore, 'databox-cloud-net');
+			})
+			.then((appStore) => {
+				return startContainer(appStore);
+			})
+			.then(() => {
+				console.log("waiting for local app store ....");
+				setTimeout(resolve,3000);
+			})
+			.catch((error)=>{
+				console.log("[launchLocalAppStore]",error);
+				reject(error);
+			});
+	});
+};
+
+exports.launchLocalRegistry = function() {
+	return new Promise((resolve, reject) => {
+		var name = Config.localRegistryName + ARCH;
+		pullDockerIOImage(Config.localRegistryImage + ":latest")
+		    .then(() => {
+				return httpsHelper.createClientCert(Config.registryUrl_dev.replace(':5000',''));
+			})
+			.then((httpsCerts) => {
+				return dockerHelper.createContainer(
+					{
+						'hostname': name,
+						'name': name,
+						'Image': Config.localRegistryImage + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
+									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+							   ],
+						'Binds':["/tmp/databoxregistry:/var/lib/registry"],
+						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
+					}
+				);
+			})
+			.then((Reg) => {
+				return dockerHelper.connectToNetwork(Reg, 'databox-cloud-net');
+			})
+			.then((Reg) => {
+				return startContainer(Reg);
+			})
+			.then(() => {
+				console.log("waiting for local registry ....");
+				setTimeout(resolve,5000);
+			})
+			.catch((error)=>{
+				console.log("[launchLocalRegistry]",error);
+				reject(error);
 			});
 	});
 };
 
 var arbiterName = '';
+var arbiterKey = null;
 var DATABOX_ARBITER_ENDPOINT = null;
-var DATABOX_ARBITER_PORT = 8080;
+var DATABOX_ARBITER_ENDPOINT_IP = null;
+var DATABOX_ARBITER_PORT = '8080';
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-arbiter" + ARCH;
 		arbiterName = name;
 		pullImage(name + ":latest")
 			.then(() => {
-				return generatingCMkeyPair()
+				var proms = [
+					httpsHelper.createClientCert(name),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
 			})
-			.then(keys => {
-
+			.then((keysArray) => {
+				httpsPem = keysArray[0];
+				arbiterKey = keysArray[1];
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': ["CM_PUB_KEY=" + keys['publicKey']]
+						'Env': [
+								"CM_KEY=" + arbiterKey,
+								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
+								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
+								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
+							   ],
+						'PortBindings': {'8080/tcp': [{ HostPort: DATABOX_ARBITER_PORT }]} //expose ports for the mac
 					}
 				);
 			})
 			.then((Arbiter) => {
-				return startContainer(Arbiter)
+				return startContainer(Arbiter);
 			})
 			.then((Arbiter) => {
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-driver-net');
@@ -285,15 +401,24 @@ exports.launchArbiter = function () {
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-app-net');
 			})
 			.then((Arbiter) => {
+				return dockerHelper.connectToNetwork(Arbiter, 'databox-cm-arbiter-net');
+			})
+			.then((Arbiter) => {
 				var untilActive = function (error, response, body) {
+					if(error) {
+						console.log(error);
+						console.log("Did you add " + Arbiter.name + " " + Arbiter.ip + " to your /etc/hosts file?");
+					}
+					console.log(body);
 					if (body === 'active') {
 						console.log("[databox-arbiter] Launched");
-						DATABOX_ARBITER_ENDPOINT = 'http://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT + '/api';
-						resolve({'name': Arbiter.name, port: Arbiter.port});
+						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
+						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
+						resolve({'name': Arbiter.name, 'port': Arbiter.port, 'CM_KEY': arbiterKey, });
 					}
 					else {
 						setTimeout(() => {
-							request.get("http://localhost:" + Arbiter.port + "/status", untilActive);
+							request({'url':"https://"+Arbiter.name+":" + DATABOX_ARBITER_PORT + "/status", 'method':'GET', 'agent':arbiterAgent}, untilActive);
 						}, 1000);
 						console.log("Waiting for Arbiter ....");
 					}
@@ -301,46 +426,74 @@ exports.launchArbiter = function () {
 				untilActive({});
 			})
 			.catch((err) => {
-				console.log("Error creating Arbiter");
-				reject(err)
+				if(DATABOX_DEV) {
+					console.log(
+						"\n#################### Error creating Arbiter ######################\n\n" +
+						"Have you seeded the local docker registry with the arbiter and demo images ? try running \n"+
+						"\n \t sh ./updateLocalRegistry.sh \n" +
+						"#################### Error creating Arbiter ######################\n\n"
+					);
+				}
+				reject(err);
 			});
 
 	});
 };
 
-var directoryName = null;
-var DATABOX_DIRECTORY_ENDPOINT = null;
-var DATABOX_DIRECTORY_PORT = 3000;
-exports.launchDirectory = function () {
+
+var DATABOX_LOGSTORE_ENDPOINT = null;
+var DATABOX_LOGSTORE_PORT = 8080;
+exports.launchLogStore = function () {
+
 	return new Promise((resolve, reject) => {
-		var name = "databox-directory" + ARCH;
-		directoryName = name;
+		var name = "databox-logstore" + ARCH;
 		pullImage(name + ":latest")
 			.then(() => {
+				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(name),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
+			})
+			.then((tokens) => {
+				let httpsPem = tokens[0];
+				arbiterToken = tokens[1];
 				return dockerHelper.createContainer(
 					{
 						'name': name,
-						'Image': Config.registryUrl + "/" + name + ":latest",
-						'PublishAllPorts': true
+						'Image': Config.registryUrl + '/' + name + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"ARBITER_TOKEN=" + arbiterToken,
+									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
+									"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
+									"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert
+							   ],
+						'Binds':["/tmp/databoxLogs:/database"],
 					}
 				);
 			})
-			.then((directory) => {
-				return startContainer(directory)
+			.then((logstore) => {
+				return startContainer(logstore);
 			})
-			.then((directory) => {
-				return dockerHelper.connectToNetwork(directory, 'databox-driver-net');
+			.then((logstore) => {
+				return dockerHelper.connectToNetwork(logstore, 'databox-driver-net');
 			})
-			.then((directory) => {
-				return dockerHelper.connectToNetwork(directory, 'databox-app-net');
+			.then((logstore) => {
+				console.log('[' + name + '] Passing token to Arbiter');
+
+				var update = {name: name, key: arbiterToken, type: logstore.type};
+
+				return updateArbiter(update);
 			})
-			.then((directory) => {
-				DATABOX_DIRECTORY_ENDPOINT = 'http://' + directory.ip + ':' + DATABOX_DIRECTORY_PORT + '/api';
-				resolve(directory);
+			.then((logstore) => {
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
+				resolve(logstore);
 			})
 			.catch((err) => {
-				console.log("Error creating Directory");
-				reject(err)
+				console.log("Error creating databox-logstore");
+				reject(err);
 			});
 
 	});
@@ -352,7 +505,6 @@ var DATABOX_NOTIFICATIONS_PORT = 8080;
 exports.launchNotifications = function () {
 	return new Promise((resolve, reject) => {
 		var name = "databox-notifications" + ARCH;
-		directoryName = name;
 		pullImage(name + ":latest")
 			.then(() => {
 				return dockerHelper.createContainer(
@@ -364,7 +516,7 @@ exports.launchNotifications = function () {
 				);
 			})
 			.then((notifications) => {
-				return startContainer(notifications)
+				return startContainer(notifications);
 			})
 			.then((notifications) => {
 				return dockerHelper.connectToNetwork(notifications, 'databox-driver-net');
@@ -378,7 +530,7 @@ exports.launchNotifications = function () {
 			})
 			.catch((err) => {
 				console.log("Error creating notifications");
-				reject(err)
+				reject(err);
 			});
 
 	});
@@ -394,7 +546,7 @@ var generateArbiterToken = function () {
 		crypto.randomBytes(32, function (err, buffer) {
 			if (err) reject(err);
 			var token = buffer.toString('base64');
-			resolve(token)
+			resolve(token);
 		});
 	});
 };
@@ -403,7 +555,7 @@ var configureDriver = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 			.then(resolve(container))
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
 
@@ -411,7 +563,7 @@ var configureApp = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-app-net')
 			.then(resolve(container))
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
 
@@ -419,10 +571,10 @@ var configureStore = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 		.then(()=> {
-			return dockerHelper.connectToNetwork(container, 'databox-app-net')
+			return dockerHelper.connectToNetwork(container, 'databox-app-net');
 		})
 		.then(resolve(container))
-		.catch((err) => reject(err))
+		.catch((err) => reject(err));
 	});
 };
 
@@ -430,43 +582,46 @@ var updateArbiter = function (data) {
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
-				return dockerHelper.inspectContainer(Arbiter)
+				return getContainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
-				var port = parseInt(arbiterInfo.NetworkSettings.Ports['8080/tcp'][0].HostPort);
-				request.post(
-					{
-						url: "http://localhost:" + port + "/update",
-						form: data
-					}
-					,
+				var options = {
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/upsert-container-info",
+						method:'POST',
+						form: data,
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
+					};
+				request(
+					options,
 					function (err, response, body) {
 						if (err) {
 							reject(err);
 							return;
 						}
 						resolve(JSON.parse(body));
-					}
-				)
+					});
 			})
-			.catch((err) => reject(err))
+			.catch((err) => reject(err));
 	});
 };
-
+exports.updateArbiter = updateArbiter;
 
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
-		
-		var rootContainerName = containerSLA['resource-requirements'][requiredType]; 
+
+		var rootContainerName = containerSLA['resource-requirements'][requiredType];
 		var requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
-		
+
 		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
 		promises.push(new Promise((resolve, reject) => {
 			getContainer(requiredName)
 				.then((cont) => {
-					return getContrainerInfo(cont)
+					return getContainerInfo(cont);
 				})
 				.then((info) => {
 					console.log('[' + requiredName + "] Linking to existing " + requiredType + " " + requiredName);
@@ -481,7 +636,7 @@ var launchDependencies = function (containerSLA) {
 					//installing.
 					db.getSLA(rootContainerName)
 						.then((sla) => {
-							if (sla != null) {
+							if (sla !== null) {
 								sla.localContainerName = requiredName;
 								return launchContainer(sla);
 							}
@@ -489,62 +644,60 @@ var launchDependencies = function (containerSLA) {
 								sla = {
 										name: rootContainerName,
 										localContainerName: requiredName
-									}
-								return launchContainer(sla)
+									};
+								return launchContainer(sla);
 							}
 						})
-						.then((infos)=> {
-							resolve(infos);
+						.then((info)=> {
+							resolve(info);
 						})
 						.catch((err) => {
 							//install failed Give up :-(
 							console.log("Required container could not be installed!" + err);
 							return new Promise.reject("Required container could not be installed!" + err);
-						})
-
-
-				})
+						});
+				});
 		}));
 	}
-	return new Promise.all(promises);
+	return Promise.all(promises);
 };
 
-var launchContainer = function (containerSLA) {
-	var name = repoTagToName(containerSLA.name) + ARCH;
+let launchContainer = function (containerSLA) {
+	let name = repoTagToName(containerSLA.name) + ARCH;
 
-	//set the local name of the container. Containers launched as dependencies 
+	//set the local name of the container. Containers launched as dependencies
 	//have their local name set to [rootContainerName]-[dependentContainerName]
 	if(!("localContainerName" in containerSLA)) {
 		containerSLA.localContainerName = name;
 	}
 
 	console.log('[' + name + '] Launching');
-	var arbiterToken = null;
-	var config = {
+	let arbiterToken = null;
+	let config = {
 		'name': containerSLA.localContainerName,
 		'Image': Config.registryUrl + '/' + name + ":latest",
 		'Env': [
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
-			"DATABOX_DIRECTORY_ENDPOINT=" + DATABOX_DIRECTORY_ENDPOINT,
 			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
-			"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName //TODO only expose this to stores 
+			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
 		'NetworkingConfig': {
-			'Links': [directoryName, arbiterName]
+			'Links': [arbiterName]
 		}
 	};
-	var launched = [];
+	let launched = [];
 
 	return new Promise((resolve, reject) => {
 
 		launchDependencies(containerSLA)
 			.then((dependencies) => {
-				for (var dependencyList of dependencies) {
-					for (var dependency of dependencyList) {
+				for (let dependencyList of dependencies) {
+					for (let dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
-						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'http://' + dependency.ip + ':8080/api');
+						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'https://' + dependency.name + ':8080');
 						launched.push(dependency);
 					}
 				}
@@ -552,31 +705,40 @@ var launchContainer = function (containerSLA) {
 				return pullImage(name + ":latest");
 			})
 			.then(() => {
-				console.log('[' + name + '] Generating Arbiter token');
-				return generateArbiterToken();
+				console.log('[' + containerSLA.localContainerName + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(containerSLA.localContainerName),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
 			})
-			.then((token) => {
-				arbiterToken = token;
-				config.Env.push("ARBITER_TOKEN=" + token);
+			.then((tokens) => {
+				let httpsPem = tokens[0];
+				arbiterToken = tokens[1];
+				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
+				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
+				config.Env.push("HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate);
+				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
 
 				if('volumes' in containerSLA) {
+					let binds = [];
 					console.log('Adding volumes');
-					config.Volumes = {}
-					for(var vol of containerSLA['volumes']) {
+					config.Volumes = {};
+					for(let vol of containerSLA['volumes']) {
 						config.Volumes[vol] = {};
-						binds.push(name+"-"+vol.replace('/','')+":"+vol);						
+						binds.push(name+"-"+vol.replace('/','')+":"+vol);
 					}
 					config.Binds = binds;
 				}
 
 				if ('datasources' in containerSLA) {
-					for (var datasource of containerSLA.datasources) {
-						var sensor = {
+					for (let datasource of containerSLA.datasources) {
+						let sensor = {
 							endpoint: datasource.endpoint,
 							sensor_id: datasource.sensor_id,
 						};
 						if (datasource.endpoint !== undefined) {
-							var index = datasource.endpoint.indexOf('/');
+							let index = datasource.endpoint.indexOf('/');
 							if (index != -1) {
 								sensor.hostname = sensor.endpoint.substr(0, index);
 								sensor.api_url = sensor.endpoint.substr(index);
@@ -586,24 +748,9 @@ var launchContainer = function (containerSLA) {
 					}
 				}
 
-				if ('hardware-permissions' in containerSLA) {
-					for (var permissions of containerSLA['hardware-permissions']) {
-						if (permissions == 'usb') {
-							console.log("Adding USB hardware-permissions");
-							Config.Privileged = true;
-							config.Devices = [USB_PASSTHROUGH]
-						}
-						if (permissions == 'serial') {
-							console.log("Adding serial hardware-permissions");
-							Config.Privileged = true;
-							config.Devices = [SERIAL_PASSTHROUGH]
-						}
-					}
-				}
-
 				if ('packages' in containerSLA) {
-					for (var manifestPackage of containerSLA.packages) {
-						var packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
+					for (let manifestPackage of containerSLA.packages) {
+						let packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
 						config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
 					}
 				}
@@ -625,19 +772,15 @@ var launchContainer = function (containerSLA) {
 				}
 			})
 			.then((container) => {
-				console.log('[' + name + '] Passing token to Arbiter');
-
-				var update = JSON.stringify({name: name, token: arbiterToken, type: container.type});
-
-				var sig = keyPair.hashAndSign('md5', new Buffer(update)).toString('base64');
-
-				return updateArbiter({data: update, sig});
+				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
+				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
+				return updateArbiter(update);
 			})
 			.then(() => {
 				resolve(launched);
 			})
 			.catch((err) => {
-				console.log("[" + name + "] ERROR Launcing: " + err);
+				console.log("[" + name + "] ERROR Launching: " + err);
 				reject(err);
 			});
 	});
@@ -659,13 +802,13 @@ exports.restoreContainers = function (slas) {
 			console.log("Launching Container:: " + sla.name);
 			result = result.then((info) => {
 				infos.push(info);
-				return launchContainer(sla)
+				return launchContainer(sla);
 			});
 		});
 		result = result.then((info)=> {
 			infos.push(info);
 			infos.shift(); //remove unneeded first item.
-			resolve(infos)
+			resolve(infos);
 		});
 		return result;
 	});

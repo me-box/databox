@@ -1,17 +1,51 @@
+/*jshint esversion: 6 */
+
 var Config = require('./config.json');
+//setup dev env 
+var DATABOX_DEV = process.env.DATABOX_DEV;
+if(DATABOX_DEV == 1) {
+
+	Config.registryUrl =  Config.registryUrl_dev;
+  	Config.storeUrl = Config.storeUrl_dev;
+	console.log("Using dev server::", Config);
+}
+
 var http = require('http');
+var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request');
+var databoxRequestPromise = require('./lib/databox-request-promise.js');
+var databoxAgent = require('./lib/databox-https-agent.js');
 var io = require('socket.io');
 var url = require('url');
 
 var app = express();
 
+//
+// The  container manager can't always access or resolve containers by hostname.
+// This catches any resolve errors and points them at 127.0.0.1.
+// It it enables the  container manager UI to proxy over https to any docker container
+// along as it knows the docker assigned port that the service is running on. 
+// N.B this effects all dns lookups by the container manager!!
+/*var dns = require('dns');
+var origLookup = dns.lookup
+dns.lookup = function (domain, options, callback) {
+	origLookup(domain, options, function(err, address, family){
+		if(err) {
+			console.log("[DNS Intercepted] for " + domain + " returning 127.0.0.1");
+			callback(null, '127.0.0.1', 4);
+		} else {
+			callback(err, address, family);
+		}
+	});
+};*/
+
 module.exports = {
 	proxies: {},
 	app: app,
-	launch: function (port, conman) {
+	launch: function (port, conman, httpsHelper) {
+		
 		var server = http.createServer(app);
 		var installingApps = {};
 		io = io(server, {});
@@ -36,7 +70,7 @@ module.exports = {
 				}
 				else {
 					proxyURL = url.format({
-						protocol: req.protocol,
+						protocol: 'https',
 						host: replacement,
 						pathname: req.baseUrl + req.path.substring(firstPart.length + 1),
 						query: req.query
@@ -44,24 +78,32 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				return req
-					.pipe(request(proxyURL))
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					})
-					.pipe(res)
-					.on('error', (e) => {
-						console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
-					});
+				databoxRequestPromise({uri:proxyURL})
+				.then((resolvedRequest)=>{
+					
+					return req.pipe(resolvedRequest)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.pipe(res)
+							.on('error', (e) => {
+								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
+							})
+							.on('end',()=>{
+								next();
+							});
+				});
+
+			} else {
+				next();
 			}
-			next();
 		});
 
 		// Needs to be after the proxy
 		app.use(bodyParser.urlencoded({extended: false}));
 
 		app.get('/', (req, res) => {
-			res.render('index')
+			res.render('index');
 		});
 		app.get('/install/:appname', (req, res) => {
 			res.render('install', {appname: req.params.appname})
@@ -73,6 +115,7 @@ module.exports = {
 		app.get('/list-apps', (req, res) => {
 			var names = [];
 			var result = [];
+
 			conman.listContainers()
 				.then((containers) => {
 					for (var container of containers) {
@@ -97,11 +140,15 @@ module.exports = {
 						}
 					}
 
-					request('https://' + Config.registryUrl + '/v2/_catalog', (error, response, body) => {
+
+					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
+					var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
+					request(options, (error, response, body) => {
 						if (error) {
 							res.json(error);
-							return
+							return;
 						}
+
 						var repositories = JSON.parse(body).repositories;
 						var repocount = repositories.length;
 						repositories.map((repo) => {
@@ -116,6 +163,7 @@ module.exports = {
 
 									if (err) {
 										//do nothing
+										console.log("[store/app/get/] ERROR::", err);
 										return;
 									}
 
@@ -136,7 +184,8 @@ module.exports = {
 							res.json(result);
 						}
 					});
-				});
+				})
+				.catch((err)=>{console.log(err)});
 		});
 
 		app.post('/install', (req, res) => {
@@ -150,7 +199,7 @@ module.exports = {
 					for (var container of containers) {
 
 						delete installingApps[container.name];
-						this.proxies[container.name] = 'localhost:' + container.port;
+						this.proxies[container.name] = container.name + ':' + container.port;
 					}
 
 					res.json(containers);
@@ -164,19 +213,19 @@ module.exports = {
 			//console.log("Restarting " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container) => {
-					return conman.stopContainer(container)
+					return conman.stopContainer(container);
 				})
 				.then((container) => {
-					return conman.startContainer(container)
+					return conman.startContainer(container);
 				})
 				.then((container) => {
 					console.log('[' + container.name + '] Restarted');
-					this.proxies[container.name] = 'localhost:' + container.port;
+					this.proxies[container.name] = container.name + ':' + container.port;
 				})
 				.catch((err)=> {
 					console.log(err);
 					res.json(err);
-				})
+				});
 		});
 
 
@@ -184,10 +233,10 @@ module.exports = {
 			//console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)
 				.then((container)=> {
-					return conman.stopContainer(container)
+					return conman.stopContainer(container);
 				})
 				.then((container)=> {
-					return conman.removeContainer(container)
+					return conman.removeContainer(container);
 				})
 				.then((info)=> {
 					var name = info.Name;

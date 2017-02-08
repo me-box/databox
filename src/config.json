@@ -1,8 +1,16 @@
-
 {
 	"registryUrl": "registry.iotdatabox.com",
   	"storeUrl": "https://store.iotdatabox.com",
-	"registryUrl_dev": "amar.io:5000",
-	"storeUrl_dev": "https://datashop.amar.io",
-  	"serverPort": 8080
+	"registryUrl_dev": "databox-local-registry:5000",
+	"storeUrl_dev": "http://databox-app-server:8181",
+  	"serverPort": 8989,
+	"localRegistryName":"databox-local-registry",
+	"localRegistryImage":"toshdatabox/databox-local-registry",
+	"localAppStoreName":"databox-app-server",
+	"localRegistrySeedImages": ["databox-arbiter","databox-logstore","databox-app-server","databox-store-blob","databox-driver-twitter-stream","databox-app-twitter-sentiment"],
+	"localAppStoreSeedManifests": [
+									"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/Hypercat/databox-manifest.json",
+									"https://raw.githubusercontent.com/me-box/databox-store-blob/Hypercat/databox-manifest.json",
+									"https://raw.githubusercontent.com/Toshbrown/databox-app-twitter-sentiment/master/databox-manifest.json"
+								  ]
 }

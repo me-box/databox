@@ -6,6 +6,7 @@
     "test": "./node_modules/mocha/bin/mocha",
     "build": "node-sass --output-style compressed src/www/styles/ -o src/www/styles/ && pug -cD src/www/templates/",
     "watch": "node-sass --output-style compressed -w src/www/styles/ -o src/www/styles/ |  pug -cwD src/www/templates/",
+    "sethosts": "node src/sethosts.js",
     "start": "node src/main.js",
     "killall": "docker kill $(docker ps -a -q)",
     "dockerclean": "docker kill $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi -f $(docker images -q)"
@@ -34,16 +35,19 @@
     "docker-events": "^0.0.2",
     "dockerode": "^2.3.1",
     "express": "^4.14.0",
+    "hostile": "^1.1.0",
+    "jsonfile": "^2.4.0",
     "material-design-lite": "^1.2.1",
     "mocha": "^3.1.2",
     "nedb": "^1.8.0",
-    "promise": "^7.1.1",
+    "node-forge": "^0.6.45",
     "pug": "^2.0.0-beta6",
     "request": "^2.69.0",
+    "selfsigned": "^1.8.0",
     "should": "^11.1.1",
     "socket.io": "^1.5.0",
     "supertest": "^2.0.1",
-    "ursa": "^0.9.4"
+    "modclean": ""
   },
   "devDependencies": {
     "node-sass": "^3.10.0",
