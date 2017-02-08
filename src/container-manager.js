@@ -207,7 +207,8 @@ var getContainerInfo = function (container) {
 				response.ip = info.NetworkSettings.IPAddress;
 				if ('Ports' in info.NetworkSettings) {
 					for (var portName in info.NetworkSettings.Ports) {
-						response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						//response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						response.port = portName.replace('/tcp','');
 						break;
 					}
 				}
