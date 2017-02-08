@@ -73,6 +73,8 @@ var getOwnContainer = function () {
 					reject(err);
 					return;
 				}
+				containers = containers.filter((cont)=>{ return cont.State === 'running'; });
+				console.log(containers)
 				if (containers.length !== 1) {
 					reject("More than one Container Manager running!");
 					return;
