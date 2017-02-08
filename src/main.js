@@ -27,6 +27,14 @@ httpsHelper.init()
 		return conman.initNetworks();
 	})
 
+	// Connect self to CM-Arbiter network
+	.then(() => {
+		return conman.getOwnContainer();
+	})
+	.then((containerManagerContainer) => {
+		return conman.connectToCMArbiterNetwork(containerManagerContainer);
+	})
+
 	.then(() => {
 		if(DATABOX_DEV) {
 			const devSeedScript = './updateLocalRegistry.sh';
@@ -62,6 +70,11 @@ httpsHelper.init()
 
 		//set up the arbiter proxy
 		containerMangerUIServer.proxies[info.name] = info.name + ':' + info.port;
+
+		//register the CM for token minting
+		console.log('[databox-container-manager] Passing token to Arbiter');
+		var update = {name: 'databox-container-manager', key: info.CM_KEY, type: 'CM'};
+		return conman.updateArbiter(update);
 		
 	})
 	

@@ -65,6 +65,34 @@ var listContainers = function () {
 };
 exports.listContainers = listContainers;
 
+var getOwnContainer = function () {
+	return new Promise((resolve, reject) => {
+		docker.listContainers({all: true, filters: {"label": ["databox.type=container-manager"]}},
+			(err, containers) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				containers = containers.filter((cont)=>{ return cont.State === 'running'; });
+				console.log(containers)
+				if (containers.length !== 1) {
+					reject("More than one Container Manager running!");
+					return;
+				}
+				getContainer(containers[0].Id)
+					.then((container) => resolve(container))
+					.catch((err)=>{
+						reject(err);
+					});
+			}
+		);
+	});
+};
+exports.getOwnContainer = getOwnContainer;
+
+exports.connectToCMArbiterNetwork = function (container) {
+	return dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net');
+};
 
 exports.killAll = function () {
 	return new Promise((resolve, reject) => {
@@ -72,10 +100,12 @@ exports.killAll = function () {
 			.then(containers => {
 				ids = [];
 				for (var container of containers) {
-					var name = repoTagToName(container.Image);
-					console.log('[' + name + '] Uninstalling');
-					ids.push(dockerHelper.kill(container.Id));
-					ids.push(dockerHelper.remove(container.Id));
+					if(container.Labels['databox.type'] != 'container-manager') {
+						var name = repoTagToName(container.Image);
+						console.log('[' + name + '] Uninstalling');
+						ids.push(dockerHelper.kill(container.Id));
+						ids.push(dockerHelper.remove(container.Id));
+					}
 				}
 				return Promise.all(ids);
 			})
@@ -83,7 +113,7 @@ exports.killAll = function () {
 				resolve();
 			})
 			.catch(err => {
-				consol.log("[killAll-2]" + err);
+				console.log("[killAll-2]" + err);
 				reject(err);
 			});
 	});
@@ -103,7 +133,9 @@ exports.initNetworks = function () {
 			.then(networks => {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net'),
-					dockerHelper.getNetwork(networks, 'databox-app-net')
+					dockerHelper.getNetwork(networks, 'databox-app-net'),
+					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net')
 				];
 
 				return Promise.all(requiredNets)
@@ -177,7 +209,8 @@ var getContainerInfo = function (container) {
 				response.ip = info.NetworkSettings.IPAddress;
 				if ('Ports' in info.NetworkSettings) {
 					for (var portName in info.NetworkSettings.Ports) {
-						response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						//response.port = info.NetworkSettings.Ports[portName][0].HostPort;
+						response.port = portName.replace('/tcp','');
 						break;
 					}
 				}
@@ -250,6 +283,7 @@ exports.launchLocalAppStore = function() {
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
@@ -263,6 +297,9 @@ exports.launchLocalAppStore = function() {
 						'PortBindings': {'8181/tcp': [{ HostPort: '8181' }]} //expose ports for the mac
 					}
 				);
+			})
+			.then((appStore) => {
+				return dockerHelper.connectToNetwork(appStore, 'databox-cloud-net');
 			})
 			.then((appStore) => {
 				return startContainer(appStore);
@@ -288,6 +325,7 @@ exports.launchLocalRegistry = function() {
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.localRegistryImage + ":latest",
 						'PublishAllPorts': true,
@@ -301,11 +339,14 @@ exports.launchLocalRegistry = function() {
 				);
 			})
 			.then((Reg) => {
+				return dockerHelper.connectToNetwork(Reg, 'databox-cloud-net');
+			})
+			.then((Reg) => {
 				return startContainer(Reg);
 			})
 			.then(() => {
-				console.log("waiting for local register ....");
-				setTimeout(resolve,2000);
+				console.log("waiting for local registry ....");
+				setTimeout(resolve,5000);
 			})
 			.catch((error)=>{
 				console.log("[launchLocalRegistry]",error);
@@ -336,6 +377,7 @@ exports.launchArbiter = function () {
 				arbiterKey = keysArray[1];
 				return dockerHelper.createContainer(
 					{
+						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
@@ -357,6 +399,9 @@ exports.launchArbiter = function () {
 			})
 			.then((Arbiter) => {
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-app-net');
+			})
+			.then((Arbiter) => {
+				return dockerHelper.connectToNetwork(Arbiter, 'databox-cm-arbiter-net');
 			})
 			.then((Arbiter) => {
 				var untilActive = function (error, response, body) {
@@ -438,9 +483,9 @@ exports.launchLogStore = function () {
 			.then((logstore) => {
 				console.log('[' + name + '] Passing token to Arbiter');
 
-				var update = JSON.stringify({name: name, key: arbiterToken, type: logstore.type});
+				var update = {name: name, key: arbiterToken, type: logstore.type};
 
-				return updateArbiter({ data: update });
+				return updateArbiter(update);
 			})
 			.then((logstore) => {
 				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
@@ -562,7 +607,7 @@ var updateArbiter = function (data) {
 			.catch((err) => reject(err));
 	});
 };
-
+exports.updateArbiter = updateArbiter;
 
 var launchDependencies = function (containerSLA) {
 	var promises = [];
@@ -728,10 +773,8 @@ let launchContainer = function (containerSLA) {
 			})
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
-
-				let update = JSON.stringify({name: containerSLA.localContainerName, key: arbiterToken, type: container.type});
-
-				return updateArbiter({ data: update });
+				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
+				return updateArbiter(update);
 			})
 			.then(() => {
 				resolve(launched);
