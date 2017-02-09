@@ -12,4 +12,4 @@ LABEL databox.type="container-manager"
 
 EXPOSE 8989
 
-CMD ["sh"]
+CMD ["npm", "start"]

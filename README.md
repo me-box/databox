@@ -42,7 +42,7 @@ First get the source code:
 			cd databox-container-manager  
 			npm install --production  
 
-Start the databox in dev mode with the code downloaded above:
+Build the container:
 
 			docker create \
 				-v /var/run/docker.sock:/var/run/docker.sock \
@@ -55,9 +55,13 @@ Start the databox in dev mode with the code downloaded above:
 
 				N.B you should mount ./certs and ./slaStore as volumes if you want ssl certs and launched apps to save between restarts. 
 
-to start databox run:
+Start the databox in dev:
 
-			 npm --prefix /cm start
+			docker run -it databox-cm sh
+
+			Then:
+
+			npm --prefix /cm start 
 
 In dev mode you will need to install an custom ssl cert into the docker cert store. 
 Instructions are provided on first run. You will also need to seed your local registry with the required base docker images
