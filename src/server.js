@@ -197,7 +197,8 @@ module.exports = {
 					return Promise.all(proms);
 				})
 				.then((repos)=>{
-					res.json(repos.filter((itm)=>{return itm !== null;}));
+					var retval = result.concat(repos.filter((itm)=>{return itm !== null;}));
+					res.json(retval);
 				})
 				.catch((err)=>{
 					console.log("[Error] ",err);
