@@ -142,20 +142,33 @@ module.exports = {
 
 
 					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
-					var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
-					request(options, (error, response, body) => {
-						if (error) {
-							res.json(error);
-							return;
-						}
+					if(DATABOX_DEV == 1) {
+						var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
+					} else {
+						var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET'};
+					}
 
-						var repositories = JSON.parse(body).repositories;
-						var repocount = repositories.length;
-						repositories.map((repo) => {
-							if (names.indexOf(repo) != -1) {
-								repocount--;
-							}
-							else {
+					return new Promise((resolve,reject)=>{
+						console.log("Getting catalog")
+						request(options, (error, response, body) => {
+							if (error) {
+								reject(error);
+								return;
+							}	
+							
+							resolve(JSON.parse(body).repositories);
+						});
+
+					});
+				})
+				.then((repositories)=>{
+
+					var proms = []; 
+					
+					for(var repo of repositories) {
+						if (names.indexOf(repo) === -1) {
+							proms.push(new Promise((resolve,reject)=>{
+								console.log("Getting maifest for", repo);
 								request.post({
 									'url': Config.storeUrl + '/app/get/',
 									'form': {'name': repo}
@@ -164,28 +177,36 @@ module.exports = {
 									if (err) {
 										//do nothing
 										console.log("[store/app/get/] ERROR::", err);
-										return;
+										resolve(null);
 									}
 
 									body = JSON.parse(data.body);
+									console.log(body);
 									if (typeof body.error == 'undefined' || body.error != 23) {
-										result.push({
-											name: body.manifest.name,
-											type: body.manifest['databox-type'] === undefined ? 'app' : body.manifest['databox-type'],
-											status: 'uninstalled',
-											author: body.manifest.author
-										});
+										resolve({
+													name: body.manifest.name,
+													type: body.manifest['databox-type'] === undefined ? 'app' : body.manifest['databox-type'],
+													status: 'uninstalled',
+													author: body.manifest.author
+												});
+									} else {
+										resolve(null);
 									}
-									repocount--;
 								});
-							}
-						});
-						if (repocount <= 0) {
-							res.json(result);
-						}
-					});
+							}));
+						}		
+					}
+					
+					return Promise.all(proms);
 				})
-				.catch((err)=>{console.log(err)});
+				.then((repos)=>{
+					res.json(repos.filter((itm)=>{return itm !== null;}));
+				})
+				.catch((err)=>{
+					console.log("[Error] ",err);
+					res.json(error);
+				});
+	
 		});
 
 		app.post('/install', (req, res) => {
