@@ -149,7 +149,6 @@ module.exports = {
 					}
 
 					return new Promise((resolve,reject)=>{
-						console.log("Getting catalog")
 						request(options, (error, response, body) => {
 							if (error) {
 								reject(error);
@@ -168,7 +167,6 @@ module.exports = {
 					for(var repo of repositories) {
 						if (names.indexOf(repo) === -1) {
 							proms.push(new Promise((resolve,reject)=>{
-								console.log("Getting maifest for", repo);
 								request.post({
 									'url': Config.storeUrl + '/app/get/',
 									'form': {'name': repo}
@@ -181,7 +179,6 @@ module.exports = {
 									}
 
 									body = JSON.parse(data.body);
-									console.log(body);
 									if (typeof body.error == 'undefined' || body.error != 23) {
 										resolve({
 													name: body.manifest.name,
