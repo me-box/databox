@@ -152,9 +152,9 @@ exports.initNetworks = function () {
 			})
 			.then((networks) => {
 				resolve(networks);
-			});
-	})
-		.catch(err => reject(err));
+			})
+			.catch((err) => {reject(err)});
+	});
 };
 
 //Pull latest image from any repo defaults to dockerIO
