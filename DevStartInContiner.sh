@@ -10,7 +10,7 @@ docker create \
 	--label databox.type=container-manager \
         -e "DATABOX_DEV=1" \
 	-p 8989:8989 \
-        -t node:alpine npm --prefix /cm start
+        -t node:latest npm --prefix /cm start
 
 docker network connect databox-cloud-net databox-cm
 docker network connect databox-app-net databox-cm
