@@ -26,7 +26,7 @@ Once Its started point a web browser at 127.0.0.1:8989 and have fun. This is dat
 
 ## Development
 
-To develop for the databox platform. It may be necessary to run the platform in dev mode. This will enable a local app store and image repository to be run in containers on your machine. In this mode it is possible to build and replace any part of the platform.
+To develop for the Databox platform, it may be necessary to run the platform in dev mode. This will enable a local app store and image repository to be run in containers on your machine. In this mode it is possible to build and replace any part of the platform.
 
 First get the clone this repository:
 
