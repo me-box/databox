@@ -16,9 +16,8 @@ var ip = '127.0.0.1';
 //setup dev env
 var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
-
-	Config.registryUrl =  Config.registryUrl_dev;
-  	Config.storeUrl = Config.storeUrl_dev;
+	Config.registryUrl = Config.registryUrl_dev;
+	Config.storeUrl = Config.storeUrl_dev;
 	console.log("Using dev server::", Config);
 }
 
