@@ -106,6 +106,30 @@ var createClientCert =  function (commonName) {
     // Set the issuer to the parent key
     clientcert.setIssuer(attrs);
 
+    clientcert.setExtensions([{
+        name: 'basicConstraints',
+        cA: true
+    }, {
+        name: 'keyUsage',
+        keyCertSign: true,
+        digitalSignature: true,
+        nonRepudiation: true,
+        keyEncipherment: true,
+        dataEncipherment: true
+    }, {
+        name: 'subjectAltName',
+        altNames: [
+            {
+                type: 2, // DNS name
+                value: commonName
+            },
+            {
+                type: 2, // DNS name
+                value: 'localhost'
+            }
+        ]
+    }]);
+
     clientcert.publicKey = clientkeys.publicKey;
 
     // Sign client cert with root cert
