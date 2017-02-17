@@ -143,7 +143,7 @@ module.exports = {
 
 					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
 					if(DATABOX_DEV == 1) {
-						var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
+						var options = {'url':"https://" + Config.localRegistryName + ":5000/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
 					} else {
 						var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET'};
 					}
@@ -167,10 +167,14 @@ module.exports = {
 					for(var repo of repositories) {
 						if (names.indexOf(repo) === -1) {
 							proms.push(new Promise((resolve,reject)=>{
-								request.post({
-									'url': Config.storeUrl + '/app/get/',
-									'form': {'name': repo}
-								}, (err, data) => {
+
+								if(DATABOX_DEV == 1) {
+									var options = {'url':"http://" + Config.localAppStoreName+ ":8181" + '/app/get/', 'method':'GET', 'form': {'name': repo}};
+								} else {
+									var options = {'url':Config.storeUrl + '/app/get/', 'method':'GET', 'form': {'name': repo}};
+								}
+
+								request.post(options, (err, data) => {
 
 									if (err) {
 										//do nothing
@@ -202,7 +206,7 @@ module.exports = {
 				})
 				.catch((err)=>{
 					console.log("[Error] ",err);
-					res.json(error);
+					res.json(err);
 				});
 	
 		});

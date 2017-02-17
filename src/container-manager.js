@@ -277,7 +277,7 @@ exports.launchLocalAppStore = function() {
 		var name = Config.localAppStoreName + ARCH;
 		pullImage(Config.localAppStoreName + ":latest")
 		    .then(() => {
-				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('http://','').replace('8080',''));
+				return httpsHelper.createClientCert(Config.localAppStoreName);
 			})
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
@@ -319,7 +319,7 @@ exports.launchLocalRegistry = function() {
 		var name = Config.localRegistryName + ARCH;
 		pullDockerIOImage(Config.localRegistryImage + ":latest")
 		    .then(() => {
-				return httpsHelper.createClientCert(Config.registryUrl_dev.replace(':5000',''));
+				return httpsHelper.createClientCert(Config.localRegistryName);
 			})
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
