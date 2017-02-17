@@ -37,7 +37,9 @@ module.exports = function (options,callback) {
 
         //request to an external site or dev component 
         //TODO: Lets not hard code these!! 
-        var isExternalRequest = host.indexOf('.') !== -1 || host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1;
+        var isExternalRequest = host.indexOf('.') !== -1;
+        
+        var isExternalDevRequest = host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1;
         
         if(protocol == "https:") {
             //use the databox https agent
@@ -49,12 +51,19 @@ module.exports = function (options,callback) {
             //do the request and call back when done
             console.log("[databox-request] " + options.uri);
             resolve(request(options,callback));
+        
+        } else if (isExternalDevRequest) {
+            //DEV mode external request.
+            options.headers = {};
+            console.log("[databox-request] ExternalRequest " + options.uri);
+            resolve(request(options,callback));
         } else if (isExternalRequest) {
             //
             // we don't need a macaroon for an external request
             //
             // TODO::EXTERNAL REQUEST SHOULD BE ROOTED THROUGH THE DATABOX WHITELISTING PROXY THING (when its been written!!)
             options.headers = {};
+            options.agent = undefined; //external request use the default agent.
             console.log("[databox-request] ExternalRequest " + options.uri);
             resolve(request(options,callback));
         } else {

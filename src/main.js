@@ -93,7 +93,7 @@ httpsHelper.init()
 	.then(()=>{
 		if(DATABOX_DEV) {
 			var req = request.defaults({jar: true});
-			req.get(Config.storeUrl_dev,(error,response,body)=>{
+			req.get("http://" + Config.localAppStoreName + ":8181/",(error,response,body)=>{
 				if(error) {
 					console.log("[seeding manifest] get app store root to log in", error);
 				}
@@ -104,7 +104,7 @@ httpsHelper.init()
 								console.log("[seeding manifest] Failed to get manifest from" + url, error);
 							}
 							req.post({
-								uri: Config.storeUrl_dev + "/app/post",
+								uri: "http://" + Config.localAppStoreName + ":8181/app/post",
 								method: "POST",
 								form: {"manifest": body}
 							}, (error,response,body) => {

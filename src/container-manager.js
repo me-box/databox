@@ -16,9 +16,8 @@ var ip = '127.0.0.1';
 //setup dev env
 var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
-
-	Config.registryUrl =  Config.registryUrl_dev;
-  	Config.storeUrl = Config.storeUrl_dev;
+	Config.registryUrl = Config.registryUrl_dev;
+	Config.storeUrl = Config.storeUrl_dev;
 	console.log("Using dev server::", Config);
 }
 
@@ -152,9 +151,9 @@ exports.initNetworks = function () {
 			})
 			.then((networks) => {
 				resolve(networks);
-			});
-	})
-		.catch(err => reject(err));
+			})
+			.catch((err) => {reject(err)});
+	});
 };
 
 //Pull latest image from any repo defaults to dockerIO
@@ -278,7 +277,7 @@ exports.launchLocalAppStore = function() {
 		var name = Config.localAppStoreName + ARCH;
 		pullImage(Config.localAppStoreName + ":latest")
 		    .then(() => {
-				return httpsHelper.createClientCert(Config.storeUrl_dev.replace('http://','').replace('8080',''));
+				return httpsHelper.createClientCert(Config.localAppStoreName);
 			})
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
@@ -320,7 +319,7 @@ exports.launchLocalRegistry = function() {
 		var name = Config.localRegistryName + ARCH;
 		pullDockerIOImage(Config.localRegistryImage + ":latest")
 		    .then(() => {
-				return httpsHelper.createClientCert(Config.registryUrl_dev.replace(':5000',''));
+				return httpsHelper.createClientCert(Config.localRegistryName);
 			})
 			.then((httpsCerts) => {
 				return dockerHelper.createContainer(
