@@ -39,7 +39,7 @@ module.exports = function (options,callback) {
         //TODO: Lets not hard code these!! 
         var isExternalRequest = host.indexOf('.') !== -1;
         
-        var isExternalDevRequest = host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1;
+        var isExternalDevRequest = host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1 || host.indexOf("localhost") !== -1;
         
         if(protocol == "https:") {
             //use the databox https agent

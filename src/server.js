@@ -50,7 +50,11 @@ module.exports = {
 		var installingApps = {};
 		io = io(server, {});
 
-		this.proxies['store'] = Config.storeUrl;
+		if(DATABOX_DEV == 1) {
+			this.proxies.store = "http://" + Config.localAppStoreName+ ":8181";
+		} else {
+			this.proxies.store = Config.storeUrl;
+		}
 
 		app.enable('trust proxy');
 		app.set('views', 'src/www');
