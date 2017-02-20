@@ -1,7 +1,9 @@
 #!/bin/bash
 
-docker kill databox-cm
-docker rm databox-cm
+if [ "$(docker ps -aq -f name=databox-cm)" ]; then
+    docker stop databox-cm
+    docker rm databox-cm
+fi
 
 docker run \
 	-v /var/run/docker.sock:/var/run/docker.sock \
@@ -9,7 +11,3 @@ docker run \
 	--label databox.type=container-manager \
 	-p 8989:8989 \
         -it toshdatabox/databox-cm
-
-
-
-

@@ -1,13 +1,9 @@
 #!/bin/bash
 
-docker kill databox-cm
-docker rm databox-cm
-
 if [ "$(docker ps -aq -f name=databox-cm)" ]; then
     docker stop databox-cm
     docker rm databox-cm
 fi
-
 
 docker create \
 	-v /var/run/docker.sock:/var/run/docker.sock \
