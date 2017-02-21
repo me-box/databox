@@ -41,7 +41,7 @@ httpsHelper.init()
 			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
 			var script = "";
 			for(img of Config.localRegistrySeedImages) {
-				script += "docker pull toshdatabox/"+img+" && docker tag toshdatabox/"+img+" "+ Config.registryUrl +"/"+img+" && docker push "+ Config.registryUrl +"/"+img+"\n";
+				script += "docker pull databoxsystems/"+img+" && docker tag databoxsystems/"+img+" "+ Config.registryUrl +"/"+img+" && docker push "+ Config.registryUrl +"/"+img+"\n";
 			}
 			fs.writeFileSync(devSeedScript, script);
 

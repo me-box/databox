@@ -51,7 +51,7 @@ var init = function() {
                         " You will need to add the container manager CA to the docker keychain \n"+
                         "\n"+
                         " \t Ubuntu: sudo install -m 044 -D "+devCAPath+" /etc/docker/certs.d/"+Config.registryUrl_dev+"/ca.crt \n"+
-                        " \t MAC OSX: sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "+devCAPath+"ca.crt \n"+
+                        " \t MAC OSX: sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "+devCAPath+" \n"+
                         "\n"+
                         "Then restart docker:\n"+
                         "\n \t Ubuntu: sudo service docker restart \n"+

@@ -20,7 +20,7 @@ Once docker is installed, just run the flowing to get your databox up and runnin
 		--name databox-cm \
 		--label databox.type=container-manager \
 		-p 8989:8989 \
-		-t toshdatabox/databox-cm
+		-t databoxsystems/databox-cm
 
 Once Its started point a web browser at 127.0.0.1:8989 and have fun. This is databoxes normal mode of operation an will use an external app store and image repository for apps.
 
