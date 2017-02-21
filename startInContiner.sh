@@ -8,7 +8,7 @@ docker run \
 	--name databox-cm \
 	--label databox.type=container-manager \
 	-p 8989:8989 \
-        -it toshdatabox/databox-cm
+        -it databoxsystems/databox-cm
 
 
 
