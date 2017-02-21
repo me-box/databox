@@ -406,9 +406,8 @@ exports.launchArbiter = function () {
 				var untilActive = function (error, response, body) {
 					if(error) {
 						console.log(error);
-						console.log("Did you add " + Arbiter.name + " " + Arbiter.ip + " to your /etc/hosts file?");
 					}
-					console.log(body);
+
 					if (body === 'active') {
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
