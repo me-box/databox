@@ -70,6 +70,10 @@ html
 									}
 								}
 							}
+
+							//add the full hypercat item to pass to the app
+							sensor.hypercat = item;
+
 							console.log(sensor);
 							if (sensors == null) {
 								sensors = [sensor];
@@ -101,6 +105,7 @@ html
 								datasource.endpoint = sensor.endpoint;
 								datasource.sensor_id = sensor.id;
 								datasource.sensor = sensor.description + ", " + sensor.location;
+								datasource.hypercat = sensor.hypercat;
 								update();
 								return true;
 							}

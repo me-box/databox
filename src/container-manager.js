@@ -732,18 +732,7 @@ let launchContainer = function (containerSLA) {
 
 				if ('datasources' in containerSLA) {
 					for (let datasource of containerSLA.datasources) {
-						let sensor = {
-							endpoint: datasource.endpoint,
-							sensor_id: datasource.sensor_id,
-						};
-						if (datasource.endpoint !== undefined) {
-							let index = datasource.endpoint.indexOf('/');
-							if (index != -1) {
-								sensor.hostname = sensor.endpoint.substr(0, index);
-								sensor.api_url = sensor.endpoint.substr(index);
-							}
-						}
-						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(sensor));
+						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
 					}
 				}
 
