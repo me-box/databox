@@ -7,10 +7,11 @@
 	"localRegistryName":"databox-local-registry",
 	"localRegistryImage":"databoxsystems/databox-local-registry",
 	"localAppStoreName":"databox-app-server",
-	"localRegistrySeedImages": ["databox-arbiter","databox-logstore","databox-app-server","databox-store-blob","databox-driver-twitter-stream","databox-app-twitter-sentiment"],
+	"localRegistrySeedImages": ["databox-arbiter","databox-logstore","databox-app-server","databox-store-blob","databox-driver-twitter-stream","databox-app-twitter-sentiment","databox-os-monitor-driver"],
 	"localAppStoreSeedManifests": [
 		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/Toshbrown/databox-app-twitter-sentiment/master/databox-manifest.json"
+		"https://raw.githubusercontent.com/Toshbrown/databox-app-twitter-sentiment/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json"
 	]
 }
