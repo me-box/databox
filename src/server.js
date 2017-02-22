@@ -149,7 +149,7 @@ module.exports = {
 					if(DATABOX_DEV == 1) {
 						var options = {'url':"https://" + Config.localRegistryName + ":5000/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
 					} else {
-						var options = {'url':"https://" + Config.registryUrl + "/v2/_catalog", 'method':'GET'};
+						var options = {'url':Config.registryUrl + "/v2/_catalog", 'method':'GET'};
 					}
 
 					return new Promise((resolve,reject)=>{
