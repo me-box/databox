@@ -383,8 +383,8 @@ exports.launchArbiter = function () {
 						'Env': [
 								"CM_KEY=" + arbiterKey,
 								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
-								"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
-								"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert,
+								"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
+								"HTTPS_SERVER_CERT=" +  httpsPem.clientcert,
 							   ],
 						'PortBindings': {'8080/tcp': [{ HostPort: DATABOX_ARBITER_PORT }]} //expose ports for the mac
 					}
@@ -465,8 +465,8 @@ exports.launchLogStore = function () {
 						'Env': [
 									"ARBITER_TOKEN=" + arbiterToken,
 									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
-									"HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate,
-									"HTTPS_CLIENT_CERT=" +  httpsPem.clientcert
+									"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
+									"HTTPS_SERVER_CERT=" +  httpsPem.clientcert
 							   ],
 						'Binds':["/tmp/databoxLogs:/database"],
 					}
@@ -715,8 +715,8 @@ let launchContainer = function (containerSLA) {
 				arbiterToken = tokens[1];
 				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
 				config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
-				config.Env.push("HTTPS_CLIENT_PRIVATE_KEY=" +  httpsPem.clientprivate);
-				config.Env.push("HTTPS_CLIENT_CERT=" +  httpsPem.clientcert);
+				config.Env.push("HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate);
+				config.Env.push("HTTPS_SERVER_CERT=" +  httpsPem.clientcert);
 
 				if('volumes' in containerSLA) {
 					let binds = [];
