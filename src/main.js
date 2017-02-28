@@ -87,7 +87,9 @@ httpsHelper.init()
 	})
 
 	.then(()=>{
-		return conman.launchLogStore();
+		//launch databox components 
+		var proms = [conman.launchLogStore(),conman.launchExportService()];
+		return Promise.all(proms);
 	})
 	
 	.then(()=>{

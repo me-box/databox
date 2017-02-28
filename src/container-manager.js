@@ -445,6 +445,7 @@ exports.launchLogStore = function () {
 
 	return new Promise((resolve, reject) => {
 		var name = "databox-logstore" + ARCH;
+		var arbiterToken = "";
 		pullImage(name + ":latest")
 			.then(() => {
 				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
@@ -491,6 +492,64 @@ exports.launchLogStore = function () {
 			})
 			.catch((err) => {
 				console.log("Error creating databox-logstore");
+				reject(err);
+			});
+
+	});
+};
+
+var DATABOX_EXPORT_SERVICE_ENDPOINT = null;
+var DATABOX_EXPORT_SERVICE_PORT = 8080;
+exports.launchExportService = function () {
+
+	return new Promise((resolve, reject) => {
+		var name = "databox-export-service" + ARCH;
+		var arbiterToken = "";
+		pullImage(name + ":latest")
+			.then(() => {
+				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
+				proms = [
+					httpsHelper.createClientCert(name),
+					generateArbiterToken()
+				];
+				return Promise.all(proms);
+			})
+			.then((tokens) => {
+				let httpsPem = tokens[0];
+				arbiterToken = tokens[1];
+				return dockerHelper.createContainer(
+					{
+						'name': name,
+						'Image': Config.registryUrl + '/' + name + ":latest",
+						'PublishAllPorts': true,
+						'Env': [
+									"ARBITER_TOKEN=" + arbiterToken,
+									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
+									"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
+									"HTTPS_SERVER_CERT=" +  httpsPem.clientcert
+							   ]
+					}
+				);
+			})
+			.then((exportService) => {
+				return startContainer(exportService);
+			})
+			.then((exportService) => {
+				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
+			})
+			.then((exportService) => {
+				console.log('[' + name + '] Passing token to Arbiter');
+
+				var update = {name: name, key: arbiterToken, type: exportService.type};
+
+				return updateArbiter(update);
+			})
+			.then((exportService) => {
+				DATABOX_EXPORT_SERVICE_ENDPOINT = 'https://' + name + ':' + DATABOX_EXPORT_SERVICE_PORT;
+				resolve(exportService);
+			})
+			.catch((err) => {
+				console.log("Error creating databox-export-service");
 				reject(err);
 			});
 
@@ -678,7 +737,8 @@ let launchContainer = function (containerSLA) {
 			"DATABOX_IP=" + ip,
 			"DATABOX_LOCAL_NAME=" + containerSLA.localContainerName,
 			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
-			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName //TODO only expose this to stores 
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName, //TODO only expose this to stores 
+			"DATABOX_EXPORT_SERVICE_ENDPOINT=" + DATABOX_EXPORT_SERVICE_ENDPOINT //TODO only expose this to apps
 			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
