@@ -144,7 +144,6 @@ httpsHelper.init()
 		return conman.restoreContainers(slas, httpsHelper);
 	})
 	.then(infos => {
-		console.log(infos);
 		for (var containers of infos) {
 			for (var container of containers) {
 				containerMangerUIServer.proxies[container.name] = container.name+':' + container.port;

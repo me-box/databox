@@ -18,7 +18,7 @@ var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 	Config.registryUrl = Config.registryUrl_dev;
 	Config.storeUrl = Config.storeUrl_dev;
-	console.log("Using dev server::", Config);
+	console.log("Using dev server::", Config.registryUrl);
 }
 
 //ARCH to append -arm to the end of a container name if running on arm
@@ -127,7 +127,6 @@ exports.getContainer = getContainer;
 
 exports.initNetworks = function () {
 	return new Promise((resolve, reject) => {
-		console.log('Creating Networks');
 		dockerHelper.listNetworks()
 			.then(networks => {
 				var requiredNets = [
@@ -139,8 +138,6 @@ exports.initNetworks = function () {
 
 				return Promise.all(requiredNets)
 					.then((networks) => {
-						console.log("Networks already exist");
-						//console.log(networks);
 						resolve(networks);
 					})
 					.catch(err => {
