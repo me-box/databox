@@ -29,7 +29,7 @@ exports.getAllSLAs = function () {
 
 exports.putSLA = function (name, sla) {
 	sla['SLAName'] = name;
-	return new Promise((resolve, reject) => db.insert(sla, function (err, doc) {
+	return new Promise((resolve, reject) => db.update({SLAName: name}, sla,  { upsert: true }, function (err, doc) {
 		if (err) {
 			reject("SLA could not be saved" + err);
 			return;
