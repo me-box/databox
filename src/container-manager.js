@@ -477,13 +477,14 @@ exports.launchLogStore = function () {
 				return startContainer(logstore);
 			})
 			.then((logstore) => {
-				return dockerHelper.connectToNetwork(logstore, 'databox-driver-net');
+				var proms =  [ dockerHelper.connectToNetwork(logstore, 'databox-driver-net'),
+							   dockerHelper.connectToNetwork(logstore, 'databox-app-net')];
+				return Promise.all(proms);
 			})
-			.then((logstore) => {
+			.then((logstores) => {
 				console.log('[' + name + '] Passing token to Arbiter');
-
+				var logstore = logstores[0];
 				var update = {name: name, key: arbiterToken, type: logstore.type};
-
 				return updateArbiter(update);
 			})
 			.then((logstore) => {
