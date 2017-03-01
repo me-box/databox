@@ -19,7 +19,6 @@ exports.kill = function (id) {
   return new Promise( (resolve, reject) =>  {
     container = docker.getContainer(id);
     container.stop({},(err,data) => {
-        console.log("killed " + id + "!");
         resolve();
       });
     });
@@ -35,7 +34,6 @@ exports.remove = function (id) {
         reject(err);
         return;
       }
-      console.log("removed " + id + "!");
       resolve();
     });
   });
@@ -73,7 +71,7 @@ var getNetwork = function(networks, name) {
             return;
           }
       }
-      console.log("Network " + name + " not found!");
+
       docker.createNetwork({'Name': name, 'Driver': 'bridge'}, (err,data) => {
         if(err) reject("[getNetwork] Can't create networks")
         resolve(data);
@@ -85,13 +83,13 @@ exports.getNetwork = getNetwork;
 
 exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
-    console.log('[' + container.name + '] Conecting to ' + networkName);
+    console.log('[' + container.name + '] Connecting to ' + networkName);
     listNetworks({})
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {
         net.connect({'Container':container.id}, (err,data) => {
           if(err) {
-            reject("Can't conect to network" + err);
+            reject("Can't connect to network" + err);
             return;
           }
           resolve(container);
