@@ -264,6 +264,8 @@ exports.removeContainer = function (cont) {
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
+
+					revokeContainerPermissions({'name': name});
 				});
 			});
 	});
@@ -688,6 +690,36 @@ var updateContainerPermissions = function (permissions) {
 							return;
 						}
 						resolve(JSON.parse(body));
+					});
+			})
+			.catch((err) => reject(err));
+	});
+};
+
+var revokeContainerPermissions = function (permissions) {
+	return new Promise((resolve, reject) => {
+		getContainer(arbiterName)
+			.then((Arbiter) => {
+				return getContainerInfo(Arbiter);
+			})
+			.then((arbiterInfo) => {
+				var options = {
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/delete-container-info",
+						method:'POST',
+						form: permissions,
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
+					};
+				request(
+					options,
+					function (err, response, body) {
+						if (err) {
+							reject(err);
+							return;
+						}
+						resolve();
 					});
 			})
 			.catch((err) => reject(err));
