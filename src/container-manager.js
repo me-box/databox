@@ -664,6 +664,36 @@ var updateArbiter = function (data) {
 };
 exports.updateArbiter = updateArbiter;
 
+var updateContainerPermissions = function (permissions) {
+	return new Promise((resolve, reject) => {
+		getContainer(arbiterName)
+			.then((Arbiter) => {
+				return getContainerInfo(Arbiter);
+			})
+			.then((arbiterInfo) => {
+				var options = {
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/grant-container-permissions",
+						method:'POST',
+						form: permissions,
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
+					};
+				request(
+					options,
+					function (err, response, body) {
+						if (err) {
+							reject(err);
+							return;
+						}
+						resolve(JSON.parse(body));
+					});
+			})
+			.catch((err) => reject(err));
+	});
+};
+
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
@@ -822,6 +852,20 @@ let launchContainer = function (containerSLA) {
 				return updateArbiter(update);
 			})
 			.then(() => {
+				//grant write access to requested stores
+				var dependentStores = launched.filter((itm)=>{ return itm.type == 'store'; });
+				for(store of dependentStores) {
+					console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
+					updateContainerPermissions({
+						name: containerSLA.localContainerName,
+						route: {target: store.name, path: '/*', method:'POST'}
+						//caveats: ""
+					})
+					.catch((err)=>{
+						console.log("[ERROR adding permissions for " + name + "] " + err);
+						reject(err);
+					});
+				}
 				resolve(launched);
 			})
 			.catch((err) => {
