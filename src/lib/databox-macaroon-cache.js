@@ -15,25 +15,27 @@ var macaroonCache = {};
  * @return {Promise} A promise that resolves with a shared secret gotten from the arbiter
  * 
  */
-function getMacaroon(host) {
+function getMacaroon(host,path) {
     return new Promise((resolve, reject) => {
 
         if(macaroonCache[host]) {
             console.log("[macaroonCache] returning cashed macaroon");
             //TODO check if the macaroon has expired? for now if a request fails we invalidate the macaroon
-            resolve(macaroonCache[host]);
+            resolve(macaroonCache[host+path]);
             return;
         }
 
         //
         // Macroon has not been requested. Get a new one.
         //
-        console.log("[macaroonCache] cashed macaroon not found for " + host + " requesting one");
+        console.log("[macaroonCache] cashed macaroon not found for " + host+path + " requesting one");
         var opts = {
                 uri: DATABOX_ARBITER_ENDPOINT+'/token',
                 method: 'POST',
                 form: {
                             target: host,
+                            path: path,
+                            method: 'GET',
                         },
                 headers: {'X-Api-Key': ARBITER_TOKEN},
                 agent: httpsAgent
@@ -50,9 +52,9 @@ function getMacaroon(host) {
                 reject(body);
                 return;
             }
-            macaroonCache[host] = body;
+            macaroonCache[host+path] = body;
             console.log("[macaroonCache] returning new macaroon");
-            resolve(macaroonCache[host]);
+            resolve(macaroonCache[host+path]);
         });
     });
 }
