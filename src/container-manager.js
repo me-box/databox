@@ -848,10 +848,18 @@ let launchContainer = function (containerSLA) {
 					}
 					config.Binds = binds;
 				}
-
+				proms = [];
 				if ('datasources' in containerSLA) {
 					for (let datasource of containerSLA.datasources) {
 						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
+						if (datasource.enabled) {
+ 							// Grant read assess to enabled datasources
+							 proms.push(updateContainerPermissions({
+										name: containerSLA.name,
+										route: {target:containerSLA.host, path: containerSLA.api_url, method:'GET'}
+										//caveats: ""
+									}));
+ 						}
 					}
 				}
 
@@ -862,11 +870,12 @@ let launchContainer = function (containerSLA) {
 					}
 				}
 
-				// Create Container
-				return dockerHelper.createContainer(config);
+				// TODO: Separate from other promises
+ 				proms.push(dockerHelper.createContainer(config));
+ 				return Promise.all(proms);
 			})
-			.then((container) => {
-				return startContainer(container);
+			.then((results) => {
+				return startContainer(results[results.length - 1]);
 			})
 			.then((container) => {
 				launched.push(container);
