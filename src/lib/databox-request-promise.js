@@ -70,7 +70,7 @@ module.exports = function (options,callback) {
             //
             // we are talking to another databox component so we need a macaroon!
             //
-            macaroonCache.getMacaroon(host)
+            macaroonCache.getMacaroon(host,path)
             .then((macaroon)=>{
                 //do the request and call back when done
                 options.headers = {'X-Api-Key': macaroon};

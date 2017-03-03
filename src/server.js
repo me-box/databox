@@ -22,25 +22,6 @@ var url = require('url');
 
 var app = express();
 
-//
-// The  container manager can't always access or resolve containers by hostname.
-// This catches any resolve errors and points them at 127.0.0.1.
-// It it enables the  container manager UI to proxy over https to any docker container
-// along as it knows the docker assigned port that the service is running on. 
-// N.B this effects all dns lookups by the container manager!!
-/*var dns = require('dns');
-var origLookup = dns.lookup
-dns.lookup = function (domain, options, callback) {
-	origLookup(domain, options, function(err, address, family){
-		if(err) {
-			console.log("[DNS Intercepted] for " + domain + " returning 127.0.0.1");
-			callback(null, '127.0.0.1', 4);
-		} else {
-			callback(err, address, family);
-		}
-	});
-};*/
-
 module.exports = {
 	proxies: {},
 	app: app,

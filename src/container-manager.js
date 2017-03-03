@@ -264,6 +264,8 @@ exports.removeContainer = function (cont) {
 					db.deleteSLA(name, false)
 						.then(resolve(info))
 						.catch((err) => reject(err));
+
+					revokeContainerPermissions({'name': name});
 				});
 			});
 	});
@@ -437,11 +439,12 @@ exports.launchArbiter = function () {
 
 
 var DATABOX_LOGSTORE_ENDPOINT = null;
+var DATABOX_LOGSTORE_NAME = "databox-logstore";
 var DATABOX_LOGSTORE_PORT = 8080;
 exports.launchLogStore = function () {
 
 	return new Promise((resolve, reject) => {
-		var name = "databox-logstore" + ARCH;
+		var name = DATABOX_LOGSTORE_NAME + ARCH;
 		var arbiterToken = "";
 		pullImage(name + ":latest")
 			.then(() => {
@@ -485,7 +488,7 @@ exports.launchLogStore = function () {
 				return updateArbiter(update);
 			})
 			.then((logstore) => {
-				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + DATABOX_LOGSTORE_NAME + ':' + DATABOX_LOGSTORE_PORT;
 				resolve(logstore);
 			})
 			.catch((err) => {
@@ -664,6 +667,67 @@ var updateArbiter = function (data) {
 };
 exports.updateArbiter = updateArbiter;
 
+var updateContainerPermissions = function (permissions) {
+
+	return new Promise((resolve, reject) => {
+		getContainer(arbiterName)
+			.then((Arbiter) => {
+				return getContainerInfo(Arbiter);
+			})
+			.then((arbiterInfo) => {
+				var options = {
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/grant-container-permissions",
+						method:'POST',
+						form: permissions,
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
+					};
+				request(
+					options,
+					function (err, response, body) {
+						if (err) {
+							reject(err);
+							return;
+						}
+						resolve(JSON.parse(body));
+					});
+			})
+			.catch((err) => reject(err));
+	});
+};
+
+var revokeContainerPermissions = function (permissions) {
+	return new Promise((resolve, reject) => {
+		getContainer(arbiterName)
+			.then((Arbiter) => {
+				return getContainerInfo(Arbiter);
+			})
+			.then((arbiterInfo) => {
+				var options = {
+						url: DATABOX_ARBITER_ENDPOINT + "/cm/delete-container-info",
+						method:'POST',
+						form: permissions,
+						agent: arbiterAgent,
+						headers: {
+							'x-api-key': arbiterKey
+						}
+					};
+				request(
+					options,
+					function (err, response, body) {
+						if (err) {
+							reject(err);
+							return;
+						}
+						resolve();
+					});
+			})
+			.catch((err) => reject(err));
+	});
+};
+
 var launchDependencies = function (containerSLA) {
 	var promises = [];
 	for (var requiredType in containerSLA['resource-requirements']) {
@@ -786,10 +850,18 @@ let launchContainer = function (containerSLA) {
 					}
 					config.Binds = binds;
 				}
-
+				proms = [];
 				if ('datasources' in containerSLA) {
 					for (let datasource of containerSLA.datasources) {
 						config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
+						if (datasource.enabled) {
+ 							// Grant read assess to enabled datasources
+							 proms.push(updateContainerPermissions({
+										name: containerSLA.name,
+										route: {target:containerSLA.host, path: containerSLA.api_url, method:'GET'}
+										//caveats: ""
+									}));
+ 						}
 					}
 				}
 
@@ -800,11 +872,12 @@ let launchContainer = function (containerSLA) {
 					}
 				}
 
-				// Create Container
-				return dockerHelper.createContainer(config);
+				// TODO: Separate from other promises
+ 				proms.push(dockerHelper.createContainer(config));
+ 				return Promise.all(proms);
 			})
-			.then((container) => {
-				return startContainer(container);
+			.then((results) => {
+				return startContainer(results[results.length - 1]);
 			})
 			.then((container) => {
 				launched.push(container);
@@ -822,6 +895,46 @@ let launchContainer = function (containerSLA) {
 				return updateArbiter(update);
 			})
 			.then(() => {
+				//grant write access to requested stores
+				var dependentStores = launched.filter((itm)=>{ return itm.type == 'store'; });
+				for(store of dependentStores) {
+
+					if(containerSLA.localContainerName != store.name) {
+
+						console.log('[Adding read permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/status');
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/status', method:'GET'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/*', method:'POST'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + DATABOX_LOGSTORE_NAME + '/' + containerSLA.localContainerName);
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: DATABOX_LOGSTORE_NAME, path: '/' + containerSLA.localContainerName + '/*', method:'POST'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+					}
+				}
 				resolve(launched);
 			})
 			.catch((err) => {
