@@ -1,5 +1,5 @@
 {
-	"registryUrl": "docker.io/databoxsystems",
+	"registryUrl": "registry.hub.docker.com/databoxsystems",
 	"storeUrl": "https://store.iotdatabox.com",
 	"registryUrl_dev": "localhost:5000",
 	"storeUrl_dev": "http://localhost:8181",

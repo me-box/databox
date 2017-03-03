@@ -439,11 +439,12 @@ exports.launchArbiter = function () {
 
 
 var DATABOX_LOGSTORE_ENDPOINT = null;
+var DATABOX_LOGSTORE_NAME = "databox-logstore";
 var DATABOX_LOGSTORE_PORT = 8080;
 exports.launchLogStore = function () {
 
 	return new Promise((resolve, reject) => {
-		var name = "databox-logstore" + ARCH;
+		var name = DATABOX_LOGSTORE_NAME + ARCH;
 		var arbiterToken = "";
 		pullImage(name + ":latest")
 			.then(() => {
@@ -487,7 +488,7 @@ exports.launchLogStore = function () {
 				return updateArbiter(update);
 			})
 			.then((logstore) => {
-				DATABOX_LOGSTORE_ENDPOINT = 'https://' + name + ':' + DATABOX_LOGSTORE_PORT;
+				DATABOX_LOGSTORE_ENDPOINT = 'https://' + DATABOX_LOGSTORE_NAME + ':' + DATABOX_LOGSTORE_PORT;
 				resolve(logstore);
 			})
 			.catch((err) => {
@@ -667,6 +668,7 @@ var updateArbiter = function (data) {
 exports.updateArbiter = updateArbiter;
 
 var updateContainerPermissions = function (permissions) {
+
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
@@ -896,16 +898,42 @@ let launchContainer = function (containerSLA) {
 				//grant write access to requested stores
 				var dependentStores = launched.filter((itm)=>{ return itm.type == 'store'; });
 				for(store of dependentStores) {
-					console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
-					updateContainerPermissions({
-						name: containerSLA.localContainerName,
-						route: {target: store.name, path: '/*', method:'POST'}
-						//caveats: ""
-					})
-					.catch((err)=>{
-						console.log("[ERROR adding permissions for " + name + "] " + err);
-						reject(err);
-					});
+
+					if(containerSLA.localContainerName != store.name) {
+
+						console.log('[Adding read permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/status');
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/status', method:'GET'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/*', method:'POST'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + DATABOX_LOGSTORE_NAME + '/' + containerSLA.localContainerName);
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: DATABOX_LOGSTORE_NAME, path: '/' + containerSLA.localContainerName + '/*', method:'POST'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+					}
 				}
 				resolve(launched);
 			})
