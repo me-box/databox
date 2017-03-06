@@ -901,6 +901,19 @@ let launchContainer = function (containerSLA) {
 
 					if(containerSLA.localContainerName != store.name) {
 
+						//Read /cat for CM
+						console.log('[Adding read permissions] for databox-container-manager on ' + store.name + '/cat');
+						updateContainerPermissions({
+							name: 'databox-container-manager',
+							route: {target: store.name, path: '/cat', method:'GET'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						//Read /status
 						console.log('[Adding read permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/status');
 						updateContainerPermissions({
 							name: containerSLA.localContainerName,
@@ -912,6 +925,7 @@ let launchContainer = function (containerSLA) {
 							reject(err);
 						});
 
+						//Write to all endpoints on dependent store
 						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
 						updateContainerPermissions({
 							name: containerSLA.localContainerName,
@@ -923,14 +937,27 @@ let launchContainer = function (containerSLA) {
 							reject(err);
 						});
 
-						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + DATABOX_LOGSTORE_NAME + '/' + containerSLA.localContainerName);
+						//Write to all endpoints on dependent store
+						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/cat');
 						updateContainerPermissions({
 							name: containerSLA.localContainerName,
-							route: {target: DATABOX_LOGSTORE_NAME, path: '/' + containerSLA.localContainerName + '/*', method:'POST'}
+							route: {target: store.name, path: '/cat', method:'POST'}
 							//caveats: ""
 						})
 						.catch((err)=>{
 							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						//Grant permissions for the store to write to the log
+						console.log('[Adding write permissions] for ' + store.name + ' on ' + DATABOX_LOGSTORE_NAME + '/' + store.name);
+						updateContainerPermissions({
+							name: store.name,
+							route: {target: DATABOX_LOGSTORE_NAME, path: '/' + store.name , method:'POST'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + store.name + "] " + err);
 							reject(err);
 						});
 					}

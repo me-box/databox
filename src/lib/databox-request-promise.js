@@ -31,6 +31,7 @@ module.exports = function (options,callback) {
         var path = urlObject.pathname;
         var host = urlObject.hostname;
         var protocol = urlObject.protocol;
+        var method = options.method || 'GET';
 
         //request to arbiter do not need a macaroon but do need the ARBITER_TOKEN
         var isRequestToArbiter = DATABOX_ARBITER_ENDPOINT.indexOf(host) !== -1;
@@ -70,7 +71,7 @@ module.exports = function (options,callback) {
             //
             // we are talking to another databox component so we need a macaroon!
             //
-            macaroonCache.getMacaroon(host,path)
+            macaroonCache.getMacaroon(host,path, method)
             .then((macaroon)=>{
                 //do the request and call back when done
                 options.headers = {'X-Api-Key': macaroon};
@@ -81,13 +82,13 @@ module.exports = function (options,callback) {
                 if(result.error !== null) {
                     console.log(result.error);
                     reject(result.error,result.response,null);
-                    macaroonCache.invalidateMacaroon(host);
+                    macaroonCache.invalidateMacaroon(host,path, options.method);
                     return;
                 } else if (result.response.statusCode != 200) {
                     //API responded with an error
                     console.log(result.body);
                     reject(result.body,result.response,null);
-                    macaroonCache.invalidateMacaroon(host);
+                    macaroonCache.invalidateMacaroon(host,path, options.method);
                     return;
                 } else {
                     console.log(result.body, result.error);
