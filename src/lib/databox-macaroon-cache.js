@@ -15,27 +15,27 @@ var macaroonCache = {};
  * @return {Promise} A promise that resolves with a shared secret gotten from the arbiter
  * 
  */
-function getMacaroon(host,path) {
+function getMacaroon(host,path, method) {
     return new Promise((resolve, reject) => {
 
-        if(macaroonCache[host]) {
+        if(macaroonCache[host+path+method]) {
             console.log("[macaroonCache] returning cashed macaroon");
             //TODO check if the macaroon has expired? for now if a request fails we invalidate the macaroon
-            resolve(macaroonCache[host+path]);
+            resolve(macaroonCache[host+path+method]);
             return;
         }
 
         //
         // Macroon has not been requested. Get a new one.
         //
-        console.log("[macaroonCache] cashed macaroon not found for " + host+path + " requesting one");
+        console.log("[macaroonCache] cashed macaroon not found for " + host+path+method + " requesting one");
         var opts = {
                 uri: DATABOX_ARBITER_ENDPOINT+'/token',
                 method: 'POST',
-                form: {
+                json: {
                             target: host,
                             path: path,
-                            method: 'GET',
+                            method: method
                         },
                 headers: {'X-Api-Key': ARBITER_TOKEN},
                 agent: httpsAgent
@@ -52,9 +52,9 @@ function getMacaroon(host,path) {
                 reject(body);
                 return;
             }
-            macaroonCache[host+path] = body;
+            macaroonCache[host+path+method] = body;
             console.log("[macaroonCache] returning new macaroon");
-            resolve(macaroonCache[host+path]);
+            resolve(macaroonCache[host+path+method]);
         });
     });
 }
@@ -64,8 +64,8 @@ function getMacaroon(host,path) {
  * @param {host} The host name of the end point to request the macaroon
  * @return void
  */
-function invalidateMacaroon(host) {
-    macaroonCache[host] = null;
+function invalidateMacaroon(host,path,method) {
+    macaroonCache[host+path+method] = null;
 }
 
 module.exports = {
