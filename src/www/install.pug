@@ -30,7 +30,9 @@ html
 			var manifest = null;
 			var sensors = null;
 			var mappings = {
-				"urn:X-databox:rels:hasDescription": "description",
+				"urn:X-hypercat:rels:hasDescription:en": "description",
+				"urn:X-hypercat:rels:isContentType": "contentType",
+				"urn:X-databox:rels:hasVendor": "vendor",
 				"urn:X-databox:rels:hasType": "type",
 				"urn:X-databox:rels:hasLocation": "location",
 				"urn:X-databox:rels:hasDatasourceid": "id"
@@ -104,7 +106,10 @@ html
 							if (sensor.index === sensor_index) {
 								datasource.endpoint = sensor.endpoint;
 								datasource.sensor_id = sensor.id;
-								datasource.sensor = sensor.description + ", " + sensor.location;
+								datasource.sensor = sensor.description;
+								if(sensor.location) {
+									datasource.sensor +=  ", " + sensor.location
+								}
 								datasource.hypercat = sensor.hypercat;
 								update();
 								return true;
