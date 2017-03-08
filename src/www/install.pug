@@ -99,13 +99,13 @@ html
 				}
 			}
 
-			function selectSensor(datasource_id, sensor_index) {
+			function selectSensor(datasource_id, sensor_id) {
 				for (var datasource of manifest.datasources) {
 					if (datasource.clientid === datasource_id) {
 						for (var sensor of sensors) {
-							if (sensor.index === sensor_index) {
-								datasource.endpoint = sensor.endpoint;
+							if (sensor.id === sensor_id) {
 								datasource.datasource = sensor.id;
+								datasource.endpoint = sensor.endpoint;
 								datasource.description = sensor.description;
 								datasource.location = sensor.location || "";
 								if(sensor.location) {
