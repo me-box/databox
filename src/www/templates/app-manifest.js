@@ -46,7 +46,7 @@ pug_html = pug_html + "\u003Cdiv class=\"mdl-grid\"\u003E";
   if ('number' == typeof $$obj.length) {
       for (var index = 0, $$l = $$obj.length; index < $$l; index++) {
         var pack = $$obj[index];
-pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["mdl-cell","mdl-cell--4-col","package",(pack.required || pack.enabled) ? '' : 'transparent'], [false,false,false,true]), false, false)+pug_attr("onclick", 'togglePackage(' + index + ')', true, false)) + "\u003E\u003Cdiv class=\"dark\" style=\"display: flex; align-items: center\"\u003E\u003Cdiv class=\"mdl-typography--title fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.name) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E";
+pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["mdl-cell","mdl-cell--4-col","package",(pack.required || pack.enabled) ? '' : 'transparent'], [false,false,false,true]), false, false)+pug_attr("onclick", 'togglePackage(' + index + ')', true, false)) + "\u003E\u003Cdiv class=\"dark\" style=\"display: flex; align-items: center;\"\u003E\u003Cdiv class=\"mdl-typography--title fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.name) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E";
 if (pack.enabled || pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"badge material-icons\"\u003Echeck\u003C\u002Fdiv\u003E";
 }
@@ -89,7 +89,7 @@ pug_html = pug_html + "\u003C\u002Fdiv\u003E";
     for (var index in $$obj) {
       $$l++;
       var pack = $$obj[index];
-pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["mdl-cell","mdl-cell--4-col","package",(pack.required || pack.enabled) ? '' : 'transparent'], [false,false,false,true]), false, false)+pug_attr("onclick", 'togglePackage(' + index + ')', true, false)) + "\u003E\u003Cdiv class=\"dark\" style=\"display: flex; align-items: center\"\u003E\u003Cdiv class=\"mdl-typography--title fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.name) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E";
+pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["mdl-cell","mdl-cell--4-col","package",(pack.required || pack.enabled) ? '' : 'transparent'], [false,false,false,true]), false, false)+pug_attr("onclick", 'togglePackage(' + index + ')', true, false)) + "\u003E\u003Cdiv class=\"dark\" style=\"display: flex; align-items: center;\"\u003E\u003Cdiv class=\"mdl-typography--title fill padded\"\u003E" + (pug_escape(null == (pug_interp = pack.name) ? "" : pug_interp)) + "\u003C\u002Fdiv\u003E";
 if (pack.enabled || pack.required) {
 pug_html = pug_html + "\u003Cdiv class=\"badge material-icons\"\u003Echeck\u003C\u002Fdiv\u003E";
 }
@@ -140,7 +140,7 @@ pug_html = pug_html + "\u003Cdiv class=\"padded\"\u003E\u003Cdiv class=\"padded 
   if ('number' == typeof $$obj.length) {
       for (var pug_index3 = 0, $$l = $$obj.length; pug_index3 < $$l; pug_index3++) {
         var datasource = $$obj[pug_index3];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.sensor || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
 // iterate getSensors(datasource.type)
 ;(function(){
   var $$obj = getSensors(datasource.type);
@@ -148,7 +148,7 @@ pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two
     if ($$obj.length) {
       for (var pug_index4 = 0, $$l = $$obj.length; pug_index4 < $$l; pug_index4++) {
         var sensor = $$obj[pug_index4];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
       }
     } else {
 pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
@@ -158,7 +158,7 @@ pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u
     for (var pug_index4 in $$obj) {
       $$l++;
       var sensor = $$obj[pug_index4];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
     }
     if ($$l === 0) {
 pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
@@ -173,7 +173,7 @@ pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fli\u003E";
     for (var pug_index3 in $$obj) {
       $$l++;
       var datasource = $$obj[pug_index3];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.sensor || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
 // iterate getSensors(datasource.type)
 ;(function(){
   var $$obj = getSensors(datasource.type);
@@ -181,7 +181,7 @@ pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two
     if ($$obj.length) {
       for (var pug_index5 = 0, $$l = $$obj.length; pug_index5 < $$l; pug_index5++) {
         var sensor = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
       }
     } else {
 pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
@@ -191,7 +191,7 @@ pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u
     for (var pug_index5 in $$obj) {
       $$l++;
       var sensor = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '",' + sensor.index + ')', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + sensor.location) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
     }
     if ($$l === 0) {
 pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
@@ -206,4 +206,4 @@ pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fli\u003E";
 
 pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fdiv\u003E";
 }
-pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-button--colored mdl-button--raised\""+" style=\"float: right\" onclick=\"installApp()\""+pug_attr("disabled", !isValid(), true, false)) + "\u003EInstall\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E";}.call(this,"manifest" in locals_for_with?locals_for_with.manifest:typeof manifest!=="undefined"?manifest:undefined,"sensors" in locals_for_with?locals_for_with.sensors:typeof sensors!=="undefined"?sensors:undefined));;return pug_html;}
+pug_html = pug_html + "\u003Cbutton" + (" class=\"mdl-button mdl-button--colored mdl-button--raised\""+" style=\"float: right;\" onclick=\"installApp()\""+pug_attr("disabled", !isValid(), true, false)) + "\u003EInstall\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E";}.call(this,"manifest" in locals_for_with?locals_for_with.manifest:typeof manifest!=="undefined"?manifest:undefined,"sensors" in locals_for_with?locals_for_with.sensors:typeof sensors!=="undefined"?sensors:undefined));;return pug_html;}

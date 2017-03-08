@@ -98,13 +98,13 @@ module.exports = {
 		});
 
 		app.get('/list-apps', (req, res) => {
-			var names = [];
-			var result = [];
+			let names = [];
+			let result = [];
 
 			conman.listContainers()
 				.then((containers) => {
-					for (var container of containers) {
-						var name = container.Names[0].substr(1);
+					for (let container of containers) {
+						let name = container.Names[0].substr(1);
 						names.push(name);
 						result.push({
 							name: name,
@@ -114,7 +114,7 @@ module.exports = {
 						});
 					}
 
-					for (var installingApp in installingApps) {
+					for (let installingApp in installingApps) {
 						if (names.indexOf(installingApp) === -1) {
 							names.push(installingApp);
 							result.push({
@@ -125,69 +125,39 @@ module.exports = {
 						}
 					}
 
-
-					//this request could be to a local or external registry add an agent that trust the CM ROOT cert just in case.
+					let options = {'url': '', 'method': 'GET'};
 					if(DATABOX_DEV == 1) {
-						var options = {'url':"https://" + Config.localRegistryName + ":5000/v2/_catalog", 'method':'GET', 'agent':databoxAgent};
+						options.url = "http://" + Config.localAppStoreName+ ":8181" + '/app/list';
 					} else {
-						var options = {'url':Config.registryUrl + "/v2/_catalog", 'method':'GET'};
+						options.url = Config.storeUrl + '/app/list';
 					}
-
 					return new Promise((resolve,reject)=>{
 						request(options, (error, response, body) => {
 							if (error) {
+								console.log("Error: " + options.url);
 								reject(error);
 								return;
 							}	
 							
-							resolve(JSON.parse(body).repositories);
+							resolve(JSON.parse(body).apps);
 						});
 
 					});
 				})
-				.then((repositories)=>{
-
-					var proms = []; 
-					
-					for(var repo of repositories) {
-						if (names.indexOf(repo) === -1) {
-							proms.push(new Promise((resolve,reject)=>{
-
-								if(DATABOX_DEV == 1) {
-									var options = {'url':"http://" + Config.localAppStoreName+ ":8181" + '/app/get/', 'method':'GET', 'form': {'name': repo}};
-								} else {
-									var options = {'url':Config.storeUrl + '/app/get/', 'method':'GET', 'form': {'name': repo}};
-								}
-
-								request.post(options, (err, data) => {
-
-									if (err) {
-										//do nothing
-										console.log("[store/app/get/] ERROR::", err);
-										resolve(null);
-									}
-
-									body = JSON.parse(data.body);
-									if (typeof body.error == 'undefined' || body.error != 23) {
-										resolve({
-													name: body.manifest.name,
-													type: body.manifest['databox-type'] === undefined ? 'app' : body.manifest['databox-type'],
-													status: 'uninstalled',
-													author: body.manifest.author
-												});
-									} else {
-										resolve(null);
-									}
-								});
-							}));
-						}		
+				.then((apps)=>{
+					for(let app of apps) {
+						if (names.indexOf(app.manifest.name) === -1) {
+							names.push(app.manifest.name);
+							result.push({
+								name: app.manifest.name,
+								type: app.manifest['databox-type'] === undefined ? 'app' : app.manifest['databox-type'],
+								status: 'uninstalled',
+								author: app.manifest.author
+							});
+						}
 					}
-					
-					return Promise.all(proms);
-				})
-				.then((repos)=>{
-					var retval = result.concat(repos.filter((itm)=>{return itm !== null;}));
-					res.json(retval);
+
+					res.json(result);
 				})
 				.catch((err)=>{
 					console.log("[Error] ",err);
