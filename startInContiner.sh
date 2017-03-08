@@ -5,6 +5,8 @@ if [ "$(docker ps -aq -f name=databox-cm)" ]; then
     docker rm databox-cm
 fi
 
+docker pull databoxsystems/databox-cm
+
 docker run \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	--name databox-cm \

@@ -5,6 +5,7 @@ var os = require('os');
 var crypto = require('crypto');
 var request = require('request');
 var https = require('https');
+var url = require('url');
 
 var db = require('./include/container-manager-db.js');
 var dockerHelper = require('./include/container-manager-docker-helper.js');
@@ -808,6 +809,60 @@ let launchContainer = function (containerSLA) {
 			'Links': [arbiterName]
 		}
 	};
+
+	//set read permissions from the sla for DATASOURCES. Limit this to Apps only??
+	var readProms = [];
+	if(containerSLA.datasources) {
+		for(var allowedDatasource of containerSLA.datasources) {
+				
+				var datasourceEndpoint = url.parse(allowedDatasource.endpoint);
+				var datasourceName = allowedDatasource.datasource;
+
+				readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/'+datasourceName, method:'GET'}
+										}));
+				console.log("read api",{
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/'+datasourceName, method:'GET'}
+										});
+
+				readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/'+datasourceName+'/*', method:'GET'}
+										}));
+				
+				readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/ws' , method:'GET'}
+										}));
+				
+				console.log("/ws",{
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/ws' , method:'GET'}
+										});
+
+				readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/sub/' + datasourceName + '/*' , method:'GET'}
+										}));
+				
+				console.log("/sub",{
+											name: containerSLA.localContainerName,
+											route: {target:datasourceEndpoint.hostname, path: '/sub/' + datasourceName + '/*' , method:'GET'}
+										});
+		}
+
+		Promise.all(readProms)
+		.then(()=>{
+			console.log('[Added read permissions for]:' + containerSLA.localContainerName);
+		})
+		.catch((error)=>{
+			//TODO sort out nested promises and think about stopping the install if this fails
+			console.log('[ERROR Adding read permissions for]:' + containerSLA.localContainerName, error);
+		});
+	}
+
 	let launched = [];
 
 	return new Promise((resolve, reject) => {
