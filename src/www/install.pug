@@ -63,7 +63,7 @@ html
 					if ('items' in data) {
 						for (var item of data.items) {
 							var sensor = {};
-							sensor.endpoint = url;
+							sensor.endpoint = item.href;
 							if ('item-metadata' in item) {
 								for (var metadata of item['item-metadata']) {
 									if (metadata.rel in mappings) {
@@ -105,10 +105,11 @@ html
 						for (var sensor of sensors) {
 							if (sensor.index === sensor_index) {
 								datasource.endpoint = sensor.endpoint;
-								datasource.sensor_id = sensor.id;
-								datasource.sensor = sensor.description;
+								datasource.datasource = sensor.id;
+								datasource.description = sensor.description;
+								datasource.location = sensor.location || "";
 								if(sensor.location) {
-									datasource.sensor +=  ", " + sensor.location
+									datasource.description +=  ", " + sensor.location
 								}
 								datasource.hypercat = sensor.hypercat;
 								update();
