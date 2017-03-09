@@ -820,12 +820,13 @@ let launchContainer = function (containerSLA) {
 
 				readProms.push(updateContainerPermissions({
 											name: containerSLA.localContainerName,
-											route: {target:datasourceEndpoint.hostname, path: '/'+datasourceName, method:'GET'}
+											route: {target:datasourceEndpoint.hostname, path: '/status', method:'GET'}
 										}));
-				console.log("read api",{
+
+				readProms.push(updateContainerPermissions({
 											name: containerSLA.localContainerName,
 											route: {target:datasourceEndpoint.hostname, path: '/'+datasourceName, method:'GET'}
-										});
+										}));
 
 				readProms.push(updateContainerPermissions({
 											name: containerSLA.localContainerName,
@@ -836,25 +837,16 @@ let launchContainer = function (containerSLA) {
 											name: containerSLA.localContainerName,
 											route: {target:datasourceEndpoint.hostname, path: '/ws' , method:'GET'}
 										}));
-				
-				console.log("/ws",{
-											name: containerSLA.localContainerName,
-											route: {target:datasourceEndpoint.hostname, path: '/ws' , method:'GET'}
-										});
-
+										
 				readProms.push(updateContainerPermissions({
 											name: containerSLA.localContainerName,
 											route: {target:datasourceEndpoint.hostname, path: '/sub/' + datasourceName + '/*' , method:'GET'}
 										}));
-				
-				console.log("/sub",{
-											name: containerSLA.localContainerName,
-											route: {target:datasourceEndpoint.hostname, path: '/sub/' + datasourceName + '/*' , method:'GET'}
-										});
 		}
 
 		Promise.all(readProms)
-		.then(()=>{
+		.then((resp)=>{
+			console.log(resp);
 			console.log('[Added read permissions for]:' + containerSLA.localContainerName);
 		})
 		.catch((error)=>{
@@ -973,6 +965,18 @@ let launchContainer = function (containerSLA) {
 						updateContainerPermissions({
 							name: containerSLA.localContainerName,
 							route: {target: store.name, path: '/status', method:'GET'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[ERROR adding permissions for " + name + "] " + err);
+							reject(err);
+						});
+
+						//Read /ws
+						console.log('[Adding read permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/ws');
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/ws', method:'GET'}
 							//caveats: ""
 						})
 						.catch((err)=>{
