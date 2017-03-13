@@ -42,6 +42,8 @@ module.exports = function (options,callback) {
         
         var isExternalDevRequest = host.indexOf("databox-local-registry") !== -1 || host.indexOf("databox-app-server") !== -1 || host.indexOf("localhost") !== -1;
         
+        var isInternalUiRequest = path.indexOf("/ui") === 0;
+
         if(protocol == "https:") {
             //use the databox https agent
             options.agent = httpsAgent;
@@ -53,12 +55,12 @@ module.exports = function (options,callback) {
             console.log("[databox-request] " + options.uri);
             resolve(request(options,callback));
         
-        } else if (isExternalDevRequest) {
-            //DEV mode external request.
+        } else if (isExternalDevRequest || isInternalUiRequest) {
+            // we don't need a macaroon for DEV mode external request or UI requests.
             options.headers = {};
             console.log("[databox-request] ExternalRequest " + options.uri);
             resolve(request(options,callback));
-        } else if (isExternalRequest) {
+        } else if (isExternalRequest ) {
             //
             // we don't need a macaroon for an external request
             //
@@ -82,13 +84,13 @@ module.exports = function (options,callback) {
                 if(result.error !== null) {
                     console.log(result.error);
                     reject(result.error,result.response,null);
-                    macaroonCache.invalidateMacaroon(host,path, options.method);
+                    macaroonCache.invalidateMacaroon(host,path,method);
                     return;
                 } else if (result.response.statusCode != 200) {
                     //API responded with an error
                     console.log(result.body);
                     reject(result.body,result.response,null);
-                    macaroonCache.invalidateMacaroon(host,path, options.method);
+                    macaroonCache.invalidateMacaroon(host,path,method);
                     return;
                 } else {
                     console.log(result.body, result.error);
