@@ -93,8 +93,38 @@ module.exports = {
 		app.get('/install/:appname', (req, res) => {
 			res.render('install', {appname: req.params.appname})
 		});
-		app.get('/ui/:appname', (req, res) => {
-			res.render('ui', {appname: req.params.appname})
+
+		app.get('/ui/:containerName', (req, res) => {
+			let containerName = req.params.containerName;
+			conman.listContainers()
+				.then((containers) => {
+					return new Promise((resolve,reject)=>{
+						for (let container of containers) {
+							let name = container.Names[0].substr(1);
+							if (name == containerName ){
+								resolve({
+									name: name,
+									container_id: container.Id,
+									type: container.Labels['databox.type'] === undefined ? 'app' : container.Labels['databox.type'],
+									status: container.State
+								});
+								return;
+							}
+						}
+						reject("[Error] " + containerName + " not found.");
+					});
+				})
+				.then((containerInfo)=>{
+					var path = '/ui';
+					if(containerInfo.type == 'store') {
+						path = '/cat';
+					}
+					res.render('ui', {appname: containerInfo.name, path: path });
+				})
+				.catch((error)=>{
+					res.render('ui', {error: error});
+				});
+			
 		});
 
 		app.get('/list-apps', (req, res) => {
