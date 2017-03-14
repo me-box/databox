@@ -34,7 +34,6 @@ httpsHelper.init()
 	.then((containerManagerContainer) => {
 		return conman.connectToCMArbiterNetwork(containerManagerContainer);
 	})
-
 	.then(() => {
 		if(DATABOX_DEV) {
 			const devSeedScript = './updateLocalRegistry.sh';

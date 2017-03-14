@@ -91,7 +91,15 @@ var getOwnContainer = function () {
 exports.getOwnContainer = getOwnContainer;
 
 exports.connectToCMArbiterNetwork = function (container) {
-	return dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net');
+
+	let proms = [
+		dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net'),
+		dockerHelper.connectToNetwork(container, 'databox-cloud-net'),
+		dockerHelper.connectToNetwork(container, 'databox-driver-net'),
+		dockerHelper.connectToNetwork(container, 'databox-app-net')
+	];
+
+	return Promise.all(proms);
 };
 
 exports.killAll = function () {
