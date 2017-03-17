@@ -23,7 +23,7 @@ if(DATABOX_DEV == 1) {
 }
 
 var DATABOX_SDK = process.env.DATABOX_SDK;
-if(DATABOX_DEV == 1) {
+if(DATABOX_SDK == 1) {
 	Config.registryUrl = Config.registryUrl_sdk;
 	Config.storeUrl = Config.storeUrl_sdk;
 	console.log("Using sdk registery::", Config.registryUrl);
