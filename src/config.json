@@ -3,6 +3,8 @@
 	"storeUrl": "https://store.iotdatabox.com",
 	"registryUrl_dev": "localhost:5000",
 	"storeUrl_dev": "http://localhost:8181",
+	"registryUrl_sdk": "registry.upintheclouds.org",
+	"storeUrl_sdk": "https://store.iotdatabox.com",
 	"serverPort": 8989,
 	"localRegistryName":"databox-local-registry",
 	"localRegistryImage":"databoxsystems/databox-local-registry",

@@ -19,7 +19,14 @@ var DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 	Config.registryUrl = Config.registryUrl_dev;
 	Config.storeUrl = Config.storeUrl_dev;
-	console.log("Using dev server::", Config.registryUrl);
+	console.log("Using dev regestry::", Config.registryUrl);
+}
+
+var DATABOX_SDK = process.env.DATABOX_SDK;
+if(DATABOX_DEV == 1) {
+	Config.registryUrl = Config.registryUrl_sdk;
+	Config.storeUrl = Config.storeUrl_sdk;
+	console.log("Using sdk registery::", Config.registryUrl);
 }
 
 //ARCH to append -arm to the end of a container name if running on arm

@@ -7,7 +7,13 @@ if(DATABOX_DEV == 1) {
 
 	Config.registryUrl =  Config.registryUrl_dev;
   	Config.storeUrl = Config.storeUrl_dev;
-	console.log("Using dev server::", Config);
+}
+
+var DATABOX_SDK = process.env.DATABOX_SDK;
+if(DATABOX_SDK == 1) {
+
+	Config.registryUrl =  Config.registryUrl_sdk;
+  	Config.storeUrl = Config.storeUrl_sdk;
 }
 
 var http = require('http');
