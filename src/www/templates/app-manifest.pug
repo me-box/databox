@@ -63,6 +63,10 @@ div
 							each datasource in pack.datasources
 								div
 									= 'Access to ' + getDatasource(datasource).type
+						if 'datastores' in pack
+							each datasource in pack.datastores
+								div
+									= 'Access to ' + getDatasource(datasource).type
 					if pack.required
 						div.mdl-color--red-700.mdl-typography--text-center.padded
 							| Required
