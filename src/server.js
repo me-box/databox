@@ -1,44 +1,44 @@
 /*jshint esversion: 6 */
 
-var Config = require('./config.json');
+const Config = require('./config.json');
 //setup dev env 
-var DATABOX_DEV = process.env.DATABOX_DEV;
-if(DATABOX_DEV == 1) {
+const DATABOX_DEV = process.env.DATABOX_DEV;
+if (DATABOX_DEV == 1) {
 
-	Config.registryUrl =  Config.registryUrl_dev;
-  	Config.storeUrl = Config.storeUrl_dev;
+	Config.registryUrl = Config.registryUrl_dev;
+	Config.storeUrl = Config.storeUrl_dev;
 }
 
-var DATABOX_SDK = process.env.DATABOX_SDK;
-if(DATABOX_SDK == 1) {
+const DATABOX_SDK = process.env.DATABOX_SDK;
+if (DATABOX_SDK == 1) {
 
-	Config.registryUrl =  Config.registryUrl_sdk;
-  	Config.storeUrl = Config.storeUrl_sdk;
+	Config.registryUrl = Config.registryUrl_sdk;
+	Config.storeUrl = Config.storeUrl_sdk;
 }
 
-var http = require('http');
-var https = require('https');
-var express = require('express');
-var bodyParser = require('body-parser');
-var request = require('request');
-var databoxRequestPromise = require('./lib/databox-request-promise.js');
-var databoxAgent = require('./lib/databox-https-agent.js');
-var io = require('socket.io');
-var url = require('url');
+const http = require('http');
+const https = require('https');
+const express = require('express');
+const bodyParser = require('body-parser');
+const request = require('request');
+const databoxRequestPromise = require('./lib/databox-request-promise.js');
+const databoxAgent = require('./lib/databox-https-agent.js');
+let io = require('socket.io');
+const url = require('url');
 
-var app = express();
+const app = express();
 
 module.exports = {
 	proxies: {},
 	app: app,
 	launch: function (port, conman, httpsHelper) {
-		
-		var server = http.createServer(app);
-		var installingApps = {};
+
+		const server = http.createServer(app);
+		const installingApps = {};
 		io = io(server, {});
 
-		if(DATABOX_DEV == 1) {
-			this.proxies.store = "http://" + Config.localAppStoreName+ ":8181";
+		if (DATABOX_DEV == 1) {
+			this.proxies.store = "http://" + Config.localAppStoreName + ":8181";
 		} else {
 			this.proxies.store = Config.storeUrl;
 		}
@@ -49,12 +49,12 @@ module.exports = {
 		app.use(express.static('src/www'));
 
 		app.use((req, res, next) => {
-			var firstPart = req.path.split('/')[1];
+			const firstPart = req.path.split('/')[1];
 			if (firstPart in this.proxies) {
-				var replacement = this.proxies[firstPart];
-				var proxyURL;
+				const replacement = this.proxies[firstPart];
+				let proxyURL;
 				if (replacement.indexOf('://') != -1) {
-					var parts = url.parse(replacement);
+					const parts = url.parse(replacement);
 					parts.pathname = req.baseUrl + req.path.substring(firstPart.length + 1);
 					parts.query = req.query;
 					proxyURL = url.format(parts);
@@ -69,10 +69,10 @@ module.exports = {
 				}
 
 				console.log("[Proxy] " + req.method + ": " + req.url + " => " + proxyURL);
-				databoxRequestPromise({uri:proxyURL})
-				.then((resolvedRequest)=>{
-					
-					return req.pipe(resolvedRequest)
+				databoxRequestPromise({uri: proxyURL})
+					.then((resolvedRequest) => {
+
+						return req.pipe(resolvedRequest)
 							.on('error', (e) => {
 								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
 							})
@@ -80,10 +80,10 @@ module.exports = {
 							.on('error', (e) => {
 								console.log('[Proxy] ERROR: ' + req.url + " " + e.message);
 							})
-							.on('end',()=>{
+							.on('end', () => {
 								next();
 							});
-				});
+					});
 
 			} else {
 				next();
@@ -104,10 +104,10 @@ module.exports = {
 			let containerName = req.params.containerName;
 			conman.listContainers()
 				.then((containers) => {
-					return new Promise((resolve,reject)=>{
+					return new Promise((resolve, reject) => {
 						for (let container of containers) {
 							let name = container.Names[0].substr(1);
-							if (name == containerName ){
+							if (name == containerName) {
 								resolve({
 									name: name,
 									container_id: container.Id,
@@ -120,17 +120,17 @@ module.exports = {
 						reject("[Error] " + containerName + " not found.");
 					});
 				})
-				.then((containerInfo)=>{
-					var path = '/ui';
-					if(containerInfo.type == 'store') {
+				.then((containerInfo) => {
+					let path = '/ui';
+					if (containerInfo.type == 'store') {
 						path = '/cat';
 					}
-					res.render('ui', {appname: containerInfo.name, path: path });
+					res.render('ui', {appname: containerInfo.name, path: path});
 				})
-				.catch((error)=>{
+				.catch((error) => {
 					res.render('ui', {error: error});
 				});
-			
+
 		});
 
 		app.get('/list-apps', (req, res) => {
@@ -162,26 +162,26 @@ module.exports = {
 					}
 
 					let options = {'url': '', 'method': 'GET'};
-					if(DATABOX_DEV == 1) {
-						options.url = "http://" + Config.localAppStoreName+ ":8181" + '/app/list';
+					if (DATABOX_DEV == 1) {
+						options.url = "http://" + Config.localAppStoreName + ":8181" + '/app/list';
 					} else {
 						options.url = Config.storeUrl + '/app/list';
 					}
-					return new Promise((resolve,reject)=>{
+					return new Promise((resolve, reject) => {
 						request(options, (error, response, body) => {
 							if (error) {
 								console.log("Error: " + options.url);
 								reject(error);
 								return;
-							}	
-							
+							}
+
 							resolve(JSON.parse(body).apps);
 						});
 
 					});
 				})
-				.then((apps)=>{
-					for(let app of apps) {
+				.then((apps) => {
+					for (let app of apps) {
 						if (names.indexOf(app.manifest.name) === -1) {
 							names.push(app.manifest.name);
 							result.push({
@@ -195,24 +195,24 @@ module.exports = {
 
 					res.json(result);
 				})
-				.catch((err)=>{
-					console.log("[Error] ",err);
+				.catch((err) => {
+					console.log("[Error] ", err);
 					res.json(err);
 				});
-	
+
 		});
 
 		app.post('/install', (req, res) => {
-			var sla = JSON.parse(req.body.sla);
+			const sla = JSON.parse(req.body.sla);
 			installingApps[sla.name] = sla['databox-type'] === undefined ? 'app' : sla['databox-type'];
 
 			io.emit('docker-create', sla.name);
 			conman.launchContainer(sla)
 				.then((containers) => {
 					console.log('[' + sla.name + '] Installed');
-					for (var container of containers) {
+					for (const container of containers) {
 
-						delete installingApps[container.name];
+						delete installingApps[sla.name];
 						this.proxies[container.name] = container.name + ':' + container.port;
 					}
 
@@ -236,7 +236,7 @@ module.exports = {
 					console.log('[' + container.name + '] Restarted');
 					this.proxies[container.name] = container.name + ':' + container.port;
 				})
-				.catch((err)=> {
+				.catch((err) => {
 					console.log(err);
 					res.json(err);
 				});
@@ -246,14 +246,14 @@ module.exports = {
 		app.post('/uninstall', (req, res) => {
 			//console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)
-				.then((container)=> {
+				.then((container) => {
 					return conman.stopContainer(container);
 				})
-				.then((container)=> {
+				.then((container) => {
 					return conman.removeContainer(container);
 				})
-				.then((info)=> {
-					var name = info.Name;
+				.then((info) => {
+					let name = info.Name;
 					if (info.Name.startsWith('/')) {
 						name = info.Name.substring(1);
 					}
@@ -261,14 +261,14 @@ module.exports = {
 					delete this.proxies[name];
 					res.json(info);
 				})
-				.catch((err)=> {
+				.catch((err) => {
 					console.log(err);
 					res.json(err)
 				});
 		});
 
 		io.on('connection', (socket) => {
-			var emitter = conman.getDockerEmitter();
+			const emitter = conman.getDockerEmitter();
 
 			emitter.on("connect", () => {
 				socket.emit('docker-connect');
