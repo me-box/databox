@@ -978,6 +978,8 @@ let launchContainer = function (containerSLA) {
 				return startContainer(results[results.length - 1]);
 			})
 			.then((container) => {
+			        proms = [];
+
 				launched.push(container);
 				if (container.type == 'driver') {
 					return configureDriver(container);
@@ -990,7 +992,10 @@ let launchContainer = function (containerSLA) {
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
 				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
-				return updateArbiter(update);
+			        proms.push(updateArbiter(update));
+
+			        proms.push(dockerHelper.disconnect(container, 'bridge'));
+			        return Promise.all(proms);
 			})
 			.then(() => {
 				//grant write access to requested stores

@@ -107,6 +107,25 @@ exports.connectToNetwork = function (container, networkName) {
   });
 };
 
+
+exports.disconnectFromNetwork = function (container, networkName) {
+  return new Promise( (resolve, reject) =>  {
+    listNetworks({})
+    .then( (nets) => { return getNetwork(nets,networkName)})
+    .then( (net) => {
+        net.disconnect({'Container':container.id}, (err,data) => {
+          if(err) {
+            reject("Can't disconnect from network" + err);
+            return;
+          }
+          resolve(container);
+        });
+      })
+      .catch(err => reject('[disconnectFromNetwork]' + err))
+  });
+};
+
+
 exports.createContainer = function(opts) {
   return new Promise( (resolve, reject) =>  {
     //TODO: check opts
