@@ -1045,7 +1045,18 @@ let launchContainer = function (containerSLA) {
 							reject(err);
 						});
 
-						//Write to all endpoints on dependent store
+						//Read to all endpoints on dependent store (sometimes its nice to read what you have written)
+						console.log('[Adding read permissions] for ' + containerSLA.localContainerName + ' on ' + store.name);
+						updateContainerPermissions({
+							name: containerSLA.localContainerName,
+							route: {target: store.name, path: '/*', method:'GET'}
+							//caveats: ""
+						})
+						.catch((err)=>{
+							console.log("[Warning adding read permissions for " + name + " on /*] " + err);
+						});
+
+						//Write to /cat on dependent store
 						console.log('[Adding write permissions] for ' + containerSLA.localContainerName + ' on ' + store.name + '/cat');
 						updateContainerPermissions({
 							name: containerSLA.localContainerName,
