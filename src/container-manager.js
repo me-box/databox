@@ -950,31 +950,6 @@ let launchContainer = function (containerSLA) {
  				return Promise.all(proms);
 			})
 			.then((results) => {
-				proms = [
-					connectContainerPair(containerSLA.localContainerName, arbiterName),
-					connectContainerPair(containerSLA.localContainerName, 'databox-cm'),
-					connectContainerPair(containerSLA.localContainerName, DATABOX_LOGSTORE_NAME),
-					connectContainerPair(containerSLA.localContainerName, DATABOX_EXPORT_SERVICE_NAME)
-				];
-
-				//link network for datasource stores
-				if(containerSLA.datasources) {
-					console.log("[Linking network for datasource stores]",containerSLA.datasources);
-					const connectDatasource = (source) => {
-						if(source.endpoint) {
-							const datastoreHostName = url.parse(source.endpoint).hostname;
-							console.log("[launch connecting network]", containerSLA.localContainerName, datastoreHostName);
-							return connectContainerPair(containerSLA.localContainerName, datastoreHostName);
-						}
-					};
-					proms.push(containerSLA.datasources.map(connectDatasource));
-				}
-				
-				proms.push(Promise.resolve(results[results.length - 1]));
-
-				return Promise.all(proms);
-			})
-			.then((results) => {
 				return startContainer(results[results.length - 1]);
 			})
 			.then((container) => {
