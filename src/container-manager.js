@@ -516,6 +516,7 @@ exports.launchLogStore = function () {
 };
 
 var DATABOX_EXPORT_SERVICE_ENDPOINT = null;
+var DATABOX_EXPORT_SERVICE_HOSTNAME = null;
 var DATABOX_EXPORT_SERVICE_PORT = 8080;
 exports.launchExportService = function () {
 
@@ -562,6 +563,7 @@ exports.launchExportService = function () {
 				return updateArbiter(update);
 			})
 			.then((exportService) => {
+				DATABOX_EXPORT_SERVICE_HOSTNAME = name;
 				DATABOX_EXPORT_SERVICE_ENDPOINT = 'https://' + name + ':' + DATABOX_EXPORT_SERVICE_PORT;
 				resolve(exportService);
 			})
@@ -825,8 +827,27 @@ let launchContainer = function (containerSLA) {
 		}
 	};
 
-	//set read permissions from the sla for DATASOURCES. Limit this to Apps only??
 	let readProms = [];
+
+	console.log(containerSLA);
+	if(containerSLA['export-whitelist']) {
+
+		let urlsString = containerSLA['export-whitelist'].map((itm)=>{return '"' + itm.url + '"';}).join(',');
+
+		console.log("[Adding Export permissions for " + containerSLA.localContainerName + "] on " + urlsString);
+			readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:DATABOX_EXPORT_SERVICE_HOSTNAME, path: '/export/', method:'POST'},
+											caveats: [ "destination = [" + urlsString + "]" ]
+										}));
+			readProms.push(updateContainerPermissions({
+											name: containerSLA.localContainerName,
+											route: {target:DATABOX_EXPORT_SERVICE_HOSTNAME, path: '/lp/export/', method:'POST'},
+											caveats: [ "destination = [" + urlsString + "]" ]
+										}));
+	}
+
+	//set read permissions from the sla for DATASOURCES. Limit this to Apps only??
 	if(containerSLA.datasources) {
 		for(let allowedDatasource of containerSLA.datasources) {
 			if(allowedDatasource.endpoint) {
