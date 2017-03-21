@@ -52,9 +52,14 @@ function getMacaroon(host,path, method) {
                 reject(body);
                 return;
             }
-            macaroonCache[host+path+method] = body;
+
             console.log("[macaroonCache] returning new macaroon");
-            resolve(macaroonCache[host+path+method]);
+            resolve(body);
+
+            //dont cache macaroons in the CM
+            //macaroonCache[host+path+method] = body;
+            //console.log("[macaroonCache] returning new macaroon");
+            //resolve(macaroonCache[host+path+method]);
         });
     });
 }
