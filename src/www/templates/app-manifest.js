@@ -18,6 +18,21 @@ var pug_match_html=/["&<>]/;function template(locals) {var pug_html = "", pug_mi
 	}
 }
 
+function isDatasourceRequired(datasource_id) {
+	for (var pack of manifest.packages) {
+		if (pack.enabled)
+		{
+			if ('datasources' in pack && pack.datasources.indexOf(datasource_id) !== -1) {
+				return true;
+			}
+			if ('datastores' in pack && pack.datastores.indexOf(datasource_id) !== -1) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 function getDatasource(id) {
 	for(var datasource of manifest.datasources) {
 		if(datasource.clientid === id) {
@@ -172,48 +187,39 @@ pug_html = pug_html + "\u003C\u002Fdiv\u003E";
 
 pug_html = pug_html + "\u003C\u002Fdiv\u003E";
 }
+if ('export-whitelist' in manifest && manifest['export-whitelist'].length > 0) {
+pug_html = pug_html + "\u003Cdiv class=\"padded\"\u003E\u003Cdiv class=\"padded mdl-color--cyan-800 mdl-typography--subhead mdl-color-text--white\"\u003EURL Permissions\u003C\u002Fdiv\u003E";
+// iterate manifest['export-whitelist']
+;(function(){
+  var $$obj = manifest['export-whitelist'];
+  if ('number' == typeof $$obj.length) {
+      for (var pug_index5 = 0, $$l = $$obj.length; pug_index5 < $$l; pug_index5++) {
+        var url = $$obj[pug_index5];
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
+      }
+  } else {
+    var $$l = 0;
+    for (var pug_index5 in $$obj) {
+      $$l++;
+      var url = $$obj[pug_index5];
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
+    }
+  }
+}).call(this);
+
+pug_html = pug_html + "\u003C\u002Fdiv\u003E";
+}
 if ('datasources' in manifest && manifest.datasources.length > 0) {
 pug_html = pug_html + "\u003Cdiv class=\"padded\"\u003E\u003Cdiv class=\"padded mdl-color--cyan-800 mdl-typography--subhead mdl-color-text--white\"\u003EDatasources\u003C\u002Fdiv\u003E\u003Cul class=\"mdl-list\"\u003E";
 // iterate manifest.datasources
 ;(function(){
   var $$obj = manifest.datasources;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index5 = 0, $$l = $$obj.length; pug_index5 < $$l; pug_index5++) {
-        var datasource = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
-// iterate getSensors(datasource.type)
-;(function(){
-  var $$obj = getSensors(datasource.type);
-  if ('number' == typeof $$obj.length) {
-    if ($$obj.length) {
       for (var pug_index6 = 0, $$l = $$obj.length; pug_index6 < $$l; pug_index6++) {
-        var sensor = $$obj[pug_index6];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
-      }
-    } else {
-pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
-    }
-  } else {
-    var $$l = 0;
-    for (var pug_index6 in $$obj) {
-      $$l++;
-      var sensor = $$obj[pug_index6];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
-    }
-    if ($$l === 0) {
-pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
-    }
-  }
-}).call(this);
-
-pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fli\u003E";
-      }
-  } else {
-    var $$l = 0;
-    for (var pug_index5 in $$obj) {
-      $$l++;
-      var datasource = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli" + (" class=\"mdl-list__item mdl-list__item--two-line\""+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
+        var datasource = $$obj[pug_index6];
+pug_html = pug_html + "\u003Cli" + (pug_attr("class", pug_classes(["mdl-list__item","mdl-list__item--two-line",isDatasourceRequired(datasource.clientid) ? 'enabled' : 'disabled'], [false,false,true]), false, false)+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E";
+if (isDatasourceRequired(datasource.clientid)) {
+pug_html = pug_html + "\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
 // iterate getSensors(datasource.type)
 ;(function(){
   var $$obj = getSensors(datasource.type);
@@ -239,7 +245,46 @@ pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u
   }
 }).call(this);
 
-pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003C\u002Ful\u003E";
+}
+pug_html = pug_html + "\u003C\u002Fli\u003E";
+      }
+  } else {
+    var $$l = 0;
+    for (var pug_index6 in $$obj) {
+      $$l++;
+      var datasource = $$obj[pug_index6];
+pug_html = pug_html + "\u003Cli" + (pug_attr("class", pug_classes(["mdl-list__item","mdl-list__item--two-line",isDatasourceRequired(datasource.clientid) ? 'enabled' : 'disabled'], [false,false,true]), false, false)+pug_attr("id", 'datasource_' + datasource.clientid, true, false)) + "\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = datasource.name) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = datasource.description || "Unbound") ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E";
+if (isDatasourceRequired(datasource.clientid)) {
+pug_html = pug_html + "\u003Cul" + (" class=\"mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect\""+pug_attr("for", 'datasource_' + datasource.clientid, true, false)) + "\u003E";
+// iterate getSensors(datasource.type)
+;(function(){
+  var $$obj = getSensors(datasource.type);
+  if ('number' == typeof $$obj.length) {
+    if ($$obj.length) {
+      for (var pug_index8 = 0, $$l = $$obj.length; pug_index8 < $$l; pug_index8++) {
+        var sensor = $$obj[pug_index8];
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+      }
+    } else {
+pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
+    }
+  } else {
+    var $$l = 0;
+    for (var pug_index8 in $$obj) {
+      $$l++;
+      var sensor = $$obj[pug_index8];
+pug_html = pug_html + "\u003Cli" + (" class=\"mdl-menu__item\""+pug_attr("onclick", 'selectSensor("' + datasource.clientid + '","' + sensor.id + '")', true, false)) + "\u003E" + (pug_escape(null == (pug_interp = sensor.description + ', ' + (sensor.location || "")) ? "" : pug_interp)) + "\u003C\u002Fli\u003E";
+    }
+    if ($$l === 0) {
+pug_html = pug_html + "\u003Cli class=\"mdl-menu__item\" disabled=\"disabled\"\u003ENo sensors found\u003C\u002Fli\u003E";
+    }
+  }
+}).call(this);
+
+pug_html = pug_html + "\u003C\u002Ful\u003E";
+}
+pug_html = pug_html + "\u003C\u002Fli\u003E";
     }
   }
 }).call(this);

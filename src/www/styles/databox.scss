@@ -22,7 +22,11 @@ $color-accent-contrast: $color-white !default;
 	white-space: nowrap;
 }
 
-.mdl-list__item--two-line:hover {
+.disabled {
+	opacity: 0.5;
+}
+
+.enabled:hover {
 	background-color: #eee;
 }
 

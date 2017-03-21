@@ -13,6 +13,21 @@
 		}
 	}
 
+	function isDatasourceRequired(datasource_id) {
+		for (var pack of manifest.packages) {
+			if (pack.enabled)
+			{
+				if ('datasources' in pack && pack.datasources.indexOf(datasource_id) !== -1) {
+					return true;
+				}
+				if ('datastores' in pack && pack.datastores.indexOf(datasource_id) !== -1) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	function getDatasource(id) {
 		for(var datasource of manifest.datasources) {
 			if(datasource.clientid === id) {
@@ -77,13 +92,28 @@ div
 						div.mdl-color--red-700.mdl-typography--text-center.padded
 							= 'Enable ' + pack.name
 
+	if 'export-whitelist' in manifest && manifest['export-whitelist'].length > 0
+		div.padded
+			div.padded.mdl-color--cyan-800.mdl-typography--subhead.mdl-color-text--white
+				| URL Permissions
+			each url in manifest['export-whitelist']
+				li.mdl-list__item.mdl-list__item--two-line
+					span.mdl-list__item-primary-content
+						i.material-icons.mdl-list__item-icon
+							| link
+						span
+							= url.url
+						span.mdl-list__item-sub-title
+							= url.description
+
 	if 'datasources' in manifest && manifest.datasources.length > 0
 		div.padded
 			div.padded.mdl-color--cyan-800.mdl-typography--subhead.mdl-color-text--white
 				| Datasources
 			ul.mdl-list
 				each datasource in manifest.datasources
-					li.mdl-list__item.mdl-list__item--two-line(id='datasource_' + datasource.clientid)
+					li.mdl-list__item.mdl-list__item--two-line(id='datasource_' + datasource.clientid,
+					class=isDatasourceRequired(datasource.clientid) ? 'enabled' : 'disabled')
 						span.mdl-list__item-primary-content
 							i.material-icons.mdl-list__item-icon
 								| input
@@ -91,13 +121,14 @@ div
 								= datasource.name
 							span.mdl-list__item-sub-title
 								= datasource.description || "Unbound"
-						ul.mdl-menu.mdl-menu--bottom-left.mdl-js-menu.mdl-js-ripple-effect(for='datasource_' + datasource.clientid)
-							each sensor in getSensors(datasource.type)
-								li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '","' + sensor.id + '")')
-									= sensor.description + ', ' + (sensor.location || "")
-							else
-								li.mdl-menu__item(disabled)
-									| No sensors found
+						if isDatasourceRequired(datasource.clientid)
+							ul.mdl-menu.mdl-menu--bottom-left.mdl-js-menu.mdl-js-ripple-effect(for='datasource_' + datasource.clientid)
+								each sensor in getSensors(datasource.type)
+									li.mdl-menu__item(onclick='selectSensor("' + datasource.clientid + '","' + sensor.id + '")')
+										= sensor.description + ', ' + (sensor.location || "")
+								else
+									li.mdl-menu__item(disabled)
+										| No sensors found
 
 	button.mdl-button.mdl-button--colored.mdl-button--raised(style="float: right", onclick="installApp()", disabled=!isValid())
 		| Install

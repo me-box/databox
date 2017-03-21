@@ -2,16 +2,14 @@
 
 const Config = require('./config.json');
 //setup dev env 
-const DATABOX_DEV = process.env.DATABOX_DEV;
-if (DATABOX_DEV == 1) {
-
+const DATABOX_DEV = process.env.DATABOX_DEV === '1';
+if (DATABOX_DEV) {
 	Config.registryUrl = Config.registryUrl_dev;
 	Config.storeUrl = Config.storeUrl_dev;
 }
 
-const DATABOX_SDK = process.env.DATABOX_SDK;
-if (DATABOX_SDK == 1) {
-
+const DATABOX_SDK = process.env.DATABOX_SDK === '1';
+if (DATABOX_SDK) {
 	Config.registryUrl = Config.registryUrl_sdk;
 	Config.storeUrl = Config.storeUrl_sdk;
 }
@@ -37,7 +35,7 @@ module.exports = {
 		const installingApps = {};
 		io = io(server, {});
 
-		if (DATABOX_DEV == 1) {
+		if (DATABOX_DEV) {
 			this.proxies.store = "http://" + Config.localAppStoreName + ":8181";
 		} else {
 			this.proxies.store = Config.storeUrl;
@@ -53,7 +51,7 @@ module.exports = {
 			if (firstPart in this.proxies) {
 				const replacement = this.proxies[firstPart];
 				let proxyURL;
-				if (replacement.indexOf('://') != -1) {
+				if (replacement.indexOf('://') !== -1) {
 					const parts = url.parse(replacement);
 					parts.pathname = req.baseUrl + req.path.substring(firstPart.length + 1);
 					parts.query = req.query;
@@ -105,9 +103,9 @@ module.exports = {
 			conman.listContainers()
 				.then((containers) => {
 					return new Promise((resolve, reject) => {
-						for (let container of containers) {
-							let name = container.Names[0].substr(1);
-							if (name == containerName) {
+						for (const container of containers) {
+							const name = container.Names[0].substr(1);
+							if (name === containerName) {
 								resolve({
 									name: name,
 									container_id: container.Id,
@@ -122,7 +120,7 @@ module.exports = {
 				})
 				.then((containerInfo) => {
 					let path = '/ui';
-					if (containerInfo.type == 'store') {
+					if (containerInfo.type === 'store') {
 						path = '/cat';
 					}
 					res.render('ui', {appname: containerInfo.name, path: path});
@@ -161,8 +159,8 @@ module.exports = {
 						}
 					}
 
-					let options = {'url': '', 'method': 'GET'};
-					if (DATABOX_DEV == 1) {
+					const options = {'url': '', 'method': 'GET'};
+					if (DATABOX_DEV) {
 						options.url = "http://" + Config.localAppStoreName + ":8181" + '/app/list';
 					} else {
 						options.url = Config.storeUrl + '/app/list';
