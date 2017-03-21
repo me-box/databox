@@ -149,7 +149,7 @@ exports.initNetworks = function () {
 					dockerHelper.getNetwork(networks, 'databox-driver-net', true),
 					dockerHelper.getNetwork(networks, 'databox-app-net'),
 					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
-					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net').
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net'),
 					dockerHelper.getNetwork(networks, 'databox-external', true)
 				];
 
