@@ -39,9 +39,13 @@ exports.remove = function (id) {
   });
 }
 
-exports.createNetwork = function(name) {
+exports.createNetwork = function(name, external) {
   return new Promise( (resolve, reject) =>  {
-    docker.createNetwork({Name:name,Driver:'bridge'}, (err,data) => {
+    docker.createNetwork({
+        Name: name,
+        Driver: 'bridge',
+        Internal: !external
+      }, (err,data) => {
       if(err) {
         reject("[createNetwork] Can't list networks");
         return;
@@ -61,7 +65,7 @@ var listNetworks = function() {
 }
 exports.listNetworks = listNetworks;
 
-var getNetwork = function(networks, name) {
+var getNetwork = function(networks, name, external) {
   return new Promise( (resolve, reject) =>  {
     for(i in networks) {
           var net = networks[i];
@@ -72,7 +76,11 @@ var getNetwork = function(networks, name) {
           }
       }
 
-      docker.createNetwork({'Name': name, 'Driver': 'bridge'}, (err,data) => {
+      docker.createNetwork({
+          Name: name,
+          Driver: 'bridge',
+          Internal: !external
+        }, (err,data) => {
         if(err) reject("[getNetwork] Can't create networks")
         resolve(data);
       })
@@ -98,6 +106,25 @@ exports.connectToNetwork = function (container, networkName) {
       .catch(err => reject('[connectToNetwork]' + err))
   });
 };
+
+
+exports.disconnectFromNetwork = function (container, networkName) {
+  return new Promise( (resolve, reject) =>  {
+    listNetworks({})
+    .then( (nets) => { return getNetwork(nets,networkName)})
+    .then( (net) => {
+        net.disconnect({'Container':container.id}, (err,data) => {
+          if(err) {
+            reject("Can't disconnect from network" + err);
+            return;
+          }
+          resolve(container);
+        });
+      })
+      .catch(err => reject('[disconnectFromNetwork]' + err))
+  });
+};
+
 
 exports.createContainer = function(opts) {
   return new Promise( (resolve, reject) =>  {

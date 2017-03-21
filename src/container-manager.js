@@ -146,10 +146,11 @@ exports.initNetworks = function () {
 		dockerHelper.listNetworks()
 			.then(networks => {
 				var requiredNets = [
-					dockerHelper.getNetwork(networks, 'databox-driver-net'),
+					dockerHelper.getNetwork(networks, 'databox-driver-net', true),
 					dockerHelper.getNetwork(networks, 'databox-app-net'),
 					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
-					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net')
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net'),
+					dockerHelper.getNetwork(networks, 'databox-external', true)
 				];
 
 				return Promise.all(requiredNets)
@@ -554,6 +555,9 @@ exports.launchExportService = function () {
 			})
 			.then((exportService) => {
 				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
+			})
+			.then((exportService) => {
+				return dockerHelper.connectToNetwork(exportService, 'databox-external');
 			})
 			.then((exportService) => {
 				console.log('[' + name + '] Passing token to Arbiter');
@@ -974,6 +978,8 @@ let launchContainer = function (containerSLA) {
 				return startContainer(results[results.length - 1]);
 			})
 			.then((container) => {
+			        proms = [];
+
 				launched.push(container);
 				if (container.type == 'driver') {
 					return configureDriver(container);
@@ -986,7 +992,10 @@ let launchContainer = function (containerSLA) {
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
 				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
-				return updateArbiter(update);
+			        proms.push(updateArbiter(update));
+
+			        proms.push(dockerHelper.disconnectFromNetwork(container, 'bridge'));
+			        return Promise.all(proms);
 			})
 			.then(() => {
 				//grant write access to requested stores
