@@ -994,7 +994,7 @@ let launchContainer = function (containerSLA) {
 				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
 			        proms.push(updateArbiter(update));
 
-			        proms.push(dockerHelper.disconnect(container, 'bridge'));
+			        proms.push(dockerHelper.disconnectFromNetwork(container, 'bridge'));
 			        return Promise.all(proms);
 			})
 			.then(() => {
