@@ -146,10 +146,11 @@ exports.initNetworks = function () {
 		dockerHelper.listNetworks()
 			.then(networks => {
 				var requiredNets = [
-					dockerHelper.getNetwork(networks, 'databox-driver-net'),
+					dockerHelper.getNetwork(networks, 'databox-driver-net', true),
 					dockerHelper.getNetwork(networks, 'databox-app-net'),
 					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
-					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net')
+					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net').
+					dockerHelper.getNetwork(networks, 'databox-external', true)
 				];
 
 				return Promise.all(requiredNets)
@@ -554,6 +555,9 @@ exports.launchExportService = function () {
 			})
 			.then((exportService) => {
 				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
+			})
+			.then((exportService) => {
+				return dockerHelper.connectToNetwork(exportService, 'databox-external');
 			})
 			.then((exportService) => {
 				console.log('[' + name + '] Passing token to Arbiter');
