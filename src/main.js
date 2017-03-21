@@ -77,17 +77,13 @@ httpsHelper.init()
 		
 	})
 	
-	.then(() => {
-		if(DATABOX_DEV) {
-			//launch in-order to preserve IPs
-			console.log('['+Config.localAppStoreName+'] Launching');
-			return conman.launchLocalAppStore();
-		}
-	})
-
 	.then(()=>{
 		//launch databox components 
 		var proms = [conman.launchLogStore(),conman.launchExportService()];
+		if(DATABOX_DEV) {
+			console.log('['+Config.localAppStoreName+'] Launching');
+			proms.push(conman.launchLocalAppStore());
+		}
 		return Promise.all(proms);
 	})
 	
