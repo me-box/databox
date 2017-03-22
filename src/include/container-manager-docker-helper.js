@@ -46,12 +46,12 @@ exports.createNetwork = function(name, external) {
         Driver: 'bridge',
         Internal: !external
       }, (err,data) => {
-      if(err) {
-        reject("[createNetwork] Can't list networks");
-        return;
-      }
-      resolve(data);
-    })
+        if(err) {
+          reject("[createNetwork] Can't list networks:", err);
+          return;
+        }
+        resolve(data);
+      });
   });
 }
 
@@ -81,9 +81,12 @@ var getNetwork = function(networks, name, external) {
           Driver: 'bridge',
           Internal: !external
         }, (err,data) => {
-        if(err) reject("[getNetwork] Can't create networks")
-        resolve(data);
-      })
+          if(err) {
+            reject("[getNetwork] Can't create networks:", err);
+            return;
+          }
+          resolve(data);
+        });
   });
 }
 exports.getNetwork = getNetwork;
