@@ -1,6 +1,6 @@
 {
 	"registryUrl": "registry.hub.docker.com/databoxsystems",
-	"storeUrl": "https://store.iotdatabox.com",
+	"storeUrl": "http://store.upintheclouds.org",
 	"registryUrl_dev": "localhost:5000",
 	"storeUrl_dev": "http://localhost:8181",
 	"registryUrl_sdk": "registry.upintheclouds.org",
