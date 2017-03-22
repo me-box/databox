@@ -45,9 +45,6 @@ var init = function() {
                         "\n###################### INSTALL INSTRUCTIONS ######################\n" +
                         "\n"+
                         "\n"+
-                        " You will need to add some lines to you hosts file (only do this once) by  running with root permission\n"+
-	                    " \t npm run sethosts \n" +
-                        "\n"+
                         " You will need to add the container manager CA to the docker keychain \n"+
                         "\n"+
                         " \t Ubuntu: sudo install -m 044 -D "+devCAPath+" /etc/docker/certs.d/"+Config.registryUrl_dev+"/ca.crt \n"+
