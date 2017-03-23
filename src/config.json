@@ -18,13 +18,15 @@
 									"databox-driver-mobile",
 									"databox-driver-twitter-stream",
 									"databox-app-twitter-sentiment",
-									"databox-os-monitor-driver"
+									"databox-os-monitor-driver",
+									"databox-driver-phillipshue"
 								],
 	"localAppStoreSeedManifests": [
 		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-driver-phillipshue/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-driver-mobile/master/databox-manifest.json"
 	]
 }
