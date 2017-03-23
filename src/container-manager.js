@@ -550,13 +550,13 @@ exports.launchExportService = function () {
 				);
 			})
 			.then((exportService) => {
-				return startContainer(exportService);
-			})
-			.then((exportService) => {
 				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
 			})
 			.then((exportService) => {
 				return dockerHelper.connectToNetwork(exportService, 'databox-external');
+			})
+			.then((exportService) => {
+				return startContainer(exportService);
 			})
 			.then((exportService) => {
 				console.log('[' + name + '] Passing token to Arbiter');
