@@ -54,9 +54,11 @@ var init = function() {
                         "\n \t Ubuntu: sudo service docker restart \n"+
                         "\n \t MAC OSX:: use the gui! \n"+
                         "Then restart the container manager:\n"+
-                        "\n \t DATABOX_DEV=1 npm start \n"+
+                        "\n \t ./platformDevMode.sh \n"+
                         "Then seed the local docker registry with the demo images:\n"+
                         "\n \t sh ./updateLocalRegistry.sh \n"+
+                        "Then restart the container manager again:\n"+
+                        "\n \t ./platformDevMode.sh \n"+
                         "\n#################### END INSTALL INSTRUCTIONS #####################\n"
                     );
                 }
