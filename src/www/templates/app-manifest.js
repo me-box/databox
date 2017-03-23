@@ -7,11 +7,9 @@ var pug_has_own_property=Object.prototype.hasOwnProperty;
 var pug_match_html=/["&<>]/;function template(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (manifest, sensors) {function getSensors(type) {
 	if (sensors == null) {
 		return [];
-	}
-	else if (type == null) {
+	} else if (type == null || type === '*') {
 		return sensors;
-	}
-	else {
+	} else {
 		return sensors.filter(function (sensor) {
 			return sensor.type === type;
 		});
@@ -195,14 +193,14 @@ pug_html = pug_html + "\u003Cdiv class=\"padded\"\u003E\u003Cdiv class=\"padded 
   if ('number' == typeof $$obj.length) {
       for (var pug_index5 = 0, $$l = $$obj.length; pug_index5 < $$l; pug_index5++) {
         var url = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Elink\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
       }
   } else {
     var $$l = 0;
     for (var pug_index5 in $$obj) {
       $$l++;
       var url = $$obj[pug_index5];
-pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Einput\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli class=\"mdl-list__item mdl-list__item--two-line\"\u003E\u003Cspan class=\"mdl-list__item-primary-content\"\u003E\u003Ci class=\"material-icons mdl-list__item-icon\"\u003Elink\u003C\u002Fi\u003E\u003Cspan\u003E" + (pug_escape(null == (pug_interp = url.url) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003Cspan class=\"mdl-list__item-sub-title\"\u003E" + (pug_escape(null == (pug_interp = url.description) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E\u003C\u002Fli\u003E";
     }
   }
 }).call(this);

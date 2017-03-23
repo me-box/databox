@@ -2,11 +2,9 @@
 	function getSensors(type) {
 		if (sensors == null) {
 			return [];
-		}
-		else if (type == null) {
+		} else if (type == null || type === '*') {
 			return sensors;
-		}
-		else {
+		} else {
 			return sensors.filter(function (sensor) {
 				return sensor.type === type;
 			});
