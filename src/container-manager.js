@@ -81,7 +81,6 @@ var getOwnContainer = function () {
 					return;
 				}
 				containers = containers.filter((cont)=>{ return cont.State === 'running'; });
-				console.log(containers)
 				if (containers.length !== 1) {
 					reject("More than one Container Manager running!");
 					return;
@@ -833,7 +832,6 @@ let launchContainer = function (containerSLA) {
 
 	let readProms = [];
 
-	console.log(containerSLA);
 	if(containerSLA['export-whitelist']) {
 
 		let urlsString = containerSLA['export-whitelist'].map((itm)=>{return '"' + itm.url + '"';}).join(',');
@@ -897,7 +895,6 @@ let launchContainer = function (containerSLA) {
 
 		Promise.all(readProms)
 		.then((resp)=>{
-			console.log(resp);
 			console.log('[Added read permissions for]:' + containerSLA.localContainerName);
 		})
 		.catch((error)=>{

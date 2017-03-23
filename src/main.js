@@ -1,5 +1,7 @@
 /*jshint esversion: 6 */
 
+process.setMaxListeners(200);
+
 var conman = require('./container-manager.js');
 var Config = require('./config.json');
 var fs = require('fs');
@@ -32,6 +34,7 @@ httpsHelper.init()
 		return conman.getOwnContainer();
 	})
 	.then((containerManagerContainer) => {
+		containerManagerContainer.name="databox-cm";
 		return conman.connectToCMArbiterNetwork(containerManagerContainer);
 	})
 	.then(() => {
@@ -93,6 +96,7 @@ httpsHelper.init()
 			req.get("http://" + Config.localAppStoreName + ":8181/",(error,response,body)=>{
 				if(error) {
 					console.log("[seeding manifest] get app store root to log in", error);
+					return Promise.reject();
 				}
 				proms = Config.localAppStoreSeedManifests.map((url)=>{
 					return new Promise(function(resolve, reject) {
@@ -101,17 +105,15 @@ httpsHelper.init()
 								console.log("[seeding manifest] Failed to get manifest from" + url, error);
 							}
 							req.post({
-								uri: "http://" + Config.localAppStoreName + ":8181/app/post",
-								method: "POST",
-								form: {"manifest": body}
-							}, (error,response,body) => {
-								if(error) {
-									console.log("[seeding manifest] Failed to POST manifest " + url, error);
-								} else {
-									console.log("[seeding manifest]" + url + " SUCCESS ",body);
-									resolve();
-								}
-							});
+									uri: "http://" + Config.localAppStoreName + ":8181/app/post",
+									method: "POST",
+									form: {"manifest": body}
+									}, (error,response,body) => {
+										if(error) {
+											console.log("[seeding manifest] Failed to POST manifest " + url, error);
+										} 
+										resolve();
+									});
 						});
 					});
 				});
