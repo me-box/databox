@@ -94,7 +94,7 @@ exports.getNetwork = getNetwork;
 
 exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
-    console.log('[' + container.name + '] Connecting to ' + networkName);
+    console.log('[' + (container.name || container.Name) + '] Connecting to ' + networkName);
     listNetworks({})
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {

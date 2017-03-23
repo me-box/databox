@@ -313,6 +313,7 @@ exports.launchLocalAppStore = function() {
 				);
 			})
 			.then((appStore) => {
+				appStore.name = name;
 				return dockerHelper.connectToNetwork(appStore, 'databox-cloud-net');
 			})
 			.then((appStore) => {
@@ -353,6 +354,7 @@ exports.launchLocalRegistry = function() {
 				);
 			})
 			.then((Reg) => {
+				Reg.name = name;
 				return dockerHelper.connectToNetwork(Reg, 'databox-cloud-net');
 			})
 			.then((Reg) => {
@@ -409,6 +411,7 @@ exports.launchArbiter = function () {
 				return startContainer(Arbiter);
 			})
 			.then((Arbiter) => {
+				Arbiter.name = name;
 				return dockerHelper.connectToNetwork(Arbiter, 'databox-driver-net');
 			})
 			.then((Arbiter) => {
@@ -493,6 +496,7 @@ exports.launchLogStore = function () {
 				return startContainer(logstore);
 			})
 			.then((logstore) => {
+				logstore.name = name;
 				var proms =  [ dockerHelper.connectToNetwork(logstore, 'databox-driver-net'),
 							   dockerHelper.connectToNetwork(logstore, 'databox-app-net')];
 				return Promise.all(proms);
@@ -550,6 +554,7 @@ exports.launchExportService = function () {
 				);
 			})
 			.then((exportService) => {
+				exportService.name = name;
 				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
 			})
 			.then((exportService) => {
