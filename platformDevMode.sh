@@ -12,7 +12,7 @@ docker create \
 	-e "DATABOX_DEV=1" \
 	--label databox.type=container-manager \
 	-p 8989:8989 \
-	-t node:latest npm --prefix /cm start
+	-t node:alpine npm --prefix /cm start
 
 
 docker start -i databox-cm
