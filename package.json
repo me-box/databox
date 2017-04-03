@@ -32,7 +32,7 @@
   "dependencies": {
     "body-parser": "^1.15.2",
     "docker-events": "^0.0.2",
-    "dockerode": "^2.3.1",
+    "dockerode": "^2.4.3",
     "express": "^4.14.0",
     "hostile": "^1.1.0",
     "jsonfile": "^2.4.0",
