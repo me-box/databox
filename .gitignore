@@ -39,3 +39,6 @@ node_modules
 sladatastore.db
 certs/*
 updateLocalRegistry.sh
+
+\.DS_Store
+scripts/*
