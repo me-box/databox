@@ -1,28 +1,28 @@
 /*jshint esversion: 6 */
 
-var Config = require('./config.json');
-var os = require('os');
-var crypto = require('crypto');
-var request = require('request');
-var https = require('https');
-var url = require('url');
+const Config = require('./config.json');
+const os = require('os');
+const crypto = require('crypto');
+const request = require('request');
+const https = require('https');
+const url = require('url');
+const Docker = require('dockerode');
+const docker = new Docker();
 
-var db = require('./include/container-manager-db.js');
-var dockerHelper = require('./include/container-manager-docker-helper.js');
+const db = require('./include/container-manager-db.js');
+const dockerHelper = require('./include/container-manager-docker-helper.js');
 
-var docker = dockerHelper.getDocker();
-
-var ip = '127.0.0.1';
+const ip = '127.0.0.1';
 
 //setup dev env
-var DATABOX_DEV = process.env.DATABOX_DEV;
+const DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 	Config.registryUrl = Config.registryUrl_dev;
 	Config.storeUrl = Config.storeUrl_dev;
 	console.log("Using dev regestry::", Config.registryUrl);
 }
 
-var DATABOX_SDK = process.env.DATABOX_SDK;
+const DATABOX_SDK = process.env.DATABOX_SDK;
 if(DATABOX_SDK == 1) {
 	Config.registryUrl = Config.registryUrl_sdk;
 	Config.storeUrl = Config.storeUrl_sdk;
