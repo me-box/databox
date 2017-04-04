@@ -1,43 +1,10 @@
 /*jshint esversion: 6 */
 
-var Docker = require('dockerode');
-var DockerEvents = require('docker-events');
+const Docker = require('dockerode');
+const DockerEvents = require('docker-events');
+const docker = new Docker();
+const dockerEmitter = new DockerEvents({docker:docker});
 
-var docker = new Docker();
-var dockerEmitter = new DockerEvents({docker:docker});
-
-exports.getDockerEmitter = function () {
-  return dockerEmitter;
-};
-
-exports.getDocker = function () {
-    return docker;
-};
-
-//kill a container without updating the slastore 
-exports.kill = function (id) {
-  return new Promise( (resolve, reject) =>  {
-    container = docker.getContainer(id);
-    container.stop({},(err,data) => {
-        resolve();
-      });
-    });
-}
-
-//force container removal 
-exports.remove = function (id) {
-  return new Promise( (resolve, reject) =>  {
-    container = docker.getContainer(id);
-    container.remove({force: true},(err,data) => {
-      if(err) {
-        console.log("[remove]" + err);
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
-}
 
 exports.createNetwork = function(name, external) {
   return new Promise( (resolve, reject) =>  {

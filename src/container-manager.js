@@ -109,12 +109,15 @@ exports.killAll = function () {
 		listContainers()
 			.then(containers => {
 				ids = [];
-				for (var container of containers) {
+				for (const container of containers) {
 					if(container.Labels['databox.type'] != 'container-manager') {
-						var name = repoTagToName(container.Image);
+						const name = repoTagToName(container.Image);
 						console.log('[' + name + '] Uninstalling');
-						ids.push(dockerHelper.kill(container.Id));
-						ids.push(dockerHelper.remove(container.Id));
+						const cont = docker.getContainer(container.Id);
+						if(container.State == 'running') { 
+							ids.push(cont.stop());
+						}
+						ids.push(cont.remove({force: true}));
 					}
 				}
 				return Promise.all(ids);
@@ -123,7 +126,7 @@ exports.killAll = function () {
 				resolve();
 			})
 			.catch(err => {
-				console.log("[killAll-2]" + err);
+				console.log("[killAll Error] " + err);
 				reject(err);
 			});
 	});
