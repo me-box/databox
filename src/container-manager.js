@@ -175,7 +175,7 @@ var pullDockerIOImage = function (imageName) {
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
-		console.log('[' + name + '] Pulling ' + version + ' image');
+		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(imageName, resolve,reject);
 	});
 };
@@ -186,7 +186,7 @@ var pullImage = function (imageName) {
 		var parts = imageName.split(':');
 		var name = parts[0];
 		var version = parts[1];
-		console.log('[' + name + '] Pulling ' + version + ' image');
+		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
 	});
 };
@@ -198,7 +198,7 @@ var dockerImagePull = function (image,resolve,reject) {
 				reject(err);
 				return;
 			}
-			stream.pipe(process.stdout);
+			//stream.pipe(process.stdout);
 			docker.modem.followProgress(stream, (err, output) => {
 				if (err) {
 					reject(err);
@@ -207,6 +207,25 @@ var dockerImagePull = function (image,resolve,reject) {
 				resolve(";->");
 			});
 		});
+};
+
+var pushToRegistry = function (image) {
+	return new Promise((resolve, reject) => {
+		image.push(image, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			//stream.pipe(process.stdout);
+			docker.modem.followProgress(stream, (err, output) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(";->");
+			});
+		});
+	});
 };
 
 var getContainerInfo = function (container) {
@@ -230,6 +249,47 @@ var getContainerInfo = function (container) {
 			return response;
 		});
 };
+
+var updateSeedImage = function (organization, imageName, targetReg) {
+	return new Promise((resolve, reject)=>{
+		const targetImage = targetReg + '/' + imageName  + ARCH;
+		const srcImage = organization + '/' + imageName  + ARCH + ':latest';
+
+		console.log("[Seeding]" + srcImage + ' to ' + targetImage);
+
+		pullDockerIOImage(targetImage)
+		.then(()=>{
+			console.log("[Seeding] successful image exists");
+			resolve();
+		})
+		.catch((err)=>{
+			//try and seed the image form the organization docker hub
+			pullDockerIOImage(srcImage)
+			.then(()=>{
+				return docker.getImage(srcImage);
+			})
+			.then((img)=>{
+				return img.tag({repo: targetImage});
+			})
+			.then(()=>{
+				return docker.getImage(targetImage);
+			})
+			.then((img)=>{
+				return pushToRegistry(img);
+			})
+			.then((data)=>{
+				console.log("[Seeding] successful " + srcImage + ' to ' + targetImage);
+				resolve();
+			})
+			.catch((err)=>{
+				console.log("[Seeding] FAILED " + srcImage + ' to ' + targetImage,err);
+				reject(err);
+			});
+		});
+
+	});
+};
+exports.updateSeedImage = updateSeedImage;
 
 var startContainer = function (container) {
 	return new Promise((resolve, reject) => {

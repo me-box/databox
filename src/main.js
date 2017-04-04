@@ -39,22 +39,21 @@ httpsHelper.init()
 	})
 	.then(() => {
 		if(DATABOX_DEV) {
-			const devSeedScript = './updateLocalRegistry.sh';
-			console.log('['+Config.localRegistryName+'] updating ' + devSeedScript);
-			var script = "";
-			for(img of Config.localRegistrySeedImages) {
-				script += "docker pull databoxsystems/"+img+" && docker tag databoxsystems/"+img+" "+ Config.registryUrl +"/"+img+" && docker push "+ Config.registryUrl +"/"+img+"\n";
-			}
-			fs.writeFileSync(devSeedScript, script);
-
 			console.log('['+Config.localRegistryName+'] Launching');
-			
-			//launch in-order to preserve IPs
-			return conman.launchLocalRegistry();
-						
+			return conman.launchLocalRegistry();		
 		}
 	})
+	.then(() => {
+		if(DATABOX_DEV) {
 
+			proms = Config.localRegistrySeedImages.map((img)=>{
+				return conman.updateSeedImage('databoxsystems',img,Config.registryUrl);
+			});
+
+			return Promise.all(proms);
+		}
+
+	})
 	.then(() => {
 		console.log('[databox-arbiter] Launching');
 		return conman.launchArbiter(httpsHelper);
