@@ -55,10 +55,7 @@ var init = function() {
                         "\n \t MAC OSX:: use the gui! \n"+
                         "Then restart the container manager:\n"+
                         "\n \t ./platformDevMode.sh \n"+
-                        "Then seed the local docker registry with the demo images:\n"+
-                        "\n \t sh ./updateLocalRegistry.sh \n"+
-                        "Then restart the container manager again:\n"+
-                        "\n \t ./platformDevMode.sh \n"+
+                        "\n" +
                         "\n#################### END INSTALL INSTRUCTIONS #####################\n"
                     );
                 }
