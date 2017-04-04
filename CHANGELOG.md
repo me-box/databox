@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
     * Moved databox container manger to node:alpine to save bandwidth. #14
+    * Removed the need to run update updateLocalRegistry.sh #13
 
 ## [0.1.0] 2017-03-24
 
