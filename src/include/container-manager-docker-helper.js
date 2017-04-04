@@ -22,16 +22,6 @@ exports.createNetwork = function(name, external) {
   });
 }
 
-var listNetworks = function() {
-  return new Promise( (resolve, reject) =>  {
-    docker.listNetworks({}, (err,data) => {
-      if(err) reject("[listNetworks] Can't list networks");
-      resolve(data);
-    })
-  });
-}
-exports.listNetworks = listNetworks;
-
 var getNetwork = function(networks, name, external) {
   return new Promise( (resolve, reject) =>  {
     for(i in networks) {
@@ -62,7 +52,7 @@ exports.getNetwork = getNetwork;
 exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
     console.log('[' + (container.name || container.Name) + '] Connecting to ' + networkName);
-    listNetworks({})
+    docker.listNetworks({})
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {
         net.connect({'Container':container.id}, (err,data) => {
@@ -80,7 +70,7 @@ exports.connectToNetwork = function (container, networkName) {
 
 exports.disconnectFromNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
-    listNetworks({})
+    docker.listNetworks({})
     .then( (nets) => { return getNetwork(nets,networkName)})
     .then( (net) => {
         net.disconnect({'Container':container.id}, (err,data) => {
@@ -109,15 +99,3 @@ exports.createContainer = function(opts) {
   });
 }
 
-exports.inspectContainer = function(cont) {
-  return new Promise( (resolve, reject) =>  {
-    //TODO: check cont
-    cont.inspect((err ,data, cont) => {
-      if(err) {
-        reject('inspectContainer::'+err);
-        return;
-      }
-      resolve(data);
-    })
-  });
-}

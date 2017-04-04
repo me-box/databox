@@ -141,7 +141,7 @@ exports.getContainer = getContainer;
 
 exports.initNetworks = function () {
 	return new Promise((resolve, reject) => {
-		dockerHelper.listNetworks()
+		docker.listNetworks({})
 			.then(networks => {
 				var requiredNets = [
 					dockerHelper.getNetwork(networks, 'databox-driver-net', true),
@@ -228,7 +228,7 @@ var pushToRegistry = function (image) {
 };
 
 var getContainerInfo = function (container) {
-	return dockerHelper.inspectContainer(container)
+	return container.inspect(container)
 		.then((info) => {
 			var response = {
 				id: info.Id,
@@ -324,7 +324,7 @@ exports.stopContainer = function (cont) {
 exports.removeContainer = function (cont) {
 
 	return new Promise((resolve, reject) => {
-		dockerHelper.inspectContainer(cont)
+			cont.inspect()
 			.then((info) => {
 				cont.remove({force: true}, (err, data) => {
 					if (err) {
