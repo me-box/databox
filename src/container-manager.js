@@ -52,10 +52,6 @@ exports.connect = function () {
 	}));
 };
 
-exports.getDockerEmitter = function () {
-	return dockerHelper.getDockerEmitter();
-};
-
 var listContainers = function () {
 	return new Promise((resolve, reject) => {
 		docker.listContainers({all: true, filters: {"label": ["databox.type"]}},
