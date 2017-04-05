@@ -20,6 +20,9 @@ exports.createNetwork = function(networkName, external) {
             })
             .then(()=>{
               resolve();
+            })
+            .catch((err)=>{
+              console.log("ERROR creating " + networkName, err);
             });
         });
   });
