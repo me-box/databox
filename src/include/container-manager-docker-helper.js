@@ -6,51 +6,47 @@ const docker = new Docker();
 const dockerEmitter = new DockerEvents({docker:docker});
 
 
-exports.createNetwork = function(name, external) {
+exports.createNetwork = function(networkName, external) {
     return new Promise((resolve,reject)=>{
-      docker.listNetworks()
-      .then((nets)=>{
-        const matching = nets.filter((itm)=>{ return itm.Name === name;});
-        if(matching.length > 0 ) {
-          resolve();
-        } else {
-          docker.createNetwork({
-            'Name': name,
-            'Driver': 'bridge',
-            'Internal': !external
-          })
-          .then(()=>{
-            resolve();
-          });
-        }
-
-      });
-    });
-};
-
-const getNetwork = function(networks, name) {
-  return new Promise( (resolve, reject) =>  {
-    for(const i in networks) {
-          const net = networks[i];
-          if(net.Name === name) {
-            const n = docker.getNetwork(net.Id);
-            resolve(n);
-            return;
-          }
-      }
-
-      reject("[getNetwork] networks not found");
-            
+      getNetwork(networkName)
+        .then((net)=>{
+            resolve(net);
+        })
+        .catch((err)=>{
+            docker.createNetwork({
+              'Name': name,
+              'Driver': 'bridge',
+              'Internal': !external
+            })
+            .then(()=>{
+              resolve();
+            });
+        });
   });
 };
-exports.getNetwork = getNetwork;
 
+const getNetwork = function(networkName) {
+  return new Promise( (resolve, reject) =>  {
+    docker.listNetworks({})
+    .then( (networks) => {
+      for(const i in networks) {
+            const net = networks[i];
+            if(net.Name === networkName) {
+              const n = docker.getNetwork(net.Id);
+              resolve(n);
+              return;
+            }
+        }
+
+        reject("[getNetwork] networks not found",networkName);
+    });
+  });
+};
 
 exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
     console.log('[' + (container.name || container.Name) + '] Connecting to ' + networkName);
-    docker.listNetworks({})
-    .then( (nets) => { return getNetwork(nets,networkName);})
+    getNetwork(networkName)
     .then( (net) => {
         return net.connect({'Container':container.id});
       })
@@ -66,8 +62,7 @@ exports.connectToNetwork = function (container, networkName) {
 
 exports.disconnectFromNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
-    docker.listNetworks({})
-    .then( (nets) => { return getNetwork(nets,networkName)})
+    getNetwork(networkName)
     .then( (net) => {
         net.disconnect({'Container':container.id}, (err,data) => {
           if(err) {

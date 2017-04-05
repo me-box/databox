@@ -47,7 +47,10 @@ exports.setHttpsHelper = function (helper) {
 
 exports.connect = function () {
 	return new Promise((resolve, reject) => docker.ping(function (err, data) {
-		if (err) reject("Cant connect to docker!");
+		if (err) {
+			reject("Cant connect to docker!");
+			return;
+		} 
 		resolve();
 	}));
 };
@@ -94,31 +97,24 @@ exports.connectToCMArbiterNetwork = function (container) {
 };
 
 exports.killAll = function () {
-	return new Promise((resolve, reject) => {
-		listContainers()
-			.then(containers => {
-				ids = [];
-				for (const container of containers) {
-					if(container.Labels['databox.type'] != 'container-manager') {
-						const name = repoTagToName(container.Image);
-						console.log('[' + name + '] Uninstalling');
-						const cont = docker.getContainer(container.Id);
-						if(container.State == 'running') { 
-							ids.push(cont.stop());
+
+		return listContainers()
+					.then(containers => {
+						ids = [];
+						for (const container of containers) {
+							if(container.Labels['databox.type'] != 'container-manager') {
+								const name = repoTagToName(container.Image);
+								console.log('[' + name + '] Uninstalling');
+								const cont = docker.getContainer(container.Id);
+								if(container.State == 'running') { 
+									ids.push(cont.stop());
+								}
+								ids.push(cont.remove({force: true}));
+							}
 						}
-						ids.push(cont.remove({force: true}));
-					}
-				}
-				return Promise.all(ids);
-			})
-			.then((data) => {
-				resolve();
-			})
-			.catch(err => {
-				console.log("[killAll Error] " + err);
-				reject(err);
-			});
-	});
+						return Promise.all(ids);
+					});
+			
 };
 
 var getContainer = function (id) {
