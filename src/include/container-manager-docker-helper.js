@@ -8,19 +8,23 @@ const dockerEmitter = new DockerEvents({docker:docker});
 
 exports.createNetwork = function(name, external) {
     return new Promise((resolve,reject)=>{
-      docker.createNetwork({
-        Name: name,
-        Driver: 'bridge',
-        Internal: !external
-      })
-      .then(()=>{
-        resolve();
+      docker.listNetworks()
+      .then((nets)=>{
+        const matching = nets.filter((itm)=>{ return itm.Name === name;});
+        if(matching.length > 0 ) {
+          resolve();
+        } else {
+          docker.createNetwork({
+            'Name': name,
+            'Driver': 'bridge',
+            'Internal': !external
+          })
+          .then(()=>{
+            resolve();
+          });
+        }
+
       });
-    })
-    .catch(()=>{
-      //if the network exists it will fail with Error: socket hang up
-      // so lets ignore it.
-      resolve();
     });
 };
 
