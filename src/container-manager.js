@@ -19,14 +19,14 @@ const DATABOX_DEV = process.env.DATABOX_DEV;
 if(DATABOX_DEV == 1) {
 	Config.registryUrl = Config.registryUrl_dev;
 	Config.storeUrl = Config.storeUrl_dev;
-	console.log("Using dev regestry::", Config.registryUrl);
+	console.log("Using dev registry::", Config.registryUrl);
 }
 
 const DATABOX_SDK = process.env.DATABOX_SDK;
 if(DATABOX_SDK == 1) {
 	Config.registryUrl = Config.registryUrl_sdk;
 	Config.storeUrl = Config.storeUrl_sdk;
-	console.log("Using sdk registery::", Config.registryUrl);
+	console.log("Using sdk registry::", Config.registryUrl);
 }
 
 //ARCH to append -arm to the end of a container name if running on arm
@@ -313,41 +313,64 @@ exports.removeContainer = function (cont) {
 	});
 };
 
+const launchPlatformContainer = function (containerName ,config , networks = [], wait = 0) {
+	return new Promise((resolve,reject)=>{
+		pullImage(config.name + ":latest")
+				.then(() => {
+					return httpsHelper.createClientCert(containerName);
+				})
+				.then((httpsCerts) => {
+
+					if(!Array.isArray(config.Env)) {
+						config.Env = [];
+					}
+
+					config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
+					config.Env.push("HTTPS_SERVER_CERT=" + httpsCerts.clientcert);
+					config.Env.push("HTTPS_SERVER_PRIVATE_KEY=" + httpsCerts.clientprivate);
+					return docker.createContainer(config);
+				})
+				.then((cont) => {
+					return startContainer(cont);
+				})
+				.then((cont) => {
+					//cont.name = containerName;
+					const proms = networks.map((networkName)=>{
+						return dockerHelper.connectToNetwork(cont,networkName);
+					});
+					return Promise.all(proms);
+				})
+				.then((contArray) => {
+					if(wait > 0) {
+						console.log("waiting for " + containerName + " ....");
+					}
+					setTimeout(resolve,wait,contArray[0]);
+				})
+				.catch((err)=>{
+					reject(err);
+				});
+	}); 
+};
+
 exports.launchLocalAppStore = function() {
 	return new Promise((resolve, reject) => {
-		var name = Config.localAppStoreName + ARCH;
-		pullImage(Config.localAppStoreName + ":latest")
-		    .then(() => {
-				return httpsHelper.createClientCert(Config.localAppStoreName);
-			})
-			.then((httpsCerts) => {
-				return docker.createContainer(
-					{
+		const name = Config.localAppStoreName + ARCH;
+		const config = {
 						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
 						'Env': [
-									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
-									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
 									"LOCAL_MODE=1", //force local mode to disable login
 									"PORT=8181"
 							   ],
 						'Binds':["/tmp/databoxAppStore:/data/db"],
 						'PortBindings': {'8181/tcp': [{ HostPort: '8181' }]} //expose ports for the mac
-					}
-				);
-			})
-			.then((appStore) => {
-				appStore.name = name;
-				return dockerHelper.connectToNetwork(appStore, 'databox-cloud-net');
-			})
-			.then((appStore) => {
-				return startContainer(appStore);
-			})
-			.then(() => {
-				console.log("waiting for local app store ....");
-				setTimeout(resolve,3000);
+					};
+
+		launchPlatformContainer(Config.localAppStoreName,config,['databox-cloud-net'],3000)
+			.then(()=>{
+				resolve();
 			})
 			.catch((error)=>{
 				console.log("[launchLocalAppStore]",error);
@@ -371,8 +394,8 @@ exports.launchLocalRegistry = function() {
 						'Image': Config.localRegistryImage + ":latest",
 						'PublishAllPorts': true,
 						'Env': [
-									"HTTP_TLS_CERTIFICATE=" + httpsCerts.clientcert,
-									"HTTP_TLS_KEY=" + httpsCerts.clientprivate,
+									"HTTPS_SERVER_CERT=" + httpsCerts.clientcert,
+									"HTTPS_SERVER_PRIVATE_KEY=" + httpsCerts.clientprivate,
 							   ],
 						'Binds':["/tmp/databoxregistry:/var/lib/registry"],
 						'PortBindings': {'5000/tcp': [{ HostPort: '5000' }]} //expose ports for the mac
@@ -404,81 +427,33 @@ var DATABOX_ARBITER_ENDPOINT_IP = null;
 var DATABOX_ARBITER_PORT = '8080';
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
-		var name = "databox-arbiter" + ARCH;
+		const name = "databox-arbiter" + ARCH;
 		arbiterName = name;
-		pullImage(name + ":latest")
-			.then(() => {
-				var proms = [
-					httpsHelper.createClientCert(name),
-					generateArbiterToken()
-				];
-				return Promise.all(proms);
-			})
-			.then((keysArray) => {
-				httpsPem = keysArray[0];
-				arbiterKey = keysArray[1];
-				return docker.createContainer(
-					{
+		let config = {
 						'hostname': name,
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': [
-								"CM_KEY=" + arbiterKey,
-								"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
-								"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
-								"HTTPS_SERVER_CERT=" +  httpsPem.clientcert,
-							   ],
+						'Env': [],
 						'PortBindings': {'8080/tcp': [{ HostPort: DATABOX_ARBITER_PORT }]} //expose ports for the mac
-					}
-				);
-			})
-			.then((Arbiter) => {
-				return startContainer(Arbiter);
-			})
-			.then((Arbiter) => {
-				Arbiter.name = name;
-				return dockerHelper.connectToNetwork(Arbiter, 'databox-driver-net');
-			})
-			.then((Arbiter) => {
-				return dockerHelper.connectToNetwork(Arbiter, 'databox-app-net');
-			})
-			.then((Arbiter) => {
-				return dockerHelper.connectToNetwork(Arbiter, 'databox-cm-arbiter-net');
-			})
-			.then((Arbiter) => {
-				var untilActive = function (error, response, body) {
-					if(error) {
-						console.log(error);
-					}
-
-					if (body === 'active') {
+					};
+		generateArbiterToken()
+			.then((arbKey)=>{
+				arbiterKey = arbKey;
+				config.Env.push("CM_KEY=" + arbKey);
+				const networks = ['databox-driver-net','databox-app-net','databox-cm-arbiter-net'];
+				launchPlatformContainer("databox-arbiter",config,networks,5000)
+					.then((Arbiter)=>{
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
 						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
 						resolve({'name': Arbiter.name, 'port': Arbiter.port, 'CM_KEY': arbiterKey, });
-					}
-					else {
-						setTimeout(() => {
-							request({'url':"https://"+Arbiter.name+":" + DATABOX_ARBITER_PORT + "/status", 'method':'GET', 'agent':arbiterAgent}, untilActive);
-						}, 1000);
-						console.log("Waiting for Arbiter ....");
-					}
-				};
-				untilActive({});
+					});
 			})
-			.catch((err) => {
-				if(DATABOX_DEV) {
-					console.log(
-						"\n#################### Error creating Arbiter ######################\n\n" +
-						"Have you seeded the local docker registry with the arbiter and demo images ? try running \n"+
-						"\n \t sh ./updateLocalRegistry.sh \n" +
-						"#################### Error creating Arbiter ######################\n\n"
-					);
-				}
-				reject(err);
+			.catch((error)=>{
+				console.log("\n#################### Error creating Arbiter ######################\n");
+				reject(error);
 			});
-
 	});
 };
 
@@ -489,59 +464,35 @@ var DATABOX_LOGSTORE_PORT = 8080;
 exports.launchLogStore = function () {
 
 	return new Promise((resolve, reject) => {
-		var name = DATABOX_LOGSTORE_NAME + ARCH;
-		var arbiterToken = "";
-		pullImage(name + ":latest")
-			.then(() => {
-				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
-				proms = [
-					httpsHelper.createClientCert(name),
-					generateArbiterToken()
-				];
-				return Promise.all(proms);
-			})
-			.then((tokens) => {
-				let httpsPem = tokens[0];
-				arbiterToken = tokens[1];
-				return docker.createContainer(
-					{
+		const name = DATABOX_LOGSTORE_NAME + ARCH;
+		let config = {
 						'name': name,
 						'Image': Config.registryUrl + '/' + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': [
-									"ARBITER_TOKEN=" + arbiterToken,
-									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
-									"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
-									"HTTPS_SERVER_CERT=" +  httpsPem.clientcert
-							   ],
+						'Env': [],
 						'Binds':["/tmp/databoxLogs:/database"],
-					}
-				);
-			})
-			.then((logstore) => {
-				return startContainer(logstore);
-			})
-			.then((logstore) => {
-				logstore.name = name;
-				var proms =  [ dockerHelper.connectToNetwork(logstore, 'databox-driver-net'),
-							   dockerHelper.connectToNetwork(logstore, 'databox-app-net')];
-				return Promise.all(proms);
-			})
-			.then((logstores) => {
-				console.log('[' + name + '] Passing token to Arbiter');
-				var logstore = logstores[0];
-				var update = {name: name, key: arbiterToken, type: logstore.type};
-				return updateArbiter(update);
-			})
-			.then((logstore) => {
-				DATABOX_LOGSTORE_ENDPOINT = 'https://' + DATABOX_LOGSTORE_NAME + ':' + DATABOX_LOGSTORE_PORT;
-				resolve(logstore);
-			})
-			.catch((err) => {
-				console.log("Error creating databox-logstore");
-				reject(err);
-			});
-
+					};
+		let arbiterToken = "";
+		generateArbiterToken()
+			.then((arbKey)=>{
+				arbiterToken = arbKey;
+				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
+				const networks = ['databox-driver-net','databox-app-net'];
+				launchPlatformContainer(DATABOX_LOGSTORE_NAME,config,networks)
+				.then((logstore) => {
+					console.log('[' + name + '] Passing token to Arbiter');
+					const update = {name: name, key: arbiterToken, type: logstore.type};
+					return updateArbiter(update);
+				})
+				.then((logstore) => {
+					DATABOX_LOGSTORE_ENDPOINT = 'https://' + DATABOX_LOGSTORE_NAME + ':' + DATABOX_LOGSTORE_PORT;
+					resolve(logstore);
+				})
+				.catch((err) => {
+					console.log("Error creating databox-logstore");
+					reject(err);
+				});
+		});
 	});
 };
 
@@ -551,99 +502,38 @@ var DATABOX_EXPORT_SERVICE_PORT = 8080;
 exports.launchExportService = function () {
 
 	return new Promise((resolve, reject) => {
-		var name = "databox-export-service" + ARCH;
-		var arbiterToken = "";
-		pullImage(name + ":latest")
-			.then(() => {
-				console.log('[' + name + '] Generating Arbiter token and HTTPS cert');
-				proms = [
-					httpsHelper.createClientCert(name),
-					generateArbiterToken()
-				];
-				return Promise.all(proms);
-			})
-			.then((tokens) => {
-				let httpsPem = tokens[0];
-				arbiterToken = tokens[1];
-				return docker.createContainer(
-					{
+		const name = "databox-export-service" + ARCH;
+		let arbiterToken = "";
+		let config = {
 						'name': name,
 						'Image': Config.registryUrl + '/' + name + ":latest",
 						'PublishAllPorts': true,
-						'Env': [
-									"ARBITER_TOKEN=" + arbiterToken,
-									"CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert(),
-									"HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate,
-									"HTTPS_SERVER_CERT=" +  httpsPem.clientcert
-							   ]
-					}
-				);
-			})
-			.then((exportService) => {
-				exportService.name = name;
-				return dockerHelper.connectToNetwork(exportService, 'databox-app-net');
-			})
-			.then((exportService) => {
-				return dockerHelper.connectToNetwork(exportService, 'databox-external');
-			})
-			.then((exportService) => {
-				return startContainer(exportService);
-			})
-			.then((exportService) => {
-				console.log('[' + name + '] Passing token to Arbiter');
+						'Env': []
+					};
+		generateArbiterToken()
+		.then((arbKey)=>{
+				arbiterToken = arbKey;
+				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
+				const networks = ['databox-driver-net','databox-external'];
+				launchPlatformContainer(DATABOX_LOGSTORE_NAME,config,networks)
+				.then((exportService) => {
+					console.log('[' + name + '] Passing token to Arbiter');
 
-				var update = {name: name, key: arbiterToken, type: exportService.type};
+					var update = {name: name, key: arbiterToken, type: exportService.type};
 
-				return updateArbiter(update);
-			})
-			.then((exportService) => {
-				DATABOX_EXPORT_SERVICE_HOSTNAME = name;
-				DATABOX_EXPORT_SERVICE_ENDPOINT = 'https://' + name + ':' + DATABOX_EXPORT_SERVICE_PORT;
-				resolve(exportService);
-			})
-			.catch((err) => {
-				console.log("Error creating databox-export-service");
-				reject(err);
+					return updateArbiter(update);
+				})
+				.then((exportService) => {
+					DATABOX_EXPORT_SERVICE_HOSTNAME = name;
+					DATABOX_EXPORT_SERVICE_ENDPOINT = 'https://' + name + ':' + DATABOX_EXPORT_SERVICE_PORT;
+					resolve(exportService);
+				})
+				.catch((err) => {
+					console.log("Error creating databox-export-service");
+					reject(err);
+				});
 			});
-
-	});
-};
-
-var notificationsName = null;
-var DATABOX_NOTIFICATIONS_ENDPOINT = null;
-var DATABOX_NOTIFICATIONS_PORT = 8080;
-exports.launchNotifications = function () {
-	return new Promise((resolve, reject) => {
-		var name = "databox-notifications" + ARCH;
-		pullImage(name + ":latest")
-			.then(() => {
-				return docker.createContainer(
-					{
-						'name': name,
-						'Image': Config.registryUrl + "/" + name + ":latest",
-						'PublishAllPorts': true
-					}
-				);
-			})
-			.then((notifications) => {
-				return startContainer(notifications);
-			})
-			.then((notifications) => {
-				return dockerHelper.connectToNetwork(notifications, 'databox-driver-net');
-			})
-			.then((notifications) => {
-				return dockerHelper.connectToNetwork(notifications, 'databox-app-net');
-			})
-			.then((notifications) => {
-				DATABOX_NOTIFICATIONS_ENDPOINT = 'http://' + notifications.ip + ':' + DATABOX_NOTIFICATIONS_PORT + '/notify';
-				resolve(notifications);
-			})
-			.catch((err) => {
-				console.log("Error creating notifications");
-				reject(err);
-			});
-
-	});
+		});
 };
 
 
@@ -853,7 +743,6 @@ let launchContainer = function (containerSLA) {
 			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
 			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + containerSLA.localContainerName, //TODO only expose this to stores 
 			"DATABOX_EXPORT_SERVICE_ENDPOINT=" + DATABOX_EXPORT_SERVICE_ENDPOINT //TODO only expose this to apps
-			//"DATABOX_NOTIFICATIONS_ENDPOINT=" + DATABOX_NOTIFICATIONS_ENDPOINT
 		],
 		'PublishAllPorts': true,
 		'NetworkingConfig': {
