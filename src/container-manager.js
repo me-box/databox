@@ -55,12 +55,12 @@ exports.connect = function () {
 	}));
 };
 
-var listContainers = function () {
+const listContainers = function () {
 	return docker.listContainers({all: true, filters: {"label": ["databox.type"]}});
 };
 exports.listContainers = listContainers;
 
-var getOwnContainer = function () {
+const getOwnContainer = function () {
 	return new Promise((resolve, reject) => {
 		docker.listContainers({all: true, filters: {"label": ["databox.type=container-manager"]}},
 			(err, containers) => {
@@ -117,7 +117,7 @@ exports.killAll = function () {
 			
 };
 
-var getContainer = function (id) {
+const getContainer = function (id) {
 	return Promise.resolve(docker.getContainer(id));
 };
 exports.getContainer = getContainer;
@@ -136,29 +136,29 @@ exports.initNetworks = function () {
 };
 
 //Pull latest image from any repo defaults to dockerIO
-var pullDockerIOImage = function (imageName) {
+const pullDockerIOImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		var parts = imageName.split(':');
-		var name = parts[0];
-		var version = parts[1];
+		const parts = imageName.split(':');
+		const name = parts[0];
+		const version = parts[1];
 		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(imageName, resolve,reject);
 	});
 };
 
 //Pull latest image from Config.registryUrl
-var pullImage = function (imageName) {
+const pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		var parts = imageName.split(':');
-		var name = parts[0];
-		var version = parts[1];
+		const parts = imageName.split(':');
+		const name = parts[0];
+		const version = parts[1];
 		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
 	});
 };
 exports.pullImage = pullImage;
 
-var dockerImagePull = function (image,resolve,reject) {
+const dockerImagePull = function (image,resolve,reject) {
 	docker.pull(image, (err, stream) => {
 			if (err) {
 				reject(err);
@@ -175,7 +175,7 @@ var dockerImagePull = function (image,resolve,reject) {
 		});
 };
 
-var pushToRegistry = function (image) {
+const pushToRegistry = function (image) {
 	return new Promise((resolve, reject) => {
 		image.push(image, (err, stream) => {
 			if (err) {
@@ -194,10 +194,10 @@ var pushToRegistry = function (image) {
 	});
 };
 
-var getContainerInfo = function (container) {
+const getContainerInfo = function (container) {
 	return container.inspect(container)
 		.then((info) => {
-			var response = {
+			const response = {
 				id: info.Id,
 				type: info.Config.Labels['databox.type'],
 				name: repoTagToName(info.Name),
@@ -205,7 +205,7 @@ var getContainerInfo = function (container) {
 			if ('NetworkSettings' in info) {
 				response.ip = info.NetworkSettings.IPAddress;
 				if ('Ports' in info.NetworkSettings) {
-					for (var portName in info.NetworkSettings.Ports) {
+					for (const portName in info.NetworkSettings.Ports) {
 						//response.port = info.NetworkSettings.Ports[portName][0].HostPort;
 						response.port = portName.replace('/tcp','');
 						break;
@@ -216,7 +216,7 @@ var getContainerInfo = function (container) {
 		});
 };
 
-var updateSeedImage = function (organization, imageName, targetReg) {
+const updateSeedImage = function (organization, imageName, targetReg) {
 	return new Promise((resolve, reject)=>{
 		const targetImage = targetReg + '/' + imageName  + ARCH;
 		const srcImage = organization + '/' + imageName  + ARCH + ':latest';
@@ -257,7 +257,7 @@ var updateSeedImage = function (organization, imageName, targetReg) {
 };
 exports.updateSeedImage = updateSeedImage;
 
-var startContainer = function (container) {
+const startContainer = function (container) {
 	return new Promise((resolve, reject) => {
 		//TODO: check container
 		container.start((err, data) => {
@@ -299,7 +299,7 @@ exports.removeContainer = function (cont) {
 						reject(err);
 						return;
 					}
-					var name = repoTagToName(info.Name);
+					const name = repoTagToName(info.Name);
 					//console.log("removed " + name + "!");
 					//console.log("[SLA] Delete " + name);
 					resolve(info);
@@ -381,7 +381,7 @@ exports.launchLocalAppStore = function() {
 
 exports.launchLocalRegistry = function() {
 	return new Promise((resolve, reject) => {
-		var name = Config.localRegistryName + ARCH;
+		const name = Config.localRegistryName + ARCH;
 		pullDockerIOImage(Config.localRegistryImage + ":latest")
 		    .then(() => {
 				return httpsHelper.createClientCert(Config.localRegistryName);
@@ -537,11 +537,11 @@ exports.launchExportService = function () {
 };
 
 
-var repoTagToName = function (repoTag) {
+const repoTagToName = function (repoTag) {
 	return repoTag.match(/(?:.*\/)?([^/:\s]+)(?::.*|$)/)[1];
 };
 
-var generateArbiterToken = function () {
+const generateArbiterToken = function () {
 	return new Promise((resolve, reject) => {
 		crypto.randomBytes(32, function (err, buffer) {
 			if (err) reject(err);
@@ -551,7 +551,7 @@ var generateArbiterToken = function () {
 	});
 };
 
-var configureDriver = function (container) {
+const configureDriver = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 			.then(resolve(container))
@@ -559,7 +559,7 @@ var configureDriver = function (container) {
 	});
 };
 
-var configureApp = function (container) {
+const configureApp = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-app-net')
 			.then(resolve(container))
@@ -567,7 +567,7 @@ var configureApp = function (container) {
 	});
 };
 
-var configureStore = function (container) {
+const configureStore = function (container) {
 	return new Promise((resolve, reject) => {
 		dockerHelper.connectToNetwork(container, 'databox-driver-net')
 		.then(()=> {
@@ -578,14 +578,14 @@ var configureStore = function (container) {
 	});
 };
 
-var updateArbiter = function (data) {
+const updateArbiter = function (data) {
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
 				return getContainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
-				var options = {
+				const options = {
 						url: DATABOX_ARBITER_ENDPOINT + "/cm/upsert-container-info",
 						method:'POST',
 						form: data,
@@ -609,7 +609,7 @@ var updateArbiter = function (data) {
 };
 exports.updateArbiter = updateArbiter;
 
-var updateContainerPermissions = function (permissions) {
+const updateContainerPermissions = function (permissions) {
 
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
@@ -617,7 +617,7 @@ var updateContainerPermissions = function (permissions) {
 				return getContainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
-				var options = {
+				const options = {
 						url: DATABOX_ARBITER_ENDPOINT + "/cm/grant-container-permissions",
 						method:'POST',
 						form: permissions,
@@ -640,14 +640,14 @@ var updateContainerPermissions = function (permissions) {
 	});
 };
 
-var revokeContainerPermissions = function (permissions) {
+const revokeContainerPermissions = function (permissions) {
 	return new Promise((resolve, reject) => {
 		getContainer(arbiterName)
 			.then((Arbiter) => {
 				return getContainerInfo(Arbiter);
 			})
 			.then((arbiterInfo) => {
-				var options = {
+				const options = {
 						url: DATABOX_ARBITER_ENDPOINT + "/cm/delete-container-info",
 						method:'POST',
 						form: permissions,
@@ -670,12 +670,12 @@ var revokeContainerPermissions = function (permissions) {
 	});
 };
 
-var launchDependencies = function (containerSLA) {
-	var promises = [];
-	for (var requiredType in containerSLA['resource-requirements']) {
+const launchDependencies = function (containerSLA) {
+	let promises = [];
+	for (let requiredType in containerSLA['resource-requirements']) {
 
-		var rootContainerName = containerSLA['resource-requirements'][requiredType];
-		var requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
+		let rootContainerName = containerSLA['resource-requirements'][requiredType];
+		let requiredName = containerSLA.name + "-" + containerSLA['resource-requirements'][requiredType] + ARCH;
 
 		console.log('[' + containerSLA.name + "] Requires " + requiredType + " " + requiredName);
 		//look for running container
@@ -723,7 +723,7 @@ var launchDependencies = function (containerSLA) {
 	return Promise.all(promises);
 };
 
-let launchContainer = function (containerSLA) {
+const launchContainer = function (containerSLA) {
 	let name = repoTagToName(containerSLA.name) + ARCH;
 
 	//set the local name of the container. Containers launched as dependencies
@@ -908,16 +908,16 @@ let launchContainer = function (containerSLA) {
 			})
 			.then((container) => {
 				console.log('[' + containerSLA.localContainerName + '] Passing token to Arbiter');
-				var update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
-			        proms.push(updateArbiter(update));
+				const update = {name: containerSLA.localContainerName, key: arbiterToken, type: container.type};
+				proms.push(updateArbiter(update));
 
-			        proms.push(dockerHelper.disconnectFromNetwork(container, 'bridge'));
-			        return Promise.all(proms);
+				proms.push(dockerHelper.disconnectFromNetwork(container, 'bridge'));
+				return Promise.all(proms);
 			})
 			.then(() => {
 				//grant write access to requested stores
-				var dependentStores = launched.filter((itm)=>{ return itm.type == 'store'; });
-				for(store of dependentStores) {
+				const dependentStores = launched.filter((itm)=>{ return itm.type == 'store'; });
+				for(let store of dependentStores) {
 
 					if(containerSLA.localContainerName != store.name) {
 
@@ -1039,7 +1039,7 @@ let launchContainer = function (containerSLA) {
 exports.launchContainer = launchContainer;
 
 
-var saveSLA = function (sla) {
+const saveSLA = function (sla) {
 	//console.log('[' + sla.name + '] Saving SLA');
 	return db.putSLA(sla.name, sla);
 };
@@ -1047,8 +1047,8 @@ exports.saveSLA = saveSLA;
 
 exports.restoreContainers = function (slas) {
 	return new Promise((resolve, reject)=> {
-		var infos = [];
-		var result = Promise.resolve();
+		let infos = [];
+		let result = Promise.resolve();
 		slas.forEach(sla => {
 			console.log("Launching Container:: " + sla.name);
 			result = result.then((info) => {
