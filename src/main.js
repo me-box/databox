@@ -2,12 +2,11 @@
 
 process.setMaxListeners(200);
 
-var conman = require('./container-manager.js');
-var Config = require('./config.json');
-var fs = require('fs');
-var httpsHelper = require('./include/container-manger-https-helper');
-var DATABOX_DEV = process.env.DATABOX_DEV
-var request = require('request');
+const conman = require('./container-manager.js');
+const Config = require('./config.json');
+const httpsHelper = require('./include/container-manger-https-helper');
+const DATABOX_DEV = process.env.DATABOX_DEV
+const request = require('request');
 
 var containerMangerUIServer = null;
 
@@ -74,14 +73,14 @@ httpsHelper.init()
 
 		//register the CM for token minting
 		console.log('[databox-container-manager] Passing token to Arbiter');
-		var update = {name: 'databox-container-manager', key: info.CM_KEY, type: 'CM'};
+		const update = {name: 'databox-container-manager', key: info.CM_KEY, type: 'CM'};
 		return conman.updateArbiter(update);
 		
 	})
 	
 	.then(()=>{
 		//launch databox components 
-		var proms = [conman.launchLogStore(),conman.launchExportService()];
+		let proms = [conman.launchLogStore(),conman.launchExportService()];
 		if(DATABOX_DEV) {
 			console.log('['+Config.localAppStoreName+'] Launching');
 			proms.push(conman.launchLocalAppStore());
@@ -91,7 +90,7 @@ httpsHelper.init()
 	
 	.then(()=>{
 		if(DATABOX_DEV) {
-			var req = request.defaults({jar: true});
+			const req = request.defaults({jar: true});
 			req.get("http://" + Config.localAppStoreName + ":8181/",(error,response,body)=>{
 				if(error) {
 					console.log("[seeding manifest] get app store root to log in", error);
@@ -126,22 +125,19 @@ httpsHelper.init()
 		console.log("Starting UI Server!!");
 		return containerMangerUIServer.launch(Config.serverPort, conman, httpsHelper);
 	})
-	/*.then(info => {
-		containerMangerUIServer.proxies[info.name] = container.name+':' + info.port;
-
-		console.log('[databox-notification] Launching');
-		return conman.launchNotifications(httpsHelper);
-	})*/
+	
 	.then(() => {
 		console.log("--------- Launching saved containers ----------");
 		return conman.getActiveSLAs();
 	})
+
 	.then(slas => {
 		return conman.restoreContainers(slas, httpsHelper);
 	})
+
 	.then(infos => {
-		for (var containers of infos) {
-			for (var container of containers) {
+		for (const containers of infos) {
+			for (const container of containers) {
 				containerMangerUIServer.proxies[container.name] = container.name+':' + container.port;
 			}
 		}
@@ -149,15 +145,15 @@ httpsHelper.init()
 		console.log("--------- Done launching saved containers ----------");
 		console.log("Databox UI can be accessed at http://127.0.0.1:"+Config.serverPort);
 	})
+
 	.then(()=>{
-
-		var app = containerMangerUIServer.app;
+		const app = containerMangerUIServer.app;
 		module.exports = app;
-
 	})
+
 	.catch(err => {
 		console.log(err);
-		var stack = new Error().stack;
+		const stack = new Error().stack;
 		console.log(stack);
 	});
 
