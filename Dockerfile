@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:alpine
 
 ADD ./package.json /package.json
 RUN npm install --production

@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
 
 
+## [0.1.1] 2017-04-05
 ### Changed
     * Moved databox container manger to node:alpine to save bandwidth. #14
+    * Removed the need to run update updateLocalRegistry.sh #13
+    * code cleanup in container-manager.js
+    * Update to local registry Env Vars 
+    * reduced size of databox-export service 
 
 ## [0.1.0] 2017-03-24
 

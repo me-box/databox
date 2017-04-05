@@ -21,15 +21,15 @@ Once Its started point a web browser at 127.0.0.1:8989 and have fun. This is dat
 
 ## Development
 
-To develop for the Databox platform, it may be necessary to run the platform in dev mode. This will enable a local app store and image repository to be run in containers on your machine. In this mode it is possible to build and replace any part of the platform.@
+To develop for the Databox platform, it may be necessary to run the platform in dev mode. This will enable a local app store and image repository to be run in containers on your machine. In this mode it is possible to build and replace any part of the platform.
 
 First get the clone this repository:
 
-	git clone https://github.com/me-box/databox-container-manager.git
-	cd databox-container-manager
+	git clone https://github.com/me-box/databox.git
+	cd databox
 	npm install
 
-Then launch in dev mode by executing `sudo ./platformDevMode.sh`. A new container will be launched, and additional instructions will be presented.
+Then launch in dev mode by executing `./platformDevMode.sh`. A new container will be launched, and additional instructions will be presented.
 
 NB: Mount ./certs and ./slaStore as volumes if you want ssl certs and launched apps to save between restarts.
 
