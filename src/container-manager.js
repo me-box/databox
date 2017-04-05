@@ -53,18 +53,7 @@ exports.connect = function () {
 };
 
 var listContainers = function () {
-	return new Promise((resolve, reject) => {
-		docker.listContainers({all: true, filters: {"label": ["databox.type"]}},
-			(err, containers) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(containers);
-			}
-		);
-
-	});
+	return docker.listContainers({all: true, filters: {"label": ["databox.type"]}});
 };
 exports.listContainers = listContainers;
 
@@ -133,9 +122,7 @@ exports.killAll = function () {
 };
 
 var getContainer = function (id) {
-	return new Promise((resolve, reject) => {
-		resolve(docker.getContainer(id));
-	});
+	return Promise.resolve(docker.getContainer(id));
 };
 exports.getContainer = getContainer;
 

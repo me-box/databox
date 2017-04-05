@@ -50,17 +50,16 @@ exports.connectToNetwork = function (container, networkName) {
   return new Promise( (resolve, reject) =>  {
     console.log('[' + (container.name || container.Name) + '] Connecting to ' + networkName);
     docker.listNetworks({})
-    .then( (nets) => { return getNetwork(nets,networkName)})
+    .then( (nets) => { return getNetwork(nets,networkName);})
     .then( (net) => {
-        net.connect({'Container':container.id}, (err,data) => {
-          if(err) {
-            reject("Can't connect to network" + err);
-            return;
-          }
-          resolve(container);
-        });
+        return net.connect({'Container':container.id});
       })
-      .catch(err => reject('[connectToNetwork]' + err))
+      .then(()=>{
+        resolve(container);
+      })
+      .catch((err) => {
+        reject('[connectToNetwork error]',err);
+      });
   });
 };
 
