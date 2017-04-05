@@ -11,7 +11,7 @@ const request = require('request');
 var containerMangerUIServer = null;
 
 httpsHelper.init()
-	.then(cert => {
+	.then(() => {
 		
 		//Put the CA pubic key into this processes env var so libs that work in containers also work in the CM
 		process.env['CM_HTTPS_CA_ROOT_CERT'] = httpsHelper.getRootCert();
@@ -20,8 +20,8 @@ httpsHelper.init()
 		return conman.connect();
 	})
 	
-	.then(data => {
-		return conman.killAll(data);
+	.then(() => {
+		return conman.killAll();
 	})
 
 	.then(() => {
