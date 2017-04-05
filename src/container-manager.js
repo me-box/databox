@@ -325,7 +325,7 @@ exports.launchLocalAppStore = function() {
 				return httpsHelper.createClientCert(Config.localAppStoreName);
 			})
 			.then((httpsCerts) => {
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'hostname': name,
 						'name': name,
@@ -368,7 +368,7 @@ exports.launchLocalRegistry = function() {
 				return httpsHelper.createClientCert(Config.localRegistryName);
 			})
 			.then((httpsCerts) => {
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'hostname': name,
 						'name': name,
@@ -421,7 +421,7 @@ exports.launchArbiter = function () {
 			.then((keysArray) => {
 				httpsPem = keysArray[0];
 				arbiterKey = keysArray[1];
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'hostname': name,
 						'name': name,
@@ -507,7 +507,7 @@ exports.launchLogStore = function () {
 			.then((tokens) => {
 				let httpsPem = tokens[0];
 				arbiterToken = tokens[1];
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'name': name,
 						'Image': Config.registryUrl + '/' + name + ":latest",
@@ -569,7 +569,7 @@ exports.launchExportService = function () {
 			.then((tokens) => {
 				let httpsPem = tokens[0];
 				arbiterToken = tokens[1];
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'name': name,
 						'Image': Config.registryUrl + '/' + name + ":latest",
@@ -621,7 +621,7 @@ exports.launchNotifications = function () {
 		var name = "databox-notifications" + ARCH;
 		pullImage(name + ":latest")
 			.then(() => {
-				return dockerHelper.createContainer(
+				return docker.createContainer(
 					{
 						'name': name,
 						'Image': Config.registryUrl + "/" + name + ":latest",
@@ -1003,7 +1003,7 @@ let launchContainer = function (containerSLA) {
 				}
 
 				// TODO: Separate from other promises
- 				proms.push(dockerHelper.createContainer(config));
+ 				proms.push(docker.createContainer(config));
  				return Promise.all(proms);
 			})
 			.then((results) => {

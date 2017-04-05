@@ -80,18 +80,3 @@ exports.disconnectFromNetwork = function (container, networkName) {
       .catch(err => reject('[disconnectFromNetwork]' + err))
   });
 };
-
-
-exports.createContainer = function(opts) {
-  return new Promise( (resolve, reject) =>  {
-    //TODO: check opts
-    docker.createContainer(opts,(err ,cont) => {
-      if(err) {
-        reject('createContainer'+err);
-        return;
-      }
-      resolve(cont);
-    });
-  });
-};
-
