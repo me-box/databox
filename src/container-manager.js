@@ -221,14 +221,15 @@ const updateSeedImage = function (organization, imageName, targetReg) {
 		const targetImage = targetReg + '/' + imageName  + ARCH;
 		const srcImage = organization + '/' + imageName  + ARCH + ':latest';
 
-		console.log("[Seeding]" + srcImage + ' to ' + targetImage);
+		
 
 		pullDockerIOImage(targetImage)
 		.then(()=>{
-			console.log("[Seeding] successful image exists");
+			console.log("[Seeding] skipped image exists");
 			resolve();
 		})
 		.catch((err)=>{
+			console.log("[Seeding]" + srcImage + ' to ' + targetImage);
 			//try and seed the image form the organization docker hub
 			pullDockerIOImage(srcImage)
 			.then(()=>{
@@ -423,7 +424,6 @@ exports.launchLocalRegistry = function() {
 var arbiterName = '';
 var arbiterKey = null;
 var DATABOX_ARBITER_ENDPOINT = null;
-var DATABOX_ARBITER_ENDPOINT_IP = null;
 var DATABOX_ARBITER_PORT = '8080';
 exports.launchArbiter = function () {
 	return new Promise((resolve, reject) => {
@@ -446,7 +446,6 @@ exports.launchArbiter = function () {
 					.then((Arbiter)=>{
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
-						DATABOX_ARBITER_ENDPOINT_IP = 'https://' + Arbiter.ip + ':' + DATABOX_ARBITER_PORT;
 						resolve({'name': Arbiter.name, 'port': Arbiter.port, 'CM_KEY': arbiterKey, });
 					});
 			})
