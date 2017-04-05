@@ -14,7 +14,7 @@ exports.createNetwork = function(networkName, external) {
         })
         .catch((err)=>{
             docker.createNetwork({
-              'Name': name,
+              'Name': networkName,
               'Driver': 'bridge',
               'Internal': !external
             })

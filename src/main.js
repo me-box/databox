@@ -55,7 +55,7 @@ httpsHelper.init()
 	})
 	.then(() => {
 		console.log('[databox-arbiter] Launching');
-		return conman.launchArbiter(httpsHelper);
+		return conman.launchArbiter();
 	})
 	
 	.then(info => {
