@@ -140,32 +140,16 @@ var getContainer = function (id) {
 exports.getContainer = getContainer;
 
 exports.initNetworks = function () {
-	return new Promise((resolve, reject) => {
-		docker.listNetworks({})
-			.then(networks => {
-				var requiredNets = [
-					dockerHelper.getNetwork(networks, 'databox-driver-net', true),
-					dockerHelper.getNetwork(networks, 'databox-app-net'),
-					dockerHelper.getNetwork(networks, 'databox-cloud-net'),
-					dockerHelper.getNetwork(networks, 'databox-cm-arbiter-net'),
-					dockerHelper.getNetwork(networks, 'databox-external', true)
-				];
+	
+	const requiredNets = [
+		dockerHelper.createNetwork('databox-driver-net', true),
+		dockerHelper.createNetwork('databox-app-net'),
+		dockerHelper.createNetwork('databox-cloud-net'),
+		dockerHelper.createNetwork('databox-cm-arbiter-net'),
+		dockerHelper.createNetwork('databox-external', true)
+	];
 
-				return Promise.all(requiredNets)
-					.then((networks) => {
-						resolve(networks);
-					})
-					.catch(err => {
-						console.log("initNetworks::" + err);
-						reject(err);
-					});
-
-			})
-			.then((networks) => {
-				resolve(networks);
-			})
-			.catch((err) => {reject(err)});
-	});
+	return Promise.all(requiredNets);
 };
 
 //Pull latest image from any repo defaults to dockerIO

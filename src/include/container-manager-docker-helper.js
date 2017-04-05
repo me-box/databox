@@ -7,45 +7,38 @@ const dockerEmitter = new DockerEvents({docker:docker});
 
 
 exports.createNetwork = function(name, external) {
-  return new Promise( (resolve, reject) =>  {
-    docker.createNetwork({
+    return new Promise((resolve,reject)=>{
+      docker.createNetwork({
         Name: name,
         Driver: 'bridge',
         Internal: !external
-      }, (err,data) => {
-        if(err) {
-          reject("[createNetwork] Can't list networks:", err);
-          return;
-        }
-        resolve(data);
+      })
+      .then(()=>{
+        resolve();
       });
-  });
-}
+    })
+    .catch(()=>{
+      //if the network exists it will fail with Error: socket hang up
+      // so lets ignore it.
+      resolve();
+    });
+};
 
-var getNetwork = function(networks, name, external) {
+const getNetwork = function(networks, name) {
   return new Promise( (resolve, reject) =>  {
-    for(i in networks) {
-          var net = networks[i];
+    for(const i in networks) {
+          const net = networks[i];
           if(net.Name === name) {
-            var n = docker.getNetwork(net.Id)
-            resolve(n)
+            const n = docker.getNetwork(net.Id);
+            resolve(n);
             return;
           }
       }
 
-      docker.createNetwork({
-          Name: name,
-          Driver: 'bridge',
-          Internal: !external
-        }, (err,data) => {
-          if(err) {
-            reject("[getNetwork] Can't create networks:", err);
-            return;
-          }
-          resolve(data);
-        });
+      reject("[getNetwork] networks not found");
+            
   });
-}
+};
 exports.getNetwork = getNetwork;
 
 
@@ -95,7 +88,7 @@ exports.createContainer = function(opts) {
         return;
       }
       resolve(cont);
-    })
+    });
   });
-}
+};
 
