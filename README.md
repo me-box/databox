@@ -29,7 +29,7 @@ First get the clone this repository:
 	cd databox
 	npm install
 
-Then launch in dev mode by executing `sudo ./platformDevMode.sh`. A new container will be launched, and additional instructions will be presented.
+Then launch in dev mode by executing `./platformDevMode.sh`. A new container will be launched, and additional instructions will be presented.
 
 NB: Mount ./certs and ./slaStore as volumes if you want ssl certs and launched apps to save between restarts.
 

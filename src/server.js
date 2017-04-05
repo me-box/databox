@@ -14,6 +14,11 @@ if (DATABOX_SDK) {
 	Config.storeUrl = Config.storeUrl_sdk;
 }
 
+const Docker = require('dockerode');
+const DockerEvents = require('docker-events');
+const docker = new Docker();
+const dockerEmitter = new DockerEvents({docker:docker});
+
 const http = require('http');
 const https = require('https');
 const express = require('express');
@@ -266,33 +271,32 @@ module.exports = {
 		});
 
 		io.on('connection', (socket) => {
-			const emitter = conman.getDockerEmitter();
 
-			emitter.on("connect", () => {
+			dockerEmitter.on("connect", () => {
 				socket.emit('docker-connect');
 			});
-			emitter.on("disconnect", () => {
+			dockerEmitter.on("disconnect", () => {
 				socket.emit('docker-disconnect');
 			});
-			emitter.on("_message", (message) => {
+			dockerEmitter.on("_message", (message) => {
 				socket.emit('docker-_message', message);
 			});
-			emitter.on("create", (message) => {
+			dockerEmitter.on("create", (message) => {
 				socket.emit('docker-create', message);
 			});
-			emitter.on("start", (message) => {
+			dockerEmitter.on("start", (message) => {
 				socket.emit('docker-star', message);
 			});
-			emitter.on("start", (message) => {
+			dockerEmitter.on("start", (message) => {
 				socket.emit('docker-stop', message);
 			});
-			emitter.on("die", (message) => {
+			dockerEmitter.on("die", (message) => {
 				socket.emit('docker-die', message);
 			});
-			emitter.on("destroy", (message) => {
+			dockerEmitter.on("destroy", (message) => {
 				socket.emit('docker-destroy', message);
 			});
-			emitter.start();
+			dockerEmitter.start();
 
 		});
 
