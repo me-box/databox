@@ -1,7 +1,7 @@
 FROM node:alpine
 
 ADD ./package.json /package.json
-RUN npm install --production
+RUN npm install --production && npm run clean
 
 ADD ./src /src
 RUN mkdir /slaStore && mkdir /certs

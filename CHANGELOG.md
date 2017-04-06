@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
-
+    * Removed some modules and implemented mod clean to reduce container manger image size
 
 ## [0.1.1] 2017-04-05
 ### Changed
