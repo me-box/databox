@@ -86,14 +86,17 @@ exports.getOwnContainer = getOwnContainer;
 
 exports.connectToCMArbiterNetwork = function (container) {
 
-	let proms = [
-		dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net'),
-		dockerHelper.connectToNetwork(container, 'databox-cloud-net'),
-		dockerHelper.connectToNetwork(container, 'databox-driver-net'),
-		dockerHelper.connectToNetwork(container, 'databox-app-net')
-	];
+	return dockerHelper.connectToNetwork(container, 'databox-cm-arbiter-net')
+	.then(()=>{
+		return dockerHelper.connectToNetwork(container, 'databox-cloud-net');
+	})
+	.then(()=>{
+		return dockerHelper.connectToNetwork(container, 'databox-driver-net');
+	})
+	.then(()=>{
+		return dockerHelper.connectToNetwork(container, 'databox-app-net');
+	})
 
-	return Promise.all(proms);
 };
 
 exports.killAll = function () {
@@ -225,7 +228,6 @@ const updateSeedImage = function (organization, imageName, targetReg) {
 
 		pullDockerIOImage(targetImage)
 		.then(()=>{
-			console.log("[Seeding] skipped image exists");
 			resolve();
 		})
 		.catch((err)=>{

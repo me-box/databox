@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
     * Removed some modules and implemented mod clean to reduce container manger image size
+    * Docker Network API issue - when creating network first time. Fixed #29
 
 ## [0.1.1] 2017-04-05
 ### Changed
