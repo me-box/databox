@@ -444,7 +444,7 @@ exports.launchArbiter = function () {
 				arbiterKey = arbKey;
 				config.Env.push("CM_KEY=" + arbKey);
 				const networks = ['databox-driver-net','databox-app-net','databox-cm-arbiter-net'];
-				launchPlatformContainer("databox-arbiter",config,networks,5000)
+				launchPlatformContainer(name,config,networks,5000)
 					.then((Arbiter)=>{
 						console.log("[databox-arbiter] Launched");
 						DATABOX_ARBITER_ENDPOINT = 'https://' + Arbiter.name + ':' + DATABOX_ARBITER_PORT;
