@@ -57,7 +57,7 @@ exports.connectToNetwork = function (container, networkName) {
         resolve(container);
       })
       .catch((err) => {
-        reject('[connectToNetwork error]',err);
+        reject('[connectToNetwork error]',networkName,err);
       });
   });
 };

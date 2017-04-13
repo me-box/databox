@@ -337,17 +337,30 @@ const launchPlatformContainer = function (containerName ,config , networks = [],
 					return startContainer(cont);
 				})
 				.then((cont) => {
-					//cont.name = containerName;
-					const proms = networks.map((networkName)=>{
-						return dockerHelper.connectToNetwork(cont,networkName);
+					
+					return new Promise((resolve,reject)=>{
+						const inSeq = (nets) => {
+								dockerHelper.connectToNetwork(cont,nets.pop())
+								.then(()=>{
+									if(nets.length > 0) {
+										inSeq(nets);
+									} else {
+										resolve(cont);
+									}
+								})
+								.catch((err)=>{
+									reject(err);
+								}); 
+						};
+						inSeq(networks);
 					});
-					return Promise.all(proms);
+	
 				})
-				.then((contArray) => {
+				.then((cont) => {
 					if(wait > 0) {
 						console.log("waiting for " + containerName + " ....");
 					}
-					setTimeout(resolve,wait,contArray[0]);
+					setTimeout(resolve,wait,cont);
 				})
 				.catch((err)=>{
 					reject(err);
@@ -515,7 +528,7 @@ exports.launchExportService = function () {
 		.then((arbKey)=>{
 				arbiterToken = arbKey;
 				config.Env.push("ARBITER_TOKEN=" + arbiterToken);
-				const networks = ['databox-driver-net','databox-external'];
+				const networks = ['databox-external','databox-driver-net'];
 				launchPlatformContainer(DATABOX_LOGSTORE_NAME,config,networks)
 				.then((exportService) => {
 					console.log('[' + name + '] Passing token to Arbiter');
