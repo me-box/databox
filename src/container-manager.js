@@ -706,31 +706,54 @@ const launchDependencies = function (containerSLA) {
 				.catch((err) => {
 					//failed try to install
 					//console.log("Required container not found trying to install it!", err);
-					//Look for an SLA to use. If one is not provided then, look for one stored in the DB.
-					//If no SLA can be found db.getSLA() will reject its promise and stop the container
-					//installing.
-					db.getSLA(rootContainerName)
-						.then((sla) => {
-							if (sla !== null) {
-								sla.localContainerName = requiredName;
-								return launchContainer(sla);
-							}
-							else {
-								sla = {
-										name: rootContainerName,
-										localContainerName: requiredName
-									};
-								return launchContainer(sla);
-							}
-						})
-						.then((info)=> {
-							resolve(info);
-						})
-						.catch((err) => {
-							//install failed Give up :-(
-							console.log("Required container could not be installed!" + err);
-							return new Promise.reject("Required container could not be installed!" + err);
+					//Look for an SLA to use. If one is not provided then, look for one in the app store
+					Promise.resolve()
+					.then(()=>{
+						const options = {
+											'url': '', 
+											'method': 'GET'
+										};
+						if (DATABOX_DEV) {
+							options.url = "http://" + Config.localAppStoreName + ":8181" + '/app/get?name=' + rootContainerName;
+						} else {
+							options.url = Config.storeUrl + '/app/get?name=' + rootContainerName;
+						}
+						return new Promise((resolve, reject) => {
+							request(options, (error, response, body) => {
+								if (error) {
+									console.log("Error: " + options.url);
+									reject(error);
+									return;
+								}
+								let manifest = JSON.parse(body).manifest;
+								manifest.name = rootContainerName;
+							    manifest.localContainerName = requiredName;
+								resolve(manifest);
+							});
+
 						});
+					})
+  					.then((sla) => {
+						if (sla !== null) {
+							sla.localContainerName = requiredName;
+							return launchContainer(sla);
+						}
+						else {
+							sla = {
+									name: rootContainerName,
+									localContainerName: requiredName
+								};
+							return launchContainer(sla);
+						}
+					})
+					.then((info)=> {
+						resolve(info);
+					})
+					.catch((err) => {
+						//install failed Give up :-(
+						console.log("Required container could not be installed!" + err);
+						return reject("Required container could not be installed!", err);
+					});
 				});
 		}));
 	}
@@ -869,16 +892,15 @@ const launchContainer = function (containerSLA) {
 				config.Env.push("HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate);
 				config.Env.push("HTTPS_SERVER_CERT=" +  httpsPem.clientcert);
 
-				if('volumes' in containerSLA) {
+				if('databox-type' in containerSLA && containerSLA['databox-type'] == 'store' && 'volumes' in containerSLA) {
 					let binds = [];
-					console.log('Adding volumes');
-					config.Volumes = {};
-					for(let vol of containerSLA['volumes']) {
-						config.Volumes[vol] = {};
-						binds.push(name+"-"+vol.replace('/','')+":"+vol);
+					console.log('[Adding volumes]', containerSLA.localContainerName, containerSLA.volumes);
+					for(let vol of containerSLA.volumes) {
+						binds.push("/tmp/"+containerSLA.localContainerName+"-"+vol.replace('/','')+":"+vol);
 					}
 					config.Binds = binds;
 				}
+
 				proms = [];
 				if ('datasources' in containerSLA) {
 					for (let datasource of containerSLA.datasources) {
