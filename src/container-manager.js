@@ -869,7 +869,8 @@ const launchContainer = function (containerSLA) {
 				for (let dependencyList of dependencies) {
 					for (let dependency of dependencyList) {
 						config.NetworkingConfig.Links.push(dependency.name);
-						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + "_ENDPOINT=" + 'https://' + dependency.name + ':8080');
+																								//TODO undo nasty hack
+						config.Env.push(dependency.name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace("_ARM",'') + "_ENDPOINT=" + 'https://' + dependency.name + ':8080');
 						launched.push(dependency);
 					}
 				}
