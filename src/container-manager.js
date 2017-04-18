@@ -331,6 +331,7 @@ const launchPlatformContainer = function (containerName ,config , networks = [],
 					config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
 					config.Env.push("HTTPS_SERVER_CERT=" + httpsCerts.clientcert);
 					config.Env.push("HTTPS_SERVER_PRIVATE_KEY=" + httpsCerts.clientprivate);
+					config.Env.push("DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT);
 					return docker.createContainer(config);
 				})
 				.then((cont) => {
