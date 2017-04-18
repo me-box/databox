@@ -726,9 +726,13 @@ const launchDependencies = function (containerSLA) {
 									return;
 								}
 								let manifest = JSON.parse(body).manifest;
-								manifest.name = rootContainerName;
-							    manifest.localContainerName = requiredName;
-								resolve(manifest);
+								if(typeof manifest === 'undefined') {
+									reject("[Error] Manifest not found on app store");
+								} else {
+									manifest.name = rootContainerName;
+									manifest.localContainerName = requiredName;
+									resolve(manifest);
+								}
 							});
 
 						});
