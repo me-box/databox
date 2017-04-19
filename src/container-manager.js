@@ -654,6 +654,7 @@ const updateContainerPermissions = function (permissions) {
 			.catch((err) => reject(err));
 	});
 };
+exports.updateContainerPermissions = updateContainerPermissions;
 
 const revokeContainerPermissions = function (permissions) {
 	return new Promise((resolve, reject) => {
@@ -764,6 +765,72 @@ const launchDependencies = function (containerSLA) {
 	}
 	return Promise.all(promises);
 };
+
+const launchStandaloneStore = function (imageName, hostname) {
+	let name = imageName;
+	let cont = null;
+
+	console.log('[' + name + '] Launching');
+	let arbiterToken = null;
+	let config = {
+		'name': hostname,
+		'Image': Config.registryUrl + '/' + name + ":latest",
+		'Env': [
+			"DATABOX_IP=" + ip,
+			"DATABOX_LOCAL_NAME=" + hostname,
+			"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
+			"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + hostname, //TODO only expose this to stores 
+			"DATABOX_EXPORT_SERVICE_ENDPOINT=" + DATABOX_EXPORT_SERVICE_ENDPOINT //TODO only expose this to apps
+		],
+		'PublishAllPorts': true,
+		'NetworkingConfig': {
+			'Links': [arbiterName]
+		}
+	};
+
+	return pullImage(name + ":latest")
+		.then(() => {
+			console.log('[' + hostname + '] Generating Arbiter token and HTTPS cert');
+			proms = [
+				httpsHelper.createClientCert(hostname),
+				generateArbiterToken()
+			];
+			return Promise.all(proms);
+		})
+		.then((tokens) => {
+			let httpsPem = tokens[0];
+			arbiterToken = tokens[1];
+			config.Env.push("ARBITER_TOKEN=" + arbiterToken);
+			config.Env.push("CM_HTTPS_CA_ROOT_CERT=" + httpsHelper.getRootCert());
+			config.Env.push("HTTPS_SERVER_PRIVATE_KEY=" +  httpsPem.clientprivate);
+			config.Env.push("HTTPS_SERVER_CERT=" +  httpsPem.clientcert);
+
+			// TODO: Separate from other promises
+			return docker.createContainer(config);
+		})
+		.then((container) => {
+			cont = container;
+			console.log('[' + hostname + '] Passing token to Arbiter');
+			return updateArbiter({ name: hostname, key: arbiterToken, type: 'store' });
+		})
+		.then(() => {
+			console.log('[' + hostname + '] Configuring container');
+			return configureStore(cont);
+		})
+		.then(() => {
+			console.log('[' + hostname + '] Starting container');
+			return startContainer(cont);
+		})
+		.then(() => {
+			console.log('[' + hostname + '] Disconnecting container from bridge network');
+			return dockerHelper.disconnectFromNetwork(cont, 'bridge');
+		})
+		.then(() => {
+			console.log('[' + hostname + '] Done launching container');
+			return cont;
+		})
+};
+exports.launchStandaloneStore = launchStandaloneStore;
 
 const launchContainer = function (containerSLA) {
 	let name = repoTagToName(containerSLA.name) + ARCH;
