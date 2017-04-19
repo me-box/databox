@@ -209,8 +209,10 @@ const getContainerInfo = function (container) {
 				response.ip = info.NetworkSettings.IPAddress;
 				if ('Ports' in info.NetworkSettings) {
 					for (const portName in info.NetworkSettings.Ports) {
-						//response.port = info.NetworkSettings.Ports[portName][0].HostPort;
 						response.port = portName.replace('/tcp','');
+						response.hostPort = info.NetworkSettings.Ports[portName];
+						if (response.hostPort.length)
+							response.hostPort = response.hostPort[0].HostPort;
 						break;
 					}
 				}
@@ -218,6 +220,7 @@ const getContainerInfo = function (container) {
 			return response;
 		});
 };
+exports.getContainerInfo = getContainerInfo;
 
 const updateSeedImage = function (organization, imageName, targetReg) {
 	return new Promise((resolve, reject)=>{

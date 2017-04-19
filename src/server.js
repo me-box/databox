@@ -228,17 +228,23 @@ module.exports = {
 		});
 
 		app.post('/launch-standalone-store', (req, res) => {
+			let cont = null;
 			conman.launchStandaloneStore(req.body.type, req.body.hostname)
 				.then((container) => {
+					return conman.getContainerInfo(container);
+				})
+				.then((container) => {
+					cont = container;
+				})
+				.then(() => {
 					console.log('[' + req.body.hostname + '] Installed');
-					this.proxies[container.name] = container.name + ':' + container.port;
 					return Promise.all(req.body.keys.map(conman.updateArbiter));
 				})
-				.then((results) => {
+				.then(() => {
 					return Promise.all(req.body.permissions.map(conman.updateContainerPermissions));
 				})
-				.then((results) => {
-					res.json(results);
+				.then(() => {
+					res.json({ name: cont.name, port: cont.hostPort });
 				})
 				.catch((err) => {
 					console.error('[' + req.body.hostname + '] Failed to launch:', err);
