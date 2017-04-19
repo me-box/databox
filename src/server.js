@@ -94,6 +94,7 @@ module.exports = {
 		});
 
 		// Needs to be after the proxy
+		app.use(bodyParser.json());
 		app.use(bodyParser.urlencoded({extended: false}));
 
 		app.get('/', (req, res) => {
@@ -223,6 +224,24 @@ module.exports = {
 				})
 				.then(() => {
 					return conman.saveSLA(sla);
+				});
+		});
+
+		app.post('/launch-standalone-store', (req, res) => {
+			conman.launchStandaloneStore(req.body.type, req.body.hostname)
+				.then((container) => {
+					console.log('[' + req.body.hostname + '] Installed');
+					this.proxies[container.name] = container.name + ':' + container.port;
+					return Promise.all(req.body.keys.map(conman.updateArbiter));
+				})
+				.then((results) => {
+					return Promise.all(req.body.permissions.map(conman.updateContainerPermissions));
+				})
+				.then((results) => {
+					res.json(results);
+				})
+				.catch((err) => {
+					console.error('[' + req.body.hostname + '] Failed to launch:', err);
 				});
 		});
 
