@@ -12,7 +12,7 @@ These instruction have been tested on a raspberry Pi 2 and 3.
 ## Installing required software
  
  1. sudo apt-get update && sudo apt-get install git curl
- 2. curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+ 2. curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
  3. sudo apt-get install -y nodejs
  4. curl -sSL https://get.docker.com | sudo sh
 
@@ -24,7 +24,7 @@ These instruction have been tested on a raspberry Pi 2 and 3.
   3. npm install --production
   
   
-#Starting the container manager
+# Starting the container manager
 
    1. make sure you are in the databox directory
    2. ./startDatabox.sh
