@@ -13,3 +13,4 @@ LABEL databox.type="container-manager"
 EXPOSE 8989
 
 CMD ["npm", "start"]
+#CMD ["sleep","99999"]

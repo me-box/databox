@@ -211,66 +211,22 @@ module.exports = {
 			installingApps[sla.name] = sla['databox-type'] === undefined ? 'app' : sla['databox-type'];
 
 			io.emit('docker-create', sla.name);
-			conman.launchContainer(sla)
-				.then((containers) => {
+			conman.installFromSLA(sla)
+				.then((config) => {
 					console.log('[' + sla.name + '] Installed');
-					for (const container of containers) {
-
+					for (const name in config.services) {
 						delete installingApps[sla.name];
-						this.proxies[container.name] = container.name + ':' + container.port;
+						this.proxies[name] = name + ':8080';
 					}
 
-					res.json(containers);
+					res.json({status:200,msg:"Success"});
 				})
 				.then(() => {
 					return conman.saveSLA(sla);
 				});
 		});
 
-		app.post('/launch-standalone-store', (req, res) => {
-			let cont = null;
-			conman.launchStandaloneStore(req.body.type, req.body.hostname)
-				.then((container) => {
-					return conman.getContainerInfo(container);
-				})
-				.then((container) => {
-					cont = container;
-				})
-				.then(() => {
-					console.log('[' + req.body.hostname + '] Installed');
-					return Promise.all(req.body.keys.map(conman.updateArbiter));
-				})
-				.then(() => {
-					return Promise.all(req.body.permissions.map(conman.updateContainerPermissions));
-				})
-				.then(() => {
-					res.json({ name: cont.name, port: cont.hostPort });
-				})
-				.catch((err) => {
-					console.error('[' + req.body.hostname + '] Failed to launch:', err);
-				});
-		});
-
-		app.post('/restart', (req, res) => {
-			//console.log("Restarting " + req.body.id);
-			conman.getContainer(req.body.id)
-				.then((container) => {
-					return conman.stopContainer(container);
-				})
-				.then((container) => {
-					return conman.startContainer(container);
-				})
-				.then((container) => {
-					console.log('[' + container.name + '] Restarted');
-					this.proxies[container.name] = container.name + ':' + container.port;
-				})
-				.catch((err) => {
-					console.log(err);
-					res.json(err);
-				});
-		});
-
-
+		
 		app.post('/uninstall', (req, res) => {
 			//console.log("Uninstalling " + req.body.id);
 			conman.getContainer(req.body.id)

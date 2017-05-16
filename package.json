@@ -44,7 +44,8 @@
     "request": "^2.69.0",
     "selfsigned": "^1.8.0",
     "socket.io": "^1.5.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "yamljs": "^0.2.10"
   },
   "devDependencies": {
     "mocha": "^3.1.2",

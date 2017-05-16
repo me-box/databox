@@ -3,12 +3,13 @@ const request = require('request');
 const url = require('url');
 const httpsAgent = require('./databox-https-agent.js');
 const macaroonCache = require('./databox-macaroon-cache.js');
-
+const fs = require('fs');
 //
 //Databox ENV vars
 //
 const DATABOX_ARBITER_ENDPOINT = process.env.DATABOX_ARBITER_ENDPOINT || "https://databox-arbiter:8080";
-const ARBITER_TOKEN = process.env.ARBITER_TOKEN || '';
+const ARBITER_TOKEN   = fs.readFileSync("/run/secrets/CM_KEY",{encoding:'base64'});
+
 /**
  * This module wraps the node request module https://github.com/request/request and adds:
  * 
@@ -52,7 +53,7 @@ module.exports = function (options,callback) {
         if(isRequestToArbiter) {
             options.headers = {'X-Api-Key': ARBITER_TOKEN};
             //do the request and call back when done
-            console.log("[databox-request] " + options.uri);
+            //console.log("[databox-request] " + options.uri);
             resolve(request(options,callback));
         
         } else if (isExternalDevRequest || isInternalUiRequest) {

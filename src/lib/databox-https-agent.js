@@ -1,10 +1,10 @@
 
 const https = require('https');
-
+const fs = require('fs');
 //
 //Databox ENV vars
 //
-const CM_HTTPS_CA_ROOT_CERT = process.env.CM_HTTPS_CA_ROOT_CERT || '';
+const CM_HTTPS_CA_ROOT_CERT = fs.readFileSync('/run/secrets/DATABOX_ROOT_CA') || process.env.CM_HTTPS_CA_ROOT_CERT || '';
 
 //
 // An https.Agent to trust the CM https cert if one is provided
