@@ -225,6 +225,13 @@ const appConfig = function (config,sla) {
 				secrets: [  ]
 			};
 	
+	if ('packages' in sla) {
+		for (let manifestPackage of sla.packages) {
+			let packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
+			config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
+		}
+	}
+
 	config.Networks.push({Target:'databox_databox-app-net'});
 	config.Name = localContainerName
 	config.TaskTemplate.ContainerSpec = app
@@ -264,13 +271,6 @@ const storeConfig = function (config,sla) {
 	if ('datasources' in sla) {
 		for (let datasource of sla.datasources) {
 			config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
-		}
-	}
-
-	if ('packages' in sla) {
-		for (let manifestPackage of sla.packages) {
-			let packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
-			config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
 		}
 	}
 
