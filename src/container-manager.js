@@ -244,8 +244,8 @@ const storeConfig = function (config,sla) {
 	let store = { 
 				image: rootContainerName,
 				volumes: [ ],
-				environment: [ 
-								"DATABOX_LOCAL_NAME=" + sla.localContainerName,
+				Env: [ 
+								"DATABOX_LOCAL_NAME=" + requiredName,
 								"DATABOX_ARBITER_ENDPOINT=" + DATABOX_ARBITER_ENDPOINT,
 								"DATABOX_LOGSTORE_ENDPOINT=" + DATABOX_LOGSTORE_ENDPOINT + '/' + requiredName, 
 							],
@@ -257,7 +257,7 @@ const storeConfig = function (config,sla) {
 
 	if('volumes' in sla) {
 		for(let vol of sla.volumes) {
-			store.volumes("/tmp/"+sla.localContainerName+"-"+vol.replace('/','')+":"+vol);
+			store.volumes("/tmp/"+requiredName+"-"+vol.replace('/','')+":"+vol);
 		}
 	}
 
