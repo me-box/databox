@@ -4,8 +4,6 @@
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
-    "build": "node-sass --output-style compressed src/www/styles/ -o src/www/styles/ && pug -cD src/www/templates/",
-    "watch": "node-sass --output-style compressed -w src/www/styles/ -o src/www/styles/ |  pug -cwD src/www/templates/",
     "start": "node src/main.js",
     "killall": "docker kill $(docker ps -a -q)",
     "clean": "node ./node_modules/modclean/bin/modclean.js -p ./node_modules/ -r",
@@ -31,27 +29,11 @@
   },
   "homepage": "https://github.com/me-box/databox-container-manager-js#readme",
   "dependencies": {
-    "body-parser": "^1.15.2",
-    "docker-events": "^0.0.2",
     "dockerode": "^2.4.3",
-    "express": "^4.14.0",
-    "jsonfile": "^2.4.0",
-    "material-design-lite": "^1.2.1",
-    "modclean": "",
-    "nedb": "^1.8.0",
+    "jsonfile": "^3.0.0",
     "node-forge": "^0.6.45",
-    "pug": "^2.0.0-beta6",
-    "request": "^2.69.0",
-    "selfsigned": "^1.8.0",
-    "socket.io": "^1.5.0",
-    "url": "^0.11.0",
-    "yamljs": "^0.2.10"
+    "request": "^2.81.0",
+    "selfsigned": "^1.8.0"
   },
-  "devDependencies": {
-    "mocha": "^3.1.2",
-    "supertest": "^2.0.1",
-    "should": "^11.1.1",
-    "node-sass": "^3.10.0",
-    "pug-cli": "^1.0.0-alpha6"
-  }
+  "devDependencies": {}
 }
