@@ -5,7 +5,7 @@ var containerMangerUIServer = null;
 
 const wait = ()=> { 
 	return new Promise((resolve,reject)=>{
-		setTimeout(resolve,7000);
+		setTimeout(resolve,8000);
 	});
 }
 
