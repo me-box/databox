@@ -110,7 +110,7 @@ module.exports = {
 				.then((containers) => {
 					return new Promise((resolve, reject) => {
 						for (const container of containers) {
-							const name = container.Names[0].substr(1);
+							const name = container.Names[0].substr(1).split('.')[0];
 							if (name === containerName) {
 								resolve({
 									name: name,
@@ -144,7 +144,7 @@ module.exports = {
 			conman.listContainers()
 				.then((containers) => {
 					for (let container of containers) {
-						let name = container.Names[0].substr(1);
+						let name = container.Names[0].substr(1).split('.')[0];
 						names.push(name);
 						result.push({
 							name: name,
@@ -213,10 +213,11 @@ module.exports = {
 			io.emit('docker-create', sla.name);
 			conman.installFromSLA(sla)
 				.then((config) => {
-					console.log('[' + sla.name + '] Installed');
-					for (const name in config.services) {
-						delete installingApps[sla.name];
+					console.log('[' + sla.name + '] Installed', config);
+					for (const name of config) {
+						delete installingApps[name];
 						this.proxies[name] = name + ':8080';
+						console.log("Proxy added for ", name)
 					}
 
 					res.json({status:200,msg:"Success"});

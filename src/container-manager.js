@@ -130,7 +130,7 @@ const installFromSLA = async function (sla) {
 						  return;
 					  });
 
-		resolve(containerConfig);
+		resolve([containerConfig.Name,dependentStoreConfig.Name || "NO STORE"]);
 	});
 };
 exports.installFromSLA = installFromSLA;
