@@ -225,11 +225,24 @@ const appConfig = function (config,sla) {
 				secrets: [  ]
 			};
 	
-	if ('packages' in sla) {
+	//packages are being removed.
+	/*if ('packages' in sla) {
+		console.log(sla.packages)
 		for (let manifestPackage of sla.packages) {
 			let packageEnabled = 'enabled' in manifestPackage ? manifestPackage.enabled : false;
-			config.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
+			app.Env.push("PACKAGE_" + manifestPackage.id + "=" + packageEnabled);
 		}
+	}*/
+
+	if ('datasources' in sla) {
+		for (let datasource of sla.datasources) {
+			app.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
+		}
+	}
+
+	if(sla['resource-requirements'] && sla['resource-requirements']['store']) {
+		let storeName = sla.name + "-" + sla['resource-requirements']['store'] + ARCH;
+		app.Env.push("DATABOX_STORE_ENDPOINT=https://" + storeName + ":8080");
 	}
 
 	config.Networks.push({Target:'databox_databox-app-net'});
@@ -268,12 +281,6 @@ const storeConfig = function (config,sla) {
 		}
 	}
 
-	if ('datasources' in sla) {
-		for (let datasource of sla.datasources) {
-			config.Env.push("DATASOURCE_" + datasource.clientid + "=" + JSON.stringify(datasource.hypercat));
-		}
-	}
-
 	config.Name = requiredName
 	config.TaskTemplate.ContainerSpec = store
 	config.TaskTemplate.Placement.constraints = ["node.role == manager"]
@@ -298,12 +305,12 @@ async function addPermissionsFromSla (sla) {
 		console.log("[Adding Export permissions for " + localContainerName + "] on " + urlsString);
 			proms.push(updateContainerPermissions({
 											name: localContainerName,
-											route: {target:DATABOX_EXPORT_SERVICE_HOSTNAME, path: '/export/', method:'POST'},
+											route: {target:DATABOX_EXPORT_SERVICE_ENDPOINT, path: '/export/', method:'POST'},
 											caveats: [ "destination = [" + urlsString + "]" ]
 										}));
 			proms.push(updateContainerPermissions({
 											name: localContainerName,
-											route: {target:DATABOX_EXPORT_SERVICE_HOSTNAME, path: '/lp/export/', method:'POST'},
+											route: {target:DATABOX_EXPORT_SERVICE_ENDPOINT, path: '/lp/export/', method:'POST'},
 											caveats: [ "destination = [" + urlsString + "]" ]
 										}));
 	}
