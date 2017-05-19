@@ -1,0 +1,85 @@
+version: '3.1'
+services:
+    datbox-cm:
+        build:
+            context: ./databox-cm
+            dockerfile: Dockerfile
+        image: databox-cm
+        ports:
+            - '8989:8989'
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
+            - './docker-compose.yaml:/cfg/docker-compose.yaml'
+            - './src/config.json:/cfg/config.json'
+            - './certs:/certs'
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+        networks:
+            - databox-cm-arbiter-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - certs.json
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+    databox-arbiter:
+        build:
+            context: ./databox-arbiter
+            dockerfile: Dockerfile
+        image: databox-arbiter
+        networks:
+            - databox-cm-arbiter-net
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - DATABOX_ARBITER_PEM.json
+            - DATABOX_LOGSTORE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+    databox-logstore:
+        build:
+            context: ./databox-logstore
+            dockerfile: Dockerfile
+        image: databox-logstore
+        networks:
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - DATABOX_LOGSTORE_PEM.json
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+
+secrets:
+    DATABOX_ROOT_CA:
+        file: ./certs/containerManager.crt
+    CM_KEY:
+        file: ./certs/arbiterToken-databox-cm.json
+    certs.json:
+        file: ./certs/certs.json
+    DATABOX_ARBITER_PEM.json:
+        file: ./certs/databox-arbiter.json
+    DATABOX_LOGSTORE_PEM.json:
+        file: ./certs/databox-logstore.json
+    LOGSTOER_KEY:
+        file: ./certs/arbiterToken-databox-logstore.json
+networks:
+    databox-cm-arbiter-net:
+        driver: overlay
+    databox-driver-net:
+        driver: overlay
+    databox-app-net:
+        driver: overlay
+    databox-cloud-net:
+        driver: overlay
