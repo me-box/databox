@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     * Moved to docker swarm mode #42
     * Removed need for local registry for development
     * pass HTTPS certs and arbiter keys as docker secrets #3 
-    * mode the container manager into it own repo mee-box/databox-cm
+    * moved the container manager into it own repo me-box/databox-cm
     * Removed some modules and implemented mod clean to reduce container manager image size
     * Docker Network API issue - when creating network first time. Fixed #29
 
