@@ -11,9 +11,6 @@ const ip = '127.0.0.1';
 
 //ARCH to append -arm to the end of a container name if running on arm
 var ARCH = '';
-if (process.arch == 'arm') {
-	ARCH = '-arm';
-};
 
 const certPath = './certs/';
 
