@@ -10,12 +10,15 @@ ARCH=$(uname -m)
 if [ "$ARCH" == 'armv7l' ]
 then
      NODE_IMAGE="hypriot/rpi-node:slim"
+     export DATABOX_ARCH="-"${ARCH}
 elif [ "$ARCH" == 'aarch64' ]
 then
      NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
+     export DATABOX_ARCH="-"${ARCH}
 else
      ARCH=""
      NODE_IMAGE="node:alpine"
+     export DATABOX_ARCH=""
 fi
 
 export DATABOX_ARCH="-"${ARCH}
