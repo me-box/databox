@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! [ -x "$(command -v docker-compose)" ]; then
+  echo 'Error: docker compose is not installed (try pip install docker-compose).' >&2
+  exit 1
+fi
+
 ARCH=$(uname -m)
 
 if [ "$ARCH" == 'armv7l' ]
