@@ -13,7 +13,7 @@ if [ ! -d "databox-logstore" ]; then
 fi
 
 if [ ! -d "databox-export-service" ]; then
-    git clone git@github.com:me-box/databox-export-service.git
+    git clone -b fet/swarm git@github.com:me-box/databox-export-service.git
 fi
 
 if [ ! -d "databox-app-server" ]; then
