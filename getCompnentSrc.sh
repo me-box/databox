@@ -17,7 +17,7 @@ if [ ! -d "databox-export-service" ]; then
 fi
 
 if [ ! -d "databox-app-server" ]; then
-    git clone git@github.com:me-box/databox-app-server.git
+    git clone  -b fet/swarm git@github.com:me-box/databox-app-server.git
 fi
 
 if [ ! -d "databox-store-blob-mongo" ]; then
