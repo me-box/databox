@@ -27,8 +27,11 @@ fi
 
 docker swarm init
 
-echo "Creating certs"
-contNode node ./src/createCerts.js
+if [ ! -d "certs" ]; then
+  echo "Creating certs"
+  mkdir ./certs
+  contNode node ./src/createCerts.js
+fi
 
 docker-compose build
 docker-compose -f ./docker-compose-dev-local-images.yaml build
