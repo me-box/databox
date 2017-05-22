@@ -2,26 +2,28 @@ version: '3'
 
 #Build only (put your images in here)
 services:
-  databox-store-blob-mongo:
-    build: 
-        context: ./databox-store-blob-mongo
-        dockerfile: Dockerfile
-    image: databox-store-blob-mongo
+#An exmaple of how to add your code to databox
+  databox-os-monitor-driver:
+    build:
+        context: ./databox-os-monitor-driver
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: databox-os-monitor-driver
+
+  #databox-app-twitter-sentiment:
+  #  build:
+  #      context: ./databox-app-twitter-sentiment
+  #      dockerfile: Dockerfile
+  #  image: databox-app-twitter-sentiment
+
+#Build the datastores 
   databox-store-blob:
     build: 
         context: ./databox-store-blob
-        dockerfile: Dockerfile
+        dockerfile: Dockerfile${DATABOX_ARCH}
     image: databox-store-blob
-
-#An exmaple of how to add your code to databox
-  databox-driver-twitter-stream:
+  databox-store-blob-mongo:
     build: 
-        context: ./databox-driver-twitter-stream
-        dockerfile: Dockerfile
-    image: databox-driver-twitter-stream
+        context: ./databox-store-blob-mongo
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: databox-store-blob-mongo
 
-  databox-app-twitter-sentiment:
-    build: 
-        context: ./databox-app-twitter-sentiment
-        dockerfile: Dockerfile
-    image: databox-app-twitter-sentiment

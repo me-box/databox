@@ -4,7 +4,14 @@ The Databox platform. See http://www.databoxproject.uk/ for more information
 
 ## Installation
 
-All Databox components, including the container manager, run in Docker containers. So first, install and run Docker: https://www.docker.com/products/docker
+All Databox components, including the container manager, run in Docker containers. So first, install and run Docker: 
+
+	see https://www.docker.com/products/docker for information
+
+
+Then install docker-compose 
+
+	pip install docker-compose
 
 
 ## Running

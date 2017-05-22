@@ -5,7 +5,17 @@ var containerMangerUIServer = null;
 
 const wait = ()=> { 
 	return new Promise((resolve,reject)=>{
-		setTimeout(resolve,8000);
+		function get () {
+			request.get("http://" + Config.localAppStoreName,(error,response,body)=>{
+                                if(error) {
+                                        console.log("[seeding manifest] waiting for appstore");
+                                        setTimeout(get,4000);
+                                } else {
+					resolve();
+				}
+			});
+		}
+		setTimeout(get,2000);
 	});
 }
 

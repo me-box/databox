@@ -5,7 +5,7 @@ services:
     databox-cm:
         build:
             context: ./databox-cm
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile${DATABOX_ARCH}
         image: databox-cm
         ports:
             - '8989:8989'
@@ -38,7 +38,7 @@ services:
     databox-arbiter:
         build:
             context: ./databox-arbiter
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile${DATABOX_ARCH}
         image: databox-arbiter
         networks:
             - databox-cm-arbiter-net
@@ -59,7 +59,7 @@ services:
     databox-logstore:
         build:
             context: ./databox-logstore
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile${DATABOX_ARCH}
         image: databox-logstore
         depends_on:
           - databox-arbiter
@@ -81,7 +81,7 @@ services:
     databox-export-service:
         build:
             context: ./databox-export-service
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile${DATABOX_ARCH}
         image: databox-export-service
         depends_on:
           - databox-arbiter
@@ -102,7 +102,7 @@ services:
     databox-app-server:
         build:
             context: ./databox-app-server
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile${DATABOX_ARCH}
         image: databox-app-server
         environment:
             - "LOCAL_MODE=1"

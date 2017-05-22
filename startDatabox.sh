@@ -1,8 +1,23 @@
 #!/bin/bash
 
-function dr () ( docker run -ti --rm -v "$(pwd -P)":/cwd -w /cwd $DARGS "$@" ;)
-function contNode { dr node:alpine  "$@" ;}
-function contNPM { dr node:alpine npm "$@" ;}
+ARCH=$(uname -m)
+
+if [ "$ARCH" == 'armv7l' ]
+then
+     NODE_IMAGE="hypriot/rpi-node:slim"
+elif [ "$ARCH" == 'aarch64' ]
+then
+     NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
+else
+     ARCH=""
+     NODE_IMAGE="node:alpine"
+fi
+
+export DATABOX_ARCH="-"${ARCH}
+
+function dr () ( docker run --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd $DARGS "$@" ;)
+function contNode { dr ${NODE_IMAGE}  "$@" ;}
+function contNPM { dr ${NODE_IMAGE} npm "$@" ;}
 
 if [ ! -d "node_modules" ]; then
     contNPM install
