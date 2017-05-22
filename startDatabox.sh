@@ -21,7 +21,6 @@ else
      export DATABOX_ARCH=""
 fi
 
-export DATABOX_ARCH="-"${ARCH}
 
 function dr () ( docker run --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd $DARGS "$@" ;)
 function contNode { dr ${NODE_IMAGE}  "$@" ;}
