@@ -1,32 +1,44 @@
 {
-	"registryUrl": "registry.hub.docker.com/databoxsystems",
-	"storeUrl": "http://store.upintheclouds.org",
-	"registryUrl_dev": "localhost:5000",
-	"storeUrl_dev": "http://localhost:8181",
-	"registryUrl_sdk": "registry.iotdatabox.com",
-	"storeUrl_sdk": "https://store.iotdatabox.com",
-	"serverPort": 8989,
-	"localRegistryName":"databox-local-registry",
-	"localRegistryImage":"databoxsystems/databox-local-registry",
-	"localAppStoreName":"databox-app-server",
+	"localAppStoreName":"127.0.0.1:8181",
+	"requiredHTTPSecrets": [
+								"databox-arbiter",
+								"databox-exportservice",
+								"databox-logstore"
+							],
+	"requiredArbiterSecrets": [
+								"databox-cm",
+								"databox-arbiter",
+								"databox-exportservice",
+								"databox-logstore"
+							],
 	"localRegistrySeedImages": [
 									"databox-arbiter",
 									"databox-logstore",
 									"databox-app-server",
 									"databox-export-service",
 									"databox-store-blob",
+									"databox-store-blob-mongo",
 									"databox-driver-mobile",
 									"databox-driver-twitter-stream",
 									"databox-app-twitter-sentiment",
 									"databox-os-monitor-driver",
 									"databox-driver-phillipshue"
 								],
-	"localAppStoreSeedManifests": [
+	"localAppStoreSeedManifests_old": [
 		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-store-blob-mongo/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-driver-phillipshue/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-driver-mobile/master/databox-manifest.json"
+	],
+	"localAppStoreSeedManifests": [
+		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-store-blob-mongo/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json"
 	]
+
 }

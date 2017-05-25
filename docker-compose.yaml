@@ -1,0 +1,149 @@
+version: '3.1'
+
+services:
+#Build and satart the databox platform
+    databox-cm:
+        build:
+            context: ./databox-cm
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: databox-cm
+        ports:
+            - '8989:8989'
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
+            - './docker-compose.yaml:/cfg/docker-compose.yaml'
+            - './src/config.json:/cfg/config.json'
+            - './certs:/certs'
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+            - 'DATABOX_DEV=1'
+            - 'DATABOX_SDK=0'
+        networks:
+            - databox-cm-arbiter-net
+            - databox-cm-app-server-net
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - DATA_BOX_CM_PEM.json
+        depends_on:
+          - databox-arbiter
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+
+    databox-arbiter:
+        build:
+            context: ./databox-arbiter
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: databox-arbiter
+        networks:
+            - databox-cm-arbiter-net
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - DATABOX_ARBITER_PEM.json
+            - DATABOX_LOGSTORE_KEY
+            - DATABOX_EXPORT_SERVICE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+
+    databox-logstore:
+        build:
+            context: ./databox-logstore
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: databox-logstore
+        depends_on:
+          - databox-arbiter
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+        networks:
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - DATABOX_LOGSTORE_PEM.json
+            - DATABOX_LOGSTORE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+    
+    databox-export-service:
+        build:
+            context: ./databox-export-service
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: databox-export-service
+        depends_on:
+          - databox-arbiter
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+        networks:
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - DATABOX_EXPORT_SERVICE_PEM.json
+            - DATABOX_EXPORT_SERVICE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+
+    databox-app-server:
+        build:
+            context: ./databox-app-server
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: databox-app-server
+        environment:
+            - "LOCAL_MODE=1"
+            - "PORT=8181"
+        ports:
+            - '8181:8181'
+        networks:
+            - databox-cloud-net
+            - databox-cm-app-server-net
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
+
+secrets:
+    DATABOX_ROOT_CA:
+        file: ./certs/containerManager.crt
+    CM_KEY:
+        file: ./certs/arbiterToken-databox-cm
+    DATA_BOX_CM_PEM.json:
+        file: ./certs/certs.json
+    DATABOX_ARBITER_PEM.json:
+        file: ./certs/databox-arbiter.json
+    DATABOX_LOGSTORE_PEM.json:
+        file: ./certs/databox-logstore.json
+    DATABOX_LOGSTORE_KEY:
+        file: ./certs/arbiterToken-databox-logstore
+    DATABOX_EXPORT_SERVICE_PEM.json:
+        file: ./certs/databox-exportservice.json
+    DATABOX_EXPORT_SERVICE_KEY:
+        file: ./certs/arbiterToken-databox-exportservice
+
+networks:
+    databox-cm-arbiter-net:
+        driver: overlay
+    databox-cm-app-server-net:
+        driver: overlay
+    databox-driver-net:
+        driver: overlay
+    databox-app-net:
+        driver: overlay
+    databox-cloud-net:
+        driver: overlay

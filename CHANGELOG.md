@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
-    * Removed some modules and implemented mod clean to reduce container manger image size
+    * Moved to docker swarm mode #42
+    * Removed need for local registry for development
+    * pass HTTPS certs and arbiter keys as docker secrets #3 
+    * moved the container manager into it own repo me-box/databox-cm
+    * Removed some modules and implemented mod clean to reduce container manager image size
+    * Docker Network API issue - when creating network first time. Fixed #29
 
 ## [0.1.1] 2017-04-05
 ### Changed

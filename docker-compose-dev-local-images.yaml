@@ -1,0 +1,29 @@
+version: '3'
+
+#Build only (put your images in here)
+services:
+#An exmaple of how to add your code to databox
+  databox-os-monitor-driver:
+    build:
+        context: ./databox-os-monitor-driver
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: databox-os-monitor-driver
+
+  #databox-app-twitter-sentiment:
+  #  build:
+  #      context: ./databox-app-twitter-sentiment
+  #      dockerfile: Dockerfile
+  #  image: databox-app-twitter-sentiment
+
+#Build the datastores 
+  databox-store-blob:
+    build: 
+        context: ./databox-store-blob
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: databox-store-blob
+  databox-store-blob-mongo:
+    build: 
+        context: ./databox-store-blob-mongo
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: databox-store-blob-mongo
+
