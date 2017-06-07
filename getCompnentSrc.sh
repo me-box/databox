@@ -1,7 +1,7 @@
 
 
 if [ ! -d "databox-cm" ]; then
-    
+    git clone https://github.com/me-box/databox-cm.git databox-cm
 fi 
 
 if [ ! -d "databox-arbiter" ]; then
