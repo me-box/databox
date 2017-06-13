@@ -1,34 +1,26 @@
+#!/usr/bin/env bash
 
+update_repo()
+{
+	NAME=$1
+	REPO=$2
 
-if [ ! -d "databox-cm" ]; then
-    git clone https://github.com/me-box/databox-cm.git databox-cm
-fi 
+	if [ ! -d ${NAME} ]; then
+        git clone ${REPO} ${NAME}
+    else
+        cd ${NAME}
+        git pull
+        cd ..
+	fi
+}
 
-if [ ! -d "databox-arbiter" ]; then
-    git clone https://github.com/me-box/databox-arbiter.git
-fi
-
-if [ ! -d "databox-logstore" ]; then
-    git clone https://github.com/me-box/databox-logstore.git
-fi
-
-if [ ! -d "databox-export-service" ]; then
-    git clone https://github.com/me-box/databox-export-service.git
-fi
-
-if [ ! -d "databox-app-server" ]; then
-    git clone  https://github.com/me-box/databox-app-server.git
-fi
-
-if [ ! -d "databox-store-blob-mongo" ]; then
-    git clone https://github.com/me-box/databox-store-blob-mongo.git
-fi
-
-if [ ! -d "databox-store-blob" ]; then
-    git clone https://github.com/me-box/databox-store-blob.git
-fi
-
-if [ ! -d "databox-os-monitor-driver" ]; then
-    git clone https://github.com/me-box/databox-os-monitor-driver.git
-fi
-
+update_repo "databox-cm" "https://github.com/me-box/databox-cm.git"
+update_repo "databox-arbiter" "https://github.com/me-box/databox-arbiter.git"
+update_repo "databox-logstore" "https://github.com/me-box/databox-logstore.git"
+update_repo "databox-export-service" "https://github.com/me-box/databox-export-service.git"
+update_repo "databox-app-server" "https://github.com/me-box/databox-app-server.git"
+update_repo "databox-store-blob-mongo" "https://github.com/me-box/databox-store-blob-mongo.git"
+update_repo "databox-store-blob" "https://github.com/me-box/databox-store-blob.git"
+update_repo "databox-os-monitor-driver" "https://github.com/me-box/databox-os-monitor-driver.git"
+update_repo "databox-driver-twitter-stream" "https://github.com/me-box/databox-driver-twitter-stream.git"
+update_repo "databox-app-twitter-sentiment" "https://github.com/me-box/databox-app-twitter-sentiment.git"
