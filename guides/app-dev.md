@@ -19,7 +19,8 @@ Another important thing to understand is that your App so not able to communicat
 
 The arbiter lives at the host defined by the environment variable `DATABOX_ARBITER_ENDPOINT` (usually `https://arbiter:8080`). When the app is running in the Databox environment, the `arbiter` hostname will resolve to the correct container.
 
-When your app is launched by the Databox system, it is provided with a unique token through the environment variable `ARBITER_TOKEN`. When making any request to the arbiter, it is important that this token is included as a header with the name `x-api-key`.
+When your driver is launched by the Databox system, it is provided with a unique token through the docker secret  `/run/secrets/ARBITER_TOKEN`. When making any request to the arbiter, it is important that this token is included as a header with the name `x-api-key` (or through Basic Auth).
+
 
 The arbiter API endpoints available to Databox apps are documented [here](https://github.com/me-box/databox-arbiter#container-facing). Apps request tokens over `/token` and may need to query this endpoint periodically as these tokens expire.
 
