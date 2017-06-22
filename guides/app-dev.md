@@ -90,8 +90,11 @@ When your app container is installed on to a databox the databox-manifest is par
 **DATABOX configuration**
 
 DATABOX_LOCAL_NAME: Your app's hostname on this databox. 
+
 DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to request new tokens for access to other Databox components.
+
 DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
+
 /run/secrets/ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
 
 DATABOX_STORE_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints.
