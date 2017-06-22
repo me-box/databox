@@ -64,13 +64,7 @@ Note that this must be served over HTTPS. Public and private certificates are pr
 
 The rest of your Dockerfile can be set up following standard Docker workflow. Depending on what language or framework your app uses, you can base it off of one of the existing [official Docker images](https://hub.docker.com/explore/) (commonly Nodejs or Java), copy files from the working directory to the container root on building the Docker image, and run commands for compiling and running your program.
 
-Once you have built an app (`docker build`), it must be given a unique name (URL namespace preferred) and tagged with the Databox registry URL, i.e.
-
-    $ docker tag com.example.myapp localhost:5000/com.example.myapp
-
-Finally, push the app image to the official registry:
-
-    $ docker push localhost:5000/com.example.myapp
+Once you have built an app (`docker build`)
 
 ### The Databox Manifest ###
 
@@ -78,16 +72,16 @@ Every app must have a `databox-manifest.json` file in its root directory. The ma
 
 The fields are documented [here](https://github.com/me-box/documents/blob/master/specs/manifest_and_sla.md#manifest).
 
-This manifest must be additionally uploaded separately to a databox-app-server.
+This manifest must be additionally uploaded separately to a databox-app-server (http://127.0.0.1:8181 for devlopment).
 
-Your app will become available on the store after it has been reviewed by store moderators.
+Your app will become available on your local databox for testing. 
 
 ### The Databox Envronment ###
 
-When your app container is installed on to a databox the databox-manifest is parsed and converted into a service level agreement(SLA). The SLA encodes your apps permissions on one particular databox. When your app is started a number of environment variables are set. These are:
+When your app container is installed on to a databox the databox-manifest is parsed and converted into a service level agreement(SLA). The SLA encodes your apps permissions on one particular databox. When your app is started a number of environment variables are set and docker secrets created in /run/secrets/. These are:
 
 **HTTPS Certificates**
-CM_HTTPS_CA_ROOT_CERT: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
+/run/secrets/DATABOX_PEM: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
 
 HTTPS_SERVER_CERT and HTTPS_SERVER_PRIVATE_KEY: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
 
@@ -97,9 +91,9 @@ DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to reque
 DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
 ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
 
-[DATABOX_LOCAL_NAME]\_[STORE_TYPE]\_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints. For example, if your app is called `databox-app-alice` and you request a `databox-blob-store` then is environment variable will be DATABOX_APP_ALICE_DATABOX_BLOB_STORE={some https url}.
+DATABOX_STORE_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints.
 
-Most of the time you will not need to worry about these as they will be abstracted away in a library. For example, [databox-request](https://github.com/me-box/databox-store-blob/blob/master/src/lib/databox-request/databox-request-promise.js).
+Most of the time you will not need to worry about these as they will be abstracted away in a library. For example, [node-databox](https://github.com/me-box/node-databox).
 
 ### Advanced ###
 
