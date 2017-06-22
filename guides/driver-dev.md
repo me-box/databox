@@ -16,7 +16,7 @@ As driver developer your app only ever needs to know about two types of internal
 
 The arbiter lives at the host defined by the environment variable `DATABOX_ARBITER_ENDPOINT` (usually `https://arbiter:8080`). When the driver is running in the Databox environment, the `arbiter` hostname will resolve to the correct container.
 
-When your driver is launched by the Databox system, it is provided with a unique token through the environment variable `ARBITER_TOKEN`. When making any request to the arbiter, it is important that this token is included as a header with the name `x-api-key` (or through Basic Auth).
+When your driver is launched by the Databox system, it is provided with a unique token through the docker secret /run/secrets/ARBITER_TOKEN. When making any request to the arbiter, it is important that this token is included as a header with the name x-api-key (or through Basic Auth).
 
 The arbiter API endpoints available to Databox apps are documented [here](https://github.com/me-box/databox-arbiter#container-facing). Driver request tokens over `/token` and may need to query this endpoint periodically as these tokens expire.
 
@@ -45,16 +45,22 @@ Your driver will become available on the store after it has been reviewed by sto
 When your driver container is installed on to a databox the databox-manifest is parsed and converted into a service level agreement(SLA). The SLA encodes your apps permissions on one particular databox. When your app is started a number of environment variables are set. These are:
 
 **HTTPS Certificates**
-CM_HTTPS_CA_ROOT_CERT: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
 
-HTTPS_SERVER_CERT and HTTPS_SERVER_PRIVATE_KEY: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
+/run/secrets/DATABOX_ROOT_CA: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
+
+/run/secrets/DATABOX_PEM: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API.
 
 **DATABOX configuration**
+
 DATABOX_LOCAL_NAME: Your app's hostname on this databox. 
+
 DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to request new tokens for access to other Databox components.
+
 DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
-ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
 
-[DATABOX_LOCAL_NAME]\_[STORE_TYPE]\_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints. For example, if your app is called `databox-app-alice` and you request a `databox-blob-store` then is environment variable will be DATABOX_APP_ALICE_DATABOX_BLOB_STORE={some https url}.
+/run/secrets/ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
 
-Most of the time you will not need to worry about these as they will be abstracted away in a library. For example, [databox-request](https://github.com/me-box/databox-store-blob/blob/master/src/lib/databox-request/databox-request-promise.js).
+DATABOX_STORE_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints.
+
+Most of the time you will not need to worry about these as they will be abstracted away in a library. For example, [node-databox](https://github.com/me-box/node-databox).
+
