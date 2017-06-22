@@ -81,11 +81,13 @@ Your app will become available on your local databox for testing.
 When your app container is installed on to a databox the databox-manifest is parsed and converted into a service level agreement(SLA). The SLA encodes your apps permissions on one particular databox. When your app is started a number of environment variables are set and docker secrets created in /run/secrets/. These are:
 
 **HTTPS Certificates**
+
 /run/secrets/DATABOX_PEM: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
 
 HTTPS_SERVER_CERT and HTTPS_SERVER_PRIVATE_KEY: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
 
 **DATABOX configuration**
+
 DATABOX_LOCAL_NAME: Your app's hostname on this databox. 
 DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to request new tokens for access to other Databox components.
 DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
