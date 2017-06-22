@@ -83,16 +83,16 @@ When your app container is installed on to a databox the databox-manifest is par
 
 **HTTPS Certificates**
 
-/run/secrets/DATABOX_PEM: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
+/run/secrets/DATABOX_ROOT_CA: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
 
-HTTPS_SERVER_CERT and HTTPS_SERVER_PRIVATE_KEY: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
+/run/secrets/DATABOX_PEM: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
 
 **DATABOX configuration**
 
 DATABOX_LOCAL_NAME: Your app's hostname on this databox. 
 DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to request new tokens for access to other Databox components.
 DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
-ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
+/run/secrets/ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
 
 DATABOX_STORE_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints.
 
