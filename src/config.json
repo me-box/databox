@@ -1,43 +1,20 @@
 {
 	"localAppStoreName":"127.0.0.1:8181",
 	"requiredHTTPSecrets": [
-								"databox-arbiter",
-								"databox-exportservice",
-								"databox-logstore"
+								"arbiter",
+								"export-service",
+								"syslog"
 							],
 	"requiredArbiterSecrets": [
-								"databox-cm",
-								"databox-arbiter",
-								"databox-exportservice",
-								"databox-logstore"
+								"container-manager",
+								"arbiter",
+								"export-service",
+								"syslog"
 							],
-	"localRegistrySeedImages": [
-									"databox-arbiter",
-									"databox-logstore",
-									"databox-app-server",
-									"databox-export-service",
-									"databox-store-blob",
-									"databox-store-blob-mongo",
-									"databox-driver-mobile",
-									"databox-driver-twitter-stream",
-									"databox-app-twitter-sentiment",
-									"databox-os-monitor-driver",
-									"databox-driver-phillipshue"
-								],
-	"localAppStoreSeedManifests_old": [
-		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-store-blob-mongo/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-driver-phillipshue/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-driver-mobile/master/databox-manifest.json"
-	],
 	"localAppStoreSeedManifests": [
 		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-store-blob/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-store-blob-mongo/master/databox-manifest.json",
+		"https://raw.githubusercontent.com/me-box/store-json/master/databox-manifest.json",
 		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json"
 	]
 

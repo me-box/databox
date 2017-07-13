@@ -1,5 +1,5 @@
 {
-  "name": "databox-container-manager",
+  "name": "container-manager",
   "version": "0.1.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/me-box/databox-container-manager.git"
+    "url": "git+https://github.com/me-box/container-manager.git"
   },
   "keywords": [
     "docker",
@@ -25,9 +25,9 @@
   "author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/me-box/databox-container-manager-js/issues"
+    "url": "https://github.com/me-box/container-manager-js/issues"
   },
-  "homepage": "https://github.com/me-box/databox-container-manager-js#readme",
+  "homepage": "https://github.com/me-box/container-manager-js#readme",
   "dependencies": {
     "dockerode": "^2.4.3",
     "jsonfile": "^3.0.0",

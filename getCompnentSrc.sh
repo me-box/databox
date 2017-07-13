@@ -1,9 +1,23 @@
 #!/usr/bin/env bash
 
+#set this to ssh if you want to clone ocer ssh rather then https
+UPDATE_TYPE="ssh"
+
 update_repo()
 {
+
+    if [ "$UPDATE_TYPE" = "ssh" ]
+    then
+        update_repo_ssh $1
+    else    
+        update_repo_https $1
+    fi
+}
+
+update_repo_https()
+{
 	NAME=$1
-	REPO=$2
+	REPO="https://github.com/me-box/${NAME}.git"
 
 	if [ ! -d ${NAME} ]; then
         git clone ${REPO} ${NAME}
@@ -14,13 +28,26 @@ update_repo()
 	fi
 }
 
-update_repo "databox-cm" "https://github.com/me-box/databox-cm.git"
-update_repo "databox-arbiter" "https://github.com/me-box/databox-arbiter.git"
-update_repo "databox-logstore" "https://github.com/me-box/databox-logstore.git"
-update_repo "databox-export-service" "https://github.com/me-box/databox-export-service.git"
-update_repo "databox-app-server" "https://github.com/me-box/databox-app-server.git"
-update_repo "databox-store-blob-mongo" "https://github.com/me-box/databox-store-blob-mongo.git"
-update_repo "databox-store-blob" "https://github.com/me-box/databox-store-blob.git"
-update_repo "databox-os-monitor-driver" "https://github.com/me-box/databox-os-monitor-driver.git"
-update_repo "databox-driver-twitter-stream" "https://github.com/me-box/databox-driver-twitter-stream.git"
-update_repo "databox-app-twitter-sentiment" "https://github.com/me-box/databox-app-twitter-sentiment.git"
+update_repo_ssh()
+{
+	NAME=$1
+	REPO="git@github.com:me-box/${NAME}.git"
+
+	if [ ! -d ${NAME} ]; then
+        git clone ${REPO} ${NAME}
+    else
+        cd ${NAME}
+        git pull
+        cd ..
+	fi
+}
+
+update_repo "core-container-manager" 
+update_repo "core-arbiter" 
+update_repo "core-syslog" 
+update_repo "core-export-service" 
+update_repo "platform-app-server" 
+update_repo "store-json" 
+update_repo "databox-os-monitor-driver" 
+update_repo "databox-driver-twitter-stream" 
+update_repo "databox-app-twitter-sentiment" 

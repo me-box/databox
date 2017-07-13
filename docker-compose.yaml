@@ -2,11 +2,11 @@ version: '3.1'
 
 services:
 #Build and satart the databox platform
-    databox-cm:
+    container-manager:
         build:
-            context: ./databox-cm
+            context: ./core-container-manager
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: databox-cm
+        image: container-manager
         ports:
             - '8989:8989'
         volumes:
@@ -15,7 +15,7 @@ services:
             - './src/config.json:/cfg/config.json'
             - './certs:/certs'
         environment:
-            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
             - 'DATABOX_DEV=1'
             - 'DATABOX_SDK=0'
         networks:
@@ -28,18 +28,18 @@ services:
             - CM_KEY
             - DATA_BOX_CM_PEM.json
         depends_on:
-          - databox-arbiter
+          - arbiter
         deploy:
             replicas: 1
             placement:
                 constraints:
                     - 'node.role == manager'
 
-    databox-arbiter:
+    arbiter:
         build:
-            context: ./databox-arbiter
+            context: ./core-arbiter
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: databox-arbiter
+        image: arbiter
         networks:
             - databox-cm-arbiter-net
             - databox-driver-net
@@ -56,15 +56,15 @@ services:
                 constraints:
                     - 'node.role == manager'
 
-    databox-logstore:
+    syslog:
         build:
-            context: ./databox-logstore
+            context: ./core-syslog
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: databox-logstore
+        image: syslog
         depends_on:
-          - databox-arbiter
+          - arbiter
         environment:
-            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
         networks:
             - databox-driver-net
             - databox-app-net
@@ -78,15 +78,15 @@ services:
                 constraints:
                     - 'node.role == manager'
     
-    databox-export-service:
+    export-service:
         build:
-            context: ./databox-export-service
+            context: ./core-export-service
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: databox-export-service
+        image: export-service
         depends_on:
-          - databox-arbiter
+          - arbiter
         environment:
-            - 'DATABOX_ARBITER_ENDPOINT=https://databox-arbiter:8080'
+            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
         networks:
             - databox-app-net
         secrets:
@@ -99,11 +99,11 @@ services:
                 constraints:
                     - 'node.role == manager'
 
-    databox-app-server:
+    app-server:
         build:
-            context: ./databox-app-server
+            context: ./platform-app-server
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: databox-app-server
+        image: app-server
         environment:
             - "LOCAL_MODE=1"
             - "PORT=8181"
@@ -122,19 +122,19 @@ secrets:
     DATABOX_ROOT_CA:
         file: ./certs/containerManager.crt
     CM_KEY:
-        file: ./certs/arbiterToken-databox-cm
+        file: ./certs/arbiterToken-container-manager
     DATA_BOX_CM_PEM.json:
         file: ./certs/certs.json
     DATABOX_ARBITER_PEM.json:
-        file: ./certs/databox-arbiter.json
+        file: ./certs/arbiter.json
     DATABOX_LOGSTORE_PEM.json:
-        file: ./certs/databox-logstore.json
+        file: ./certs/syslog.json
     DATABOX_LOGSTORE_KEY:
-        file: ./certs/arbiterToken-databox-logstore
+        file: ./certs/arbiterToken-syslog
     DATABOX_EXPORT_SERVICE_PEM.json:
-        file: ./certs/databox-exportservice.json
+        file: ./certs/export-service.json
     DATABOX_EXPORT_SERVICE_KEY:
-        file: ./certs/arbiterToken-databox-exportservice
+        file: ./certs/arbiterToken-export-service
 
 networks:
     databox-cm-arbiter-net:

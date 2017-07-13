@@ -80,3 +80,15 @@ databox-export-service/
 databox-app-twitter-sentiment/
 
 databox-driver-twitter-stream/
+
+core-arbiter/
+
+core-container-manager/
+
+core-export-service/
+
+core-syslog/
+
+platform-app-server/
+
+store-json/

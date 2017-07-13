@@ -16,14 +16,9 @@ services:
   #  image: databox-app-twitter-sentiment
 
 #Build the datastores 
-  databox-store-blob:
+  store-json:
     build: 
-        context: ./databox-store-blob
+        context: ./store-json
         dockerfile: Dockerfile${DATABOX_ARCH}
-    image: databox-store-blob
-  databox-store-blob-mongo:
-    build: 
-        context: ./databox-store-blob-mongo
-        dockerfile: Dockerfile${DATABOX_ARCH}
-    image: databox-store-blob-mongo
+    image: store-json
 
