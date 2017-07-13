@@ -13,9 +13,13 @@
 							],
 	"localAppStoreSeedManifests": [
 		"driver-twitter",
+		"driver-os-monitor",
+		"driver-sensingkit",
+		"driver-google-takeout",
+		"driver-phillips-hue",
+		"app-light-graph",
 		"app-twitter-sentiment",
-		"store-json",
-		"driver-os-monitor"
+		"store-json"
 	]
 
 }
