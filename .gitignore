@@ -98,3 +98,11 @@ app-twitter-sentiment/
 driver-os-monitor/
 
 driver-twitter/
+
+app-light-graph/
+
+driver-google-takeout/
+
+driver-phillips-hue/
+
+driver-sensingkit/

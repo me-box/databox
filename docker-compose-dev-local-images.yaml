@@ -14,12 +14,36 @@ services:
         context: ./driver-twitter
         dockerfile: Dockerfile${DATABOX_ARCH}
     image: driver-twitter
+  
+  driver-phillips-hue:
+    build:
+        context: ./driver-phillips-hue
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-phillips-hue
+
+  driver-sensingkit:
+    build:
+        context: ./driver-sensingkit
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-sensingkit
+  
+  driver-google-takeout:
+    build:
+        context: ./driver-google-takeout
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-google-takeout
 
   app-twitter-sentiment:
     build:
         context: ./app-twitter-sentiment
         dockerfile: Dockerfile
     image: app-twitter-sentiment
+
+  app-light-graph:
+    build:
+        context: ./app-light-graph
+        dockerfile: Dockerfile
+    image: app-light-graph
 
 #Build the datastores 
   store-json:
