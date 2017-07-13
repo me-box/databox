@@ -1,5 +1,6 @@
 const Config = require('./config.json');
 const request = require('request');
+const fs = require('fs');
 
 var containerMangerUIServer = null;
 
@@ -28,11 +29,13 @@ const wait = ()=> {
 					console.log("[seeding manifest] get app store root to log in", error);
 					return Promise.reject();
 				}
-				proms = Config.localAppStoreSeedManifests.map((url)=>{
+				proms = Config.localAppStoreSeedManifests.map((name)=>{
 					return new Promise(function(resolve, reject) {
-						req.get(url,(error,response,body)=>{
+						
+						let path = "./"+name+"/databox-manifest.json";
+						fs.readFile(path,'utf8', (error,body)=>{
 							if(error) {
-								console.log("[seeding manifest] Failed to get manifest from" + url, error);
+								console.log("[seeding manifest] Failed to get manifest from " + path, error);
 							}
 							req.post({
 									uri: "http://" + Config.localAppStoreName + "/app/post",

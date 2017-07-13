@@ -12,10 +12,10 @@
 								"syslog"
 							],
 	"localAppStoreSeedManifests": [
-		"https://raw.githubusercontent.com/me-box/databox-driver-twitter-stream/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-app-twitter-sentiment/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/store-json/master/databox-manifest.json",
-		"https://raw.githubusercontent.com/me-box/databox-os-monitor-driver/master/databox-manifest.json"
+		"driver-twitter",
+		"app-twitter-sentiment",
+		"store-json",
+		"driver-os-monitor"
 	]
 
 }

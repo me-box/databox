@@ -92,3 +92,9 @@ core-syslog/
 platform-app-server/
 
 store-json/
+
+app-twitter-sentiment/
+
+driver-os-monitor/
+
+driver-twitter/
