@@ -36,13 +36,13 @@ services:
   app-twitter-sentiment:
     build:
         context: ./app-twitter-sentiment
-        dockerfile: Dockerfile
+        dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-twitter-sentiment
 
   app-light-graph:
     build:
         context: ./app-light-graph
-        dockerfile: Dockerfile
+        dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-light-graph
 
 #Build the datastores 
