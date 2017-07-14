@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#set this to ssh if you want to clone ocer ssh rather then https
-UPDATE_TYPE="ssh"
+#set this to ssh if you want to clone over ssh rather then https
+UPDATE_TYPE=""
 
 update_repo()
 {
