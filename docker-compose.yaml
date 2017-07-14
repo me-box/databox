@@ -6,7 +6,7 @@ services:
         build:
             context: ./core-container-manager
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: container-manager
+        image: ${DOCKER_REPO}container-manager
         ports:
             - '8989:8989'
         volumes:
@@ -16,8 +16,8 @@ services:
             - './certs:/certs'
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
-            - 'DATABOX_DEV=1'
-            - 'DATABOX_SDK=0'
+            - 'DATABOX_DEV=${DATABOX_DEV}'
+            - 'DATABOX_SDK=${DATABOX_SDK}'
         networks:
             - databox-cm-arbiter-net
             - databox-cm-app-server-net
@@ -28,7 +28,8 @@ services:
             - CM_KEY
             - DATA_BOX_CM_PEM.json
         depends_on:
-          - arbiter
+            - arbiter
+            - app-server
         deploy:
             replicas: 1
             placement:
@@ -39,7 +40,7 @@ services:
         build:
             context: ./core-arbiter
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: arbiter
+        image: ${DOCKER_REPO}arbiter
         networks:
             - databox-cm-arbiter-net
             - databox-driver-net
@@ -60,7 +61,7 @@ services:
         build:
             context: ./core-syslog
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: syslog
+        image: ${DOCKER_REPO}syslog
         depends_on:
           - arbiter
         environment:
@@ -82,7 +83,7 @@ services:
         build:
             context: ./core-export-service
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: export-service
+        image: ${DOCKER_REPO}export-service
         depends_on:
           - arbiter
         environment:
@@ -103,7 +104,7 @@ services:
         build:
             context: ./platform-app-server
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: app-server
+        image: ${DOCKER_REPO}app-server
         environment:
             - "LOCAL_MODE=1"
             - "PORT=8181"
