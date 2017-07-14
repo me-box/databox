@@ -3,27 +3,52 @@ version: '3'
 #Build only (put your images in here)
 services:
 #An exmaple of how to add your code to databox
-  databox-os-monitor-driver:
+  driver-os-monitor:
     build:
-        context: ./databox-os-monitor-driver
+        context: ./driver-os-monitor
         dockerfile: Dockerfile${DATABOX_ARCH}
-    image: databox-os-monitor-driver
+    image: driver-os-monitor
 
-  #databox-app-twitter-sentiment:
-  #  build:
-  #      context: ./databox-app-twitter-sentiment
-  #      dockerfile: Dockerfile
-  #  image: databox-app-twitter-sentiment
+  driver-twitter:
+    build:
+        context: ./driver-twitter
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-twitter
+  
+  driver-phillips-hue:
+    build:
+        context: ./driver-phillips-hue
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-phillips-hue
+
+  driver-sensingkit:
+    build:
+        context: ./driver-sensingkit
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-sensingkit
+  
+  driver-google-takeout:
+    build:
+        context: ./driver-google-takeout
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-google-takeout
+
+  app-twitter-sentiment:
+    build:
+        context: ./app-twitter-sentiment
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: app-twitter-sentiment
+
+  app-light-graph:
+    build:
+        context: ./app-light-graph
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: app-light-graph
 
 #Build the datastores 
-  databox-store-blob:
+  store-json:
     build: 
-        context: ./databox-store-blob
+        context: ./store-json
         dockerfile: Dockerfile${DATABOX_ARCH}
-    image: databox-store-blob
-  databox-store-blob-mongo:
-    build: 
-        context: ./databox-store-blob-mongo
-        dockerfile: Dockerfile${DATABOX_ARCH}
-    image: databox-store-blob-mongo
+    image: store-json
 

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
+    * renamed all the repos see #52
+    * Re-enable docker hub builds
+    * removed need for remote app-store (for now)
+
+## [0.1.2]
+### Changed
     * Moved to docker swarm mode #42
     * Removed need for local registry for development
     * pass HTTPS certs and arbiter keys as docker secrets #3 
