@@ -16,7 +16,7 @@ Then install docker-compose
 
 ## Running
 
-Once docker is installed, just run the flowing to get your databox up and running. (This can take a while the first time as it rebuilds all the platform components)
+Once docker is installed, just run the flowing to get your databox up and running. (Images will be pulled from https://hub.docker.com/r/databoxsystems/)
 
 	./startDatabox.sh
 
@@ -26,7 +26,11 @@ To stop databox and clean up use ./stopDatabox.sh
 
 ## Development
 
-To develop for the Databox platform. Add you code into a directory with a databox manifest and docker file. Then add a reference to it in docker-compose-dev-local-images.yaml your image will then be built along with the platform. 
+To develop on the platform and core components you can run 
+
+	./startDatabox.sh dev
+
+This will copy all the code needed to your local machine and build you a local set of docker image. Add you code into a directory with a databox manifest and docker file. Then add a reference to it in docker-compose-dev-local-images.yaml your image will then be built along with the platform. 
 
 To install your app you will need to upload the manifest to the local app store on http://127.0.0.1:8181 then it will be visible in the UI.
 
