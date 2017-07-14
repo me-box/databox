@@ -15,6 +15,7 @@ const wait = ()=> {
 					resolve();
 				}
 			});
+			resolve();
 		}
 		setTimeout(get,2000);
 	});
@@ -66,20 +67,30 @@ const seedFromDisk = (name) => {
 const req = request.defaults({jar: true});
 wait()
 .then(()=>{
-		req.get("http://" + Config.localAppStoreName,(error,response,body)=>{
-			if(error) {
-				console.log("[seeding manifest] get app store root to log in", error);
-				return Promise.reject();
-			}
-			
-			if(process.env.DATABOX_DEV == 1) {
-				let fn = seedFromDisk(req);
-			} else {
-				let fn = seedFromGithub(req);
-			}
-			let proms = Config.localAppStoreSeedManifests.map(fn)
-			return Promise.all(proms);
+		return  new Promise(function(resolve, reject) { 
+		
+			req.get("http://" + Config.localAppStoreName,(error,response,body)=>{
+				if(error) {
+					console.log("[seeding manifest] get app store root to log in", error);
+					return reject();
+				}
+				
+				let proms = []
+				if(process.env.DATABOX_DEV == 1) {
+					proms = Config.localAppStoreSeedManifests.map(seedFromDisk)
+				} else {
+					proms = Config.localAppStoreSeedManifests.map(seedFromGithub)
+				}
+				
+				resolve(proms);
+			});
 		});
+})
+.then((pArray)=>{
+	return Promise.all(pArray);
+})
+.then(()=>{
+	console.log("[seeding manifest] Done");
 })
 .catch(err => {
 	console.log(err);
