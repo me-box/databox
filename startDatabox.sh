@@ -5,6 +5,21 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
+ips=($(ifconfig | sed -En 's/127.0.0.1//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
+EXT_IP=$ips
+if [ "${#ips[@]}" -gt "1" ]
+then
+   echo More than one IP found please select from the list.
+   select ip in ${ips[*]}; do
+      case $ip in
+         exit) echo "exiting"
+               break ;;
+            *) EXT_IP=$ip
+            break ;;
+      esac
+   done
+fi
+
 DEV=""
 if [ "$1" == "dev" ]
 then
@@ -62,7 +77,7 @@ fi
 
 
 
-docker swarm init
+docker swarm init --advertise-addr ${EXT_IP}
 
 if [ ! -d "certs" ]; then
   echo "Creating certs"
