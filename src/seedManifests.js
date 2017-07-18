@@ -12,10 +12,9 @@ const wait = ()=> {
                                         console.log("[seeding manifest] waiting for appstore");
                                         setTimeout(get,4000);
                                 } else {
-					resolve();
-				}
+									resolve();
+								}
 			});
-			resolve();
 		}
 		setTimeout(get,2000);
 	});
