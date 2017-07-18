@@ -1,5 +1,12 @@
 #!/bin/bash
 
+docker node ls > /dev/null
+if [ $? -eq 0 ]
+then
+   echo databox is already running
+   exit 0
+fi
+
 if ! [ -x "$(command -v docker-compose)" ]; then
   echo 'Error: docker compose is not installed (try pip install docker-compose).' >&2
   exit 1
