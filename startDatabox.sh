@@ -1,8 +1,30 @@
 #!/bin/bash
 
+docker node ls > /dev/null
+if [ $? -eq 0 ]
+then
+   echo databox is already running
+   exit 0
+fi
+
 if ! [ -x "$(command -v docker-compose)" ]; then
   echo 'Error: docker compose is not installed (try pip install docker-compose).' >&2
   exit 1
+fi
+
+ips=($(ifconfig | sed -En 's/127.0.0.1//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
+EXT_IP=$ips
+if [ "${#ips[@]}" -gt "1" ]
+then
+   echo More than one IP found please select from the list.
+   select ip in ${ips[*]}; do
+      case $ip in
+         exit) echo "exiting"
+               break ;;
+            *) EXT_IP=$ip
+            break ;;
+      esac
+   done
 fi
 
 DEV=""
@@ -62,7 +84,7 @@ fi
 
 
 
-docker swarm init
+docker swarm init --advertise-addr ${EXT_IP}
 
 if [ ! -d "certs" ]; then
   echo "Creating certs"
