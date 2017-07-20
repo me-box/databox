@@ -27,6 +27,7 @@ services:
             - DATABOX_ROOT_CA
             - CM_KEY
             - DATA_BOX_CM_PEM.json
+            - DATA_BOX_CM.pem
         depends_on:
             - arbiter
             - app-server
@@ -49,6 +50,7 @@ services:
             - DATABOX_ROOT_CA
             - CM_KEY
             - DATABOX_ARBITER_PEM.json
+            - DATABOX_ARBITER.pem
             - DATABOX_LOGSTORE_KEY
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
@@ -72,6 +74,7 @@ services:
         secrets:
             - DATABOX_ROOT_CA
             - DATABOX_LOGSTORE_PEM.json
+            - DATABOX_LOGSTORE.pem
             - DATABOX_LOGSTORE_KEY
         deploy:
             replicas: 1
@@ -93,6 +96,7 @@ services:
         secrets:
             - DATABOX_ROOT_CA
             - DATABOX_EXPORT_SERVICE_PEM.json
+            - DATABOX_EXPORT_SERVICE.pem
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
             replicas: 1
@@ -126,14 +130,22 @@ secrets:
         file: ./certs/arbiterToken-container-manager
     DATA_BOX_CM_PEM.json:
         file: ./certs/certs.json
+    DATA_BOX_CM.pem:
+        file: ./certs/certs.pem
     DATABOX_ARBITER_PEM.json:
         file: ./certs/arbiter.json
+    DATABOX_ARBITER.pem:
+        file: ./certs/arbiter.pem
     DATABOX_LOGSTORE_PEM.json:
         file: ./certs/syslog.json
+    DATABOX_LOGSTORE.pem:
+        file: ./certs/export-service.pem
     DATABOX_LOGSTORE_KEY:
         file: ./certs/arbiterToken-syslog
     DATABOX_EXPORT_SERVICE_PEM.json:
         file: ./certs/export-service.json
+    DATABOX_EXPORT_SERVICE.pem:
+        file: ./certs/export-service.pem
     DATABOX_EXPORT_SERVICE_KEY:
         file: ./certs/arbiterToken-export-service
 

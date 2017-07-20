@@ -9,13 +9,14 @@ let rootPems;
 
 const certPath = './certs/';
 const devCertPath = './certs/certs.json';
+const devPemCertPath = './certs/certs.pem';
 const devCAPath = './certs/containerManager.crt';
 
 //Generate the CM root cert at startup.
 const init = function() {
     return new Promise( (resolve, reject) =>  {
 
-        jsonfile.readFile(devCertPath, function (err, obj) {
+        jsonfile.readFile(devPemCertPath, function (err, obj) {
             
             //return cached certs if we have them and 
             if(err === null) {
@@ -29,10 +30,9 @@ const init = function() {
                     reject(err);
                 }
                 rootPems = pems;
-                
                 //Cash the certs in dev mode. These are new certs so display the update instructions and exit.
-                jsonfile.writeFileSync(devCertPath, rootPems);
-                fs.writeFileSync(devCAPath, rootPems.cert);
+                jsonfile.writeFileSync(devCertPath, pems);
+                fs.writeFileSync(devPemCertPath,pems.private + pems.public + pems.cert);
 
                 resolve({rootCAcert:rootPems.cert});
             });
@@ -52,8 +52,9 @@ const createClientCert =  function (commonName) {
     return new Promise( (resolve, reject) =>  {
         
         var certFullpath = certPath + commonName + ".json";
+        var certPemFullpath = certPath + commonName + ".pem";
 
-        jsonfile.readFile(certFullpath, function (err, obj) {
+        jsonfile.readFile(certPemFullpath, function (err, obj) {
                 
             //return cached certs if we have them 
             if(err === null) {
@@ -125,7 +126,7 @@ const createClientCert =  function (commonName) {
             pem.clientcert = forge.pki.certificateToPem(clientcert);
             console.log(certFullpath, commonName);
             jsonfile.writeFileSync(certFullpath, pem);
-            
+            fs.writeFileSync(certPemFullpath,pem.clientprivate + pem.clientpublic + pem.clientcert);
             resolve(pem);
         });
     });
