@@ -48,7 +48,6 @@ services:
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
-            - DATABOX_ARBITER_PEM.json
             - DATABOX_ARBITER.pem
             - DATABOX_LOGSTORE_KEY
             - DATABOX_EXPORT_SERVICE_KEY
@@ -72,7 +71,6 @@ services:
             - databox-app-net
         secrets:
             - DATABOX_ROOT_CA
-            - DATABOX_LOGSTORE_PEM.json
             - DATABOX_LOGSTORE.pem
             - DATABOX_LOGSTORE_KEY
         deploy:
@@ -129,12 +127,8 @@ secrets:
         file: ./certs/arbiterToken-container-manager
     DATA_BOX_CM.pem:
         file: ./certs/containerManager.pem
-    DATABOX_ARBITER_PEM.json:
-        file: ./certs/arbiter.json
     DATABOX_ARBITER.pem:
         file: ./certs/arbiter.pem
-    DATABOX_LOGSTORE_PEM.json:
-        file: ./certs/syslog.json
     DATABOX_LOGSTORE.pem:
         file: ./certs/syslog.pem
     DATABOX_LOGSTORE_KEY:
