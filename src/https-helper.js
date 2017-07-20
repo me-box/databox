@@ -9,14 +9,14 @@ let rootPems;
 
 const certPath = './certs/';
 const devCertPath = './certs/certs.json';
-const devPemCertPath = './certs/certs.pem';
+const devPemCertPath = './certs/containerManager.pem';
 const devCAPath = './certs/containerManager.crt';
 
 //Generate the CM root cert at startup.
 const init = function() {
     return new Promise( (resolve, reject) =>  {
 
-        jsonfile.readFile(devPemCertPath, function (err, obj) {
+        fs.readFile(devPemCertPath, function (err, obj) {
             
             //return cached certs if we have them and 
             if(err === null) {
@@ -33,6 +33,7 @@ const init = function() {
                 //Cash the certs in dev mode. These are new certs so display the update instructions and exit.
                 jsonfile.writeFileSync(devCertPath, pems);
                 fs.writeFileSync(devPemCertPath,pems.private + pems.public + pems.cert);
+                fs.writeFileSync(devCAPath, rootPems.cert);
 
                 resolve({rootCAcert:rootPems.cert});
             });
@@ -54,11 +55,11 @@ const createClientCert =  function (commonName) {
         var certFullpath = certPath + commonName + ".json";
         var certPemFullpath = certPath + commonName + ".pem";
 
-        jsonfile.readFile(certPemFullpath, function (err, obj) {
+        fs.readFile(certPemFullpath, function (err, data) {
                 
             //return cached certs if we have them 
             if(err === null) {
-                resolve(obj);
+                resolve(data);
                 return;
             }
 

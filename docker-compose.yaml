@@ -26,7 +26,6 @@ services:
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
-            - DATA_BOX_CM_PEM.json
             - DATA_BOX_CM.pem
         depends_on:
             - arbiter
@@ -128,10 +127,8 @@ secrets:
         file: ./certs/containerManager.crt
     CM_KEY:
         file: ./certs/arbiterToken-container-manager
-    DATA_BOX_CM_PEM.json:
-        file: ./certs/certs.json
     DATA_BOX_CM.pem:
-        file: ./certs/certs.pem
+        file: ./certs/containerManager.pem
     DATABOX_ARBITER_PEM.json:
         file: ./certs/arbiter.json
     DATABOX_ARBITER.pem:
@@ -139,7 +136,7 @@ secrets:
     DATABOX_LOGSTORE_PEM.json:
         file: ./certs/syslog.json
     DATABOX_LOGSTORE.pem:
-        file: ./certs/export-service.pem
+        file: ./certs/syslog.pem
     DATABOX_LOGSTORE_KEY:
         file: ./certs/arbiterToken-syslog
     DATABOX_EXPORT_SERVICE_PEM.json:
