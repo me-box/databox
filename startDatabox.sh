@@ -89,8 +89,9 @@ docker swarm init --advertise-addr ${EXT_IP}
 if [ ! -d "certs" ]; then
   echo "Creating certs"
   mkdir ./certs
-  contNode node ./src/createCerts.js
 fi
+
+contNode node ./src/createCerts.js
 
 
 if [ "$DEV" == "1" ]
