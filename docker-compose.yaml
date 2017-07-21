@@ -26,7 +26,7 @@ services:
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
-            - DATA_BOX_CM.pem
+            - DATABOX_CM.pem
         depends_on:
             - arbiter
             - app-server
@@ -125,7 +125,7 @@ secrets:
         file: ./certs/containerManager.crt
     CM_KEY:
         file: ./certs/arbiterToken-container-manager
-    DATA_BOX_CM.pem:
+    DATABOX_CM.pem:
         file: ./certs/containerManager.pem
     DATABOX_ARBITER.pem:
         file: ./certs/arbiter.pem
