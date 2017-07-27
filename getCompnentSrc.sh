@@ -57,4 +57,5 @@ update_repo "driver-phillips-hue" &
 
 update_repo "app-twitter-sentiment" & 
 update_repo "app-light-graph" &
+update_repo "app-os-monitor" &
 wait
