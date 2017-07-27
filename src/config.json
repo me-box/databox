@@ -19,7 +19,8 @@
 		"driver-phillips-hue",
 		"app-light-graph",
 		"app-twitter-sentiment",
-		"store-json"
+		"store-json",
+		"app-os-monitor"
 	]
 
 }

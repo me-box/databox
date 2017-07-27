@@ -106,3 +106,9 @@ driver-google-takeout/
 driver-phillips-hue/
 
 driver-sensingkit/
+
+lib-node-databox/
+
+app-os-monitor/
+
+package-lock\.json

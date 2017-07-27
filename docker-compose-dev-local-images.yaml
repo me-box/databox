@@ -45,6 +45,12 @@ services:
         dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-light-graph
 
+  app-os-monitor:
+    build:
+        context: ./app-os-monitor
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: app-os-monitor
+
 #Build the datastores 
   store-json:
     build: 
