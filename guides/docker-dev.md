@@ -37,17 +37,17 @@ We want to launch this container once, and be limited at most by the time it tak
 
 Now build and push this container as usual to the local registry. If you're using a template repo, refer to its documentation as it may have scripts built in to do this automatically. Otherwise, you can use the Docker CLI in the following manner, replacing the container name with what your component is called:
 
-docker build -t databox-app-template-node .
-docker tag databox-app-template-node localhost:5000/databox-app-template-node
-docker push localhost:5000/databox-app-template-node
+    docker build -t databox-app-template-node .
+    docker tag databox-app-template-node localhost:5000/databox-app-template-node
+    docker push localhost:5000/databox-app-template-node
 
-Similarly, if you're deploying your container on a differen host (such as an actual Databox) replace `localhost` with its hostname or IP address.
+Similarly, if you're deploying your container on a different host (such as an actual Databox) replace `localhost` with its hostname or IP address.
 
 Before you can launch the container, you must also upload its manifest to a local development manifest server, in the same way you would when publishing an app or driver. Browse to port 8181 on the host (e.g. http://localhost:8181) and follow the instructions there. As long as you don't need to update your container manifest, you will only need to do this once.
 
-Now you can launch your container through the dashboard by browsing to the URL indicated by the Databox system. If you're depolying on the same host that you're developing on, this will likely be http://localhost:8989.
+Now you can launch your container through the dashboard by browsing to the URL indicated by the Databox system. If you're deploying on the same host that you're developing on, this will likely be http://localhost:8989.
 
-Once launched the contaienr should do nothing yet.
+Once launched the container should do nothing yet.
 
 Running your Code
 -----------------
