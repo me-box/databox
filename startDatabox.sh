@@ -12,7 +12,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-ips=($(ifconfig | sed -En 's/127.0.0.1//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
+ips=($(ifconfig | sed -En 's/127.0.0.1//;s/172.//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
 EXT_IP=$ips
 if [ "${#ips[@]}" -gt "1" ]
 then
