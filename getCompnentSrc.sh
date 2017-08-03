@@ -48,6 +48,7 @@ update_repo "core-syslog" &
 update_repo "core-export-service" &
 update_repo "platform-app-server" &
 update_repo "store-json" &
+update_repo "store-timeseries" &
 
 update_repo "driver-os-monitor" &
 update_repo "driver-twitter" &

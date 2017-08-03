@@ -112,3 +112,5 @@ lib-node-databox/
 app-os-monitor/
 
 package-lock\.json
+
+store-timeseries/
