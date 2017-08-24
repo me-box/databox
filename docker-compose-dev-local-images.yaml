@@ -57,4 +57,10 @@ services:
         context: ./store-json
         dockerfile: Dockerfile${DATABOX_ARCH}
     image: store-json
+  
+  store-timeseries:
+    build: 
+        context: ./store-timeseries
+        dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-timeseries
 
