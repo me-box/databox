@@ -49,30 +49,7 @@ services:
             - DATABOX_ROOT_CA
             - CM_KEY
             - DATABOX_ARBITER.pem
-            - DATABOX_LOGSTORE_KEY
             - DATABOX_EXPORT_SERVICE_KEY
-        deploy:
-            replicas: 1
-            placement:
-                constraints:
-                    - 'node.role == manager'
-
-    syslog:
-        build:
-            context: ./core-syslog
-            dockerfile: Dockerfile${DATABOX_ARCH}
-        image: ${DOCKER_REPO}syslog
-        depends_on:
-          - arbiter
-        environment:
-            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
-        networks:
-            - databox-driver-net
-            - databox-app-net
-        secrets:
-            - DATABOX_ROOT_CA
-            - DATABOX_LOGSTORE.pem
-            - DATABOX_LOGSTORE_KEY
         deploy:
             replicas: 1
             placement:
@@ -129,10 +106,6 @@ secrets:
         file: ./certs/containerManager.pem
     DATABOX_ARBITER.pem:
         file: ./certs/arbiter.pem
-    DATABOX_LOGSTORE.pem:
-        file: ./certs/syslog.pem
-    DATABOX_LOGSTORE_KEY:
-        file: ./certs/arbiterToken-syslog
     DATABOX_EXPORT_SERVICE_PEM.json:
         file: ./certs/export-service.json
     DATABOX_EXPORT_SERVICE.pem:
