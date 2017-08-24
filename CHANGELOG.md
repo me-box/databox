@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     * renamed all the repos see #52
     * Re-enable docker hub builds
     * removed need for remote app-store (for now)
+    * removed syslog loging will be done by stores
 
 ## [0.1.2]
 ### Changed
