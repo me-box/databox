@@ -1,0 +1,59 @@
+version: '3.1'
+
+services:
+  redis:
+    image:
+      tlodge/databox-redis
+    ports:
+      - "6379"
+
+  mongo:
+    image:
+      tlodge/mongo
+    ports:
+      - "27017"
+    command:
+      /usr/bin/mongod --dbpath /data/mongo --smallfiles
+
+  app-server:
+    image:
+      tlodge/databox-app-server
+    ports:
+      - "8091"
+    links:
+      - mongo
+    command:
+      /root/start.sh
+    
+
+  mock-datasource:
+    image:
+      tlodge/databox-datasource-mock
+    command:
+      /root/start.sh
+
+  databox-sdk:
+    image:
+      tlodge/databox-sdk
+    links:
+      - redis
+      - mongo
+    ports:
+      - "8086:8086"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOSTMOUNT}/sdk:/usr/src/app/conf
+    command:
+      node index.js
+
+  databox-test-server:
+    image:
+      tlodge/databox-test-server
+    links:
+      - redis
+      - mongo
+    ports:
+      - "9090:9090"
+      - "8435"
+    command:
+      node index.js

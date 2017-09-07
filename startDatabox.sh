@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "$1" == "sdk" ]
+then
+    export HOSTMOUNT=$(pwd -P)
+    docker stack deploy -c docker-databox-sdk.yaml sdk
+    exit 0
+fi
+
 docker node ls > /dev/null
 if [ $? -eq 0 ]
 then
@@ -35,14 +42,6 @@ then
 else
   DEV=0 
   export DATABOX_DEV="0"
-fi
-
-if [ "$1" == "sdk" ]
-then
-    #enable SDK mode
-    export DATABOX_SDK="1"
-else 
-    export DATABOX_SDK="0"
 fi
 
 ARCH=$(uname -m)
