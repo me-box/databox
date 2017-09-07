@@ -51,6 +51,13 @@ services:
         dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-os-monitor
 
+  driver-tplink-smart-plug:
+     build:
+         context: ./driver-tplink-smart-plug
+         dockerfile: Dockerfile${DATABOX_ARCH}
+     image: driver-tplink-smart-plug
+
+     
 #Build the datastores 
   store-json:
     build: 

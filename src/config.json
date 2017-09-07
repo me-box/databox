@@ -21,6 +21,7 @@
 		"app-twitter-sentiment",
 		"store-json",
 		"store-timeseries",
+		"driver-tplink-smart-plug",
 		"app-os-monitor"
 	]
 
