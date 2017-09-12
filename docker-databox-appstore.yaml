@@ -1,18 +1,10 @@
- app-server:
-        build:
-            context: ./platform-app-server
-            dockerfile: Dockerfile${DATABOX_ARCH}
-        image: ${DOCKER_REPO}app-server
-        environment:
-            - "LOCAL_MODE=1"
-            - "PORT=8181"
-        ports:
-            - '8181:8181'
-        networks:
-          #  - databox-cloud-net
-            - databox-cm-app-server-net
-        deploy:
-            replicas: 1
-            placement:
-                constraints:
-                    - 'node.role == manager'
+app-server:
+    
+    image: ${DOCKER_REPO}app-server
+    
+    environment:
+        - "LOCAL_MODE=1"
+        - "PORT=8181"
+    
+    ports:
+        - '8181:8181'
