@@ -100,7 +100,7 @@ then
   docker-compose build
   docker-compose -f ./docker-compose-dev-local-images.yaml build
 fi
-
+docker-compose up -f ./docker-databox-appstore.yaml -d
 docker stack deploy -c docker-compose.yaml databox
 
 DARGS="-e DATABOX_DEV=${DEV}"
