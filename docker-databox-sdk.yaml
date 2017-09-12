@@ -3,6 +3,8 @@ redis:
     tlodge/databox-redis
   ports:
     - "6379"
+  container_name:
+    redis
 
 mongo:
   image:
@@ -11,12 +13,16 @@ mongo:
     - "27017"
   command:
     /usr/bin/mongod --dbpath /data/mongo --smallfiles
+  container_name:
+    mongo
 
 mock-datasource:
   image:
     tlodge/databox-datasource-mock
   command:
     /root/start.sh
+  container_name:
+    mock-datasource
 
 databox-sdk:
   image:
@@ -29,6 +35,8 @@ databox-sdk:
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - ${HOSTMOUNT}/sdk:/usr/src/app/conf
+  container_name:
+    databox-sdk
   command:
     node index.js
 
@@ -41,5 +49,7 @@ databox-test-server:
   ports:
     - "9090:9090"
     - "8435"
+  container_name:
+    databox-test-server
   command:
     node index.js
