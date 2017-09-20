@@ -32,8 +32,6 @@ fi
 DATABOX_SDK="0"
 DATABOX_DEV="0"
 DEV=0
-
-## dev mode?
 case "$1" in
   dev )
     DEV=1
