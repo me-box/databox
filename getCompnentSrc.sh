@@ -55,6 +55,7 @@ update_repo "driver-twitter" &
 update_repo "driver-sensingkit" &
 update_repo "driver-google-takeout" &
 update_repo "driver-phillips-hue" &
+update_repo "driver-tplink-smart-plug" &
 
 update_repo "app-twitter-sentiment" & 
 update_repo "app-light-graph" &

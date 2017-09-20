@@ -26,6 +26,21 @@ To stop databox and clean up use ./stopDatabox.sh
 
 ## Development
 
+### Get Started with the Graphical SDK
+
+The graphical SDK will allow you to quickly build and test simple databox apps. To start the sdk run:
+
+	./startDatabox.sh sdk
+
+The SDK web UI is available at http://127.0.0.1:8086
+
+To stop the SDK run: 
+
+	./stopDatabox.sh sdk
+
+
+### Develop system components and custom drivers
+
 To develop on the platform and core components you can run 
 
 	./startDatabox.sh dev

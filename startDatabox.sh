@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "$1" == "sdk" ]
+then
+    export HOSTMOUNT=$(pwd -P)
+    docker-compose -f docker-databox-sdk.yaml up -d
+    exit 0
+fi
+
 docker node ls > /dev/null
 if [ $? -eq 0 ]
 then
@@ -35,14 +42,6 @@ then
 else
   DEV=0 
   export DATABOX_DEV="0"
-fi
-
-if [ "$1" == "sdk" ]
-then
-    #enable SDK mode
-    export DATABOX_SDK="1"
-else 
-    export DATABOX_SDK="0"
 fi
 
 ARCH=$(uname -m)
@@ -93,7 +92,6 @@ fi
 
 contNode node ./src/createCerts.js
 
-
 if [ "$DEV" == "1" ]
 then
   #only build local images in dev mode 
@@ -101,7 +99,7 @@ then
   docker-compose build
   docker-compose -f ./docker-compose-dev-local-images.yaml build
 fi
-
+docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
 
 DARGS="-e DATABOX_DEV=${DEV}"
