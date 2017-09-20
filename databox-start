@@ -28,11 +28,30 @@ if ! [ -x "$(command -v docker-compose)" ]; then
        `"see https://docs.docker.com/compose/install/#install-compose"
 fi
 
+## parse command line args
+DATABOX_SDK="0"
+DATABOX_DEV="0"
+DEV=0
+
+## dev mode?
+case "$1" in
+  dev )
+    DEV=1
+    export DATABOX_DEV="1"
+    ;;
+
+  sdk )
+    export DATABOX_SDK="1"
+    ;;
+esac
+
 ## test if Databox is already running
 err "testing if Databox is already running ..."
-docker node ls > /dev/null
+docker node ls >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
   die 0 "Databox is already running!"
+else
+  err "starting Databox ..."
 fi
 
 ## extract a host interface IP address
@@ -57,36 +76,20 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
 fi
 err "host interface IP address = ${EXT_IP}"
 
-## dev mode?
-DATABOX_DEV="0"
-DEV=0
-if [ "$1" == "dev" ]
-then
-  DEV=1
-  export DATABOX_DEV="1"
-fi
-
-## sdk mode?
-DATABOX_SDK="0"
-if [ "$1" == "sdk" ]
-then
-  export DATABOX_SDK="1"
-fi
-
 ## base images: what are we running on?
 ARCH=$(uname -m)
 case "$ARCH" in
   armv7l )
     NODE_IMAGE="hypriot/rpi-node:slim"
-    export DATABOX_ARCH="-"${ARCH}
     DEV=1 #ARM is only supported in dev mode with localy built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
     export DATABOX_DEV="1"
     ;;
 
   aarch64 )
     NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
-    export DATABOX_ARCH="-"${ARCH}
     DEV=1 #ARM is only supported in dev mode with localy built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
     export DATABOX_DEV="1"
     ;;
 
@@ -104,21 +107,20 @@ then
   export DOCKER_REPO="databoxsystems/"
 fi
 
-function dr {
-  docker run --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd $DARGS "$@"
+function _exec {
+  docker run \
+         --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd \
+         $DARGS $NODE_IMAGE "$@"
 }
 
-function contNode { dr ${NODE_IMAGE} node "$@" ;}
-function contNPM  { dr ${NODE_IMAGE} npm  "$@" ;}
-
 if [ ! -d "node_modules" ]; then
-  contNPM install
+  _exec npm install
 fi
 
 err "starting the Databox swarm"
-docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+docker swarm init --advertise-addr $EXT_IP > /dev/null
 mkdir -p ./certs
-contNode ./src/createCerts.js
+_exec node ./src/createCerts.js
 
 if [ "$DEV" == "1" ]; then
   # build all images locally in dev mode
@@ -130,9 +132,9 @@ fi
 err "starting Databox"
 docker stack deploy -c docker-compose.yaml databox
 
-DARGS="-e DATABOX_DEV=${DEV}"
+DARGS="-e DATABOX_DEV=$DEV"
 err "seeding manifests"
-contNode ./src/seedManifests.js
+_exec node ./src/seedManifests.js
 
 err "Databox started! Visit http://127.0.0.1:8989"
 docker service logs databox_container-manager -f
