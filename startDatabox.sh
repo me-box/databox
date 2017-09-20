@@ -108,4 +108,4 @@ contNode node ./src/seedManifests.js
 
 echo "databox started goto http://127.0.0.1:8989"
 
-docker service logs databox_container-manager -f
+#docker service logs databox_container-manager -f
