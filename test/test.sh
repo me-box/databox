@@ -29,7 +29,7 @@ function assert {
 export DATABOX_TESTING=1 
 source ./databox-start dev
 
-sleep 10
+sleep 30
 
 #can we see the CM UI
 STATUS=$(curl -sL -w "%{http_code}\\n" "http://127.0.0.1:8989/" -o /dev/null)
