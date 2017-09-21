@@ -135,7 +135,8 @@ docker swarm init --advertise-addr $EXT_IP > /dev/null
 mkdir -p ./certs
 _exec node ./src/createCerts.js
 
-if [ "$DEV" == "1" ]; then
+if [ "$DEV" == "1" ]
+then
   # build all images locally in dev mode
   err "Building Databox localy in dev mode"
   ./databox-fetch-components
@@ -145,7 +146,6 @@ if [ "$DEV" == "1" ]; then
     # dont build these optional components when testing
     docker-compose -f ./docker-compose-dev-local-images.yaml build
   fi
-  docker-compose -f ./docker-databox-appstore.yaml build 
 fi
 
 err "starting Databox"

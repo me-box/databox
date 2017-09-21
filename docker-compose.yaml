@@ -91,11 +91,12 @@ services:
             context: ./driver-os-monitor
             dockerfile: Dockerfile${DATABOX_ARCH}
         image: driver-os-monitor
-    app-os-monitor:
+
+    app-server:
         build:
-            context: ./app-os-monitor
+            context: ./platform-app-server
             dockerfile: Dockerfile${DATABOX_ARCH}
-        image: app-os-monitor
+        image: app-server
         
 secrets:
   DATABOX_ROOT_CA:
