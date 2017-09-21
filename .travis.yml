@@ -1,7 +1,6 @@
 sudo: required
-language: Bash
+language: bash
 script:
-  - exit 0
-
+  - test/test.sh
 services:
   - docker
