@@ -32,7 +32,7 @@ export DATABOX_TESTING=1
 source ./databox-start dev
 
 echo "Sleeping...."
-sleep 60
+sleep 30
 docker ps
 
 #can we see the CM UI
@@ -61,7 +61,7 @@ EXPECTED='{"status":200,"msg":"Success"}'
 assert "$RES" "$EXPECTED" "Can we install the app-os-monitor?"
 
 #is the OS monitor app up 
-sleep 10
+sleep 30
 STATUS=$(curl -sL  -w "%{http_code}\\n" "http://127.0.0.1:8989/app-os-monitor/ui" -o /dev/null)
 assert "$STATUS" 200 "Is the app-os-monitor/ui avalable?"
 
