@@ -6,7 +6,10 @@ NC='\033[0m'
 
 function fail {
     echo -e "[${RED}FAILED${NC}] ${1} \nERROR: ${2}"
-    #exit 1
+    #output debug information
+    docker ps
+    docker service logs databox_container-manager
+    exit 1
 }
 
 function sucsess {
