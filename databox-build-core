@@ -27,16 +27,15 @@ build()
 {
     echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: Starting build ${1} ..."
     cd $1
-    OUTPUT=$(docker build -t $1 -f Dockerfile${DATABOX_ARCH} .)
+    OUTPUT=$(docker build -t $2 -f Dockerfile${DATABOX_ARCH} .)
     assert $? 0 " Build ${1}"
     cd ..
 }
 
-build "core-container-manager"
-build "platform-app-server" 
-build "core-arbiter"
-build "core-export-service" 
-build "store-json"
-build "driver-os-monitor"
-build "app-os-monitor" 
-
+build "core-container-manager" "container-manager"
+build "platform-app-server" "app-server" 
+build "core-arbiter" "arbiter"
+build "core-export-service" "export-service"
+build "store-json" "store-json"
+build "driver-os-monitor" "driver-os-monitor"
+build "app-os-monitor" "app-os-monitor"
