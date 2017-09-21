@@ -1,7 +1,7 @@
 sudo: required
-language: node_js
-node_js:
-  - "6"
+language: Bash
+script:
+  - exit 0
 
 services:
   - docker

@@ -15,19 +15,19 @@ then
 Once docker is installed, just run the following to get your databox up and
 running using images published to <https://hub.docker.com/r/databoxsystems>:
 
-    ./startDatabox.sh
+    ./databox-start
 
 Once it's started point a web browser at <https://127.0.0.1:8989> and have fun.
 
 To stop databox and clean up,
 
-    ./stopDatabox.sh
+    ./databox-stop
 
 ## Development
 
 To develop on the platform and core components run
 
-    ./startDatabox.sh dev
+    ./databox-start dev
 
 This will clones all the relevant repositories locally, and builds them into the
 required Docker images. To try your component out, add your code into a
@@ -39,10 +39,25 @@ UI, ready for you to install.
 
 ## Known issues
 
-- Error response from daemon: `network databox_[some network] not found`.
+### Get Started with the Graphical SDK
+
+The graphical SDK will allow you to quickly build and test simple databox apps. To start the sdk run:
+
+	./databox-start sdk
+
+The SDK web UI is available at http://127.0.0.1:8086
+
+To stop the SDK run: 
+
+	./databox-stop sdk
+
+
+### Develop system components and custom drivers
+
+To develop on the platform and core components you can run 
 
   This is caused by starting Databox before docker has cleaned up the networks.
-  Should be fixed if you run `./startDatabox.sh`
+  Should be fixed if you run `./databox-start`
 
 - TLS certificates invalid.
 

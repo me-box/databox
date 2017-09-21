@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     * Re-enable docker hub builds
     * removed need for remote app-store (for now)
     * removed syslog loging will be done by stores
+    * new UI and Android app
 
 ## [0.1.2]
 ### Changed
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     * moved the container manager into it own repo me-box/databox-cm
     * Removed some modules and implemented mod clean to reduce container manager image size
     * Docker Network API issue - when creating network first time. Fixed #29
+    * Integrated the graphical SDK
 
 ## [0.1.1] 2017-04-05
 ### Changed

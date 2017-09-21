@@ -3,100 +3,82 @@ version: '3.1'
 # Build and start the Databox platform
 
 services:
-  container-manager:
-    build:
-      context: ./core-container-manager
-      dockerfile: Dockerfile${DATABOX_ARCH}
-    image: ${DOCKER_REPO}container-manager
-    ports:
-      - '8989:8989'
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      - './docker-compose.yaml:/cfg/docker-compose.yaml'
-      - './src/config.json:/cfg/config.json'
-      - './certs:/certs'
-    environment:
-      - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
-      - 'DATABOX_DEV=$DATABOX_DEV'
-      - 'DATABOX_SDK=$DATABOX_SDK'
-    networks:
-      - databox-cm-arbiter-net
-      - databox-cm-app-server-net
-      - databox-driver-net
-      - databox-app-net
-    secrets:
-      - DATABOX_ROOT_CA
-      - CM_KEY
-      - DATABOX_CM.pem
-    depends_on:
-      - arbiter
-      - app-server
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - 'node.role == manager'
+#Build and satart the databox platform
+    container-manager:
+        build:
+            context: ./core-container-manager
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: ${DOCKER_REPO}container-manager
+        ports:
+            - '8989:8989'
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
+            - './docker-compose.yaml:/cfg/docker-compose.yaml'
+            - './src/config.json:/cfg/config.json'
+            - './certs:/certs'
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
+            - 'DATABOX_DEV=${DATABOX_DEV}'
+            - 'DATABOX_SDK=${DATABOX_SDK}'
+        networks:
+            - databox-cm-arbiter-net
+            - databox-cm-app-server-net
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - DATABOX_CM.pem
+        depends_on:
+            - arbiter
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
 
-  arbiter:
-    build:
-      context: ./core-arbiter
-      dockerfile: Dockerfile${DATABOX_ARCH}
-    image: ${DOCKER_REPO}arbiter
-    networks:
-      - databox-cm-arbiter-net
-      - databox-driver-net
-      - databox-app-net
-    secrets:
-      - DATABOX_ROOT_CA
-      - CM_KEY
-      - DATABOX_ARBITER.pem
-      - DATABOX_EXPORT_SERVICE_KEY
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - 'node.role == manager'
+    arbiter:
+        build:
+            context: ./core-arbiter
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: ${DOCKER_REPO}arbiter
+        networks:
+            - databox-cm-arbiter-net
+            - databox-driver-net
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - CM_KEY
+            - DATABOX_ARBITER.pem
+            - DATABOX_EXPORT_SERVICE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role == manager'
 
-  export-service:
-    build:
-      context: ./core-export-service
-      dockerfile: Dockerfile${DATABOX_ARCH}
-    image: ${DOCKER_REPO}export-service
-    depends_on:
-      - arbiter
-    environment:
-      - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
-    networks:
-      - databox-app-net
-    secrets:
-      - DATABOX_ROOT_CA
-      - DATABOX_EXPORT_SERVICE_PEM.json
-      - DATABOX_EXPORT_SERVICE.pem
-      - DATABOX_EXPORT_SERVICE_KEY
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - 'node.role == manager'
+    export-service:
+        build:
+            context: ./core-export-service
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: ${DOCKER_REPO}export-service
+        depends_on:
+            - arbiter
+        environment:
+            - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
+        networks:
+            - databox-app-net
+        secrets:
+            - DATABOX_ROOT_CA
+            - DATABOX_EXPORT_SERVICE_PEM.json
+            - DATABOX_EXPORT_SERVICE.pem
+            - DATABOX_EXPORT_SERVICE_KEY
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                - 'node.role == manager'
 
-  app-server:
-    build:
-      context: ./platform-app-server
-      dockerfile: Dockerfile${DATABOX_ARCH}
-    image: ${DOCKER_REPO}app-server
-    environment:
-      - "LOCAL_MODE=1"
-      - "PORT=8181"
-    ports:
-      - '8181:8181'
-    networks:
-      - databox-cloud-net
-      - databox-cm-app-server-net
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - 'node.role == manager'
 
 secrets:
   DATABOX_ROOT_CA:
@@ -115,13 +97,13 @@ secrets:
     file: ./certs/arbiterToken-export-service
 
 networks:
-  databox-cm-arbiter-net:
-    driver: overlay
-  databox-cm-app-server-net:
-    driver: overlay
-  databox-driver-net:
-    driver: overlay
-  databox-app-net:
-    driver: overlay
-  databox-cloud-net:
-    driver: overlay
+    databox-cm-arbiter-net:
+        driver: overlay
+    databox-cm-app-server-net:
+        driver: overlay
+    databox-driver-net:
+        driver: overlay
+    databox-app-net:
+        driver: overlay
+#    databox-cloud-net:
+#        driver: overlay

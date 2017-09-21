@@ -1,7 +1,20 @@
 version: '3'
 
+
 # Build only (put your images in here)
 services:
+  store-json:
+    build:
+      context: ./store-json
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-json
+
+  store-timeseries:
+    build:
+      context: ./store-timeseries
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-timeseries
+    
   driver-os-monitor:
     build:
       context: ./driver-os-monitor
@@ -12,7 +25,7 @@ services:
     build:
       context: ./driver-twitter
       dockerfile: Dockerfile${DATABOX_ARCH}
-      image: driver-twitter
+    image: driver-twitter
 
   driver-phillips-hue:
     build:
@@ -50,15 +63,8 @@ services:
       dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-os-monitor
 
-# Build the datastores
-  store-json:
+  driver-tplink-smart-plug:
     build:
-      context: ./store-json
+      context: ./driver-tplink-smart-plug
       dockerfile: Dockerfile${DATABOX_ARCH}
-    image: store-json
-
-  store-timeseries:
-    build:
-      context: ./store-timeseries
-      dockerfile: Dockerfile${DATABOX_ARCH}
-    image: store-timeseries
+    image: driver-tplink-smart-plug
