@@ -7,10 +7,17 @@ NC='\033[0m'
 function fail {
     echo -e "[${RED}FAILED${NC}] ${1} \nERROR: ${2}"
     #output debug information
+    echo "docker version:"
     docker version
+    echo "docker ps \n"
     docker ps
+    echo "docker image ls \n"
     docker image ls 
+    echo "docker service ls \n"
+    docker service ls
+    echo "service logs databox_container-manager \n"
     docker service logs databox_container-manager
+    echo "\n"
     exit 1
 }
 
@@ -32,7 +39,7 @@ export DATABOX_TESTING=1
 source ./databox-start dev
 
 echo "Sleeping...."
-sleep 30
+sleep 60
 docker ps
 
 #can we see the CM UI
