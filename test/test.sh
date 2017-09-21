@@ -29,16 +29,10 @@ function assert {
 
 #Start databox
 export DATABOX_TESTING=1 
-source ./databox-start dev
+source ./databox-start
 
 echo "Sleeping...."
 sleep 60
-docker ps
-echo "Sleeping again .... "
-sleep 60 
-docker ps
-echo "Sleeping again .... "
-sleep 60 
 docker ps
 
 #can we see the CM UI
