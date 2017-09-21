@@ -79,7 +79,30 @@ services:
                 constraints:
                 - 'node.role == manager'
 
+#Core apps and stores needed for testing
+    store-json:
+        build:
+            context: ./store-json
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: store-json
 
+    store-timeseries:
+        build:
+            context: ./store-timeseries
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: store-timeseries
+    
+    driver-os-monitor:
+        build:
+            context: ./driver-os-monitor
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: driver-os-monitor
+    app-os-monitor:
+        build:
+            context: ./app-os-monitor
+            dockerfile: Dockerfile${DATABOX_ARCH}
+        image: app-os-monitor
+        
 secrets:
   DATABOX_ROOT_CA:
     file: ./certs/containerManager.crt

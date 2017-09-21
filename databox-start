@@ -140,7 +140,11 @@ if [ "$DEV" == "1" ]; then
   err "Building Databox localy in dev mode"
   ./databox-fetch-components
   docker-compose build
-  docker-compose -f ./docker-compose-dev-local-images.yaml build
+  if [ -z "$DATABOX_TESTING" ]
+  then
+    # dont build these optional components when testing
+    docker-compose -f ./docker-compose-dev-local-images.yaml build
+  fi
   docker-compose -f ./docker-databox-appstore.yaml build 
 fi
 
