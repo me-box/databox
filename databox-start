@@ -141,6 +141,7 @@ if [ "$DEV" == "1" ]; then
   ./databox-fetch-components
   docker-compose build
   docker-compose -f ./docker-compose-dev-local-images.yaml build
+  docker-compose -f ./docker-databox-appstore.yaml build 
 fi
 
 err "starting Databox"
