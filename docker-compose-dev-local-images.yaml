@@ -3,6 +3,12 @@ version: '3'
 
 # Build only (put your images in here)
 services:
+  store-timeseries:
+    build:
+      context: ./store-timeseries
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-timeseries
+    
   driver-twitter:
     build:
       context: ./driver-twitter
