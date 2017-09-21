@@ -29,9 +29,11 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 ## parse command line args
+DOCKER_REPO="" #default to local images 
 DATABOX_SDK="0"
 DATABOX_DEV="0"
 DEV=0
+SDK=0
 case "$1" in
   dev )
     DEV=1
@@ -39,9 +41,21 @@ case "$1" in
     ;;
 
   sdk )
-    export DATABOX_SDK="1"
+    SDK=1
     ;;
 esac
+
+#Start the SDK
+if [ "$SDK" == "1" ]
+then
+  err "Starting SDK"
+  
+  #SDK only works in DEV mode so force it 
+  DEV=1
+  export DATABOX_DEV="1"
+  export HOSTMOUNT=$(pwd -P)
+  docker-compose -f docker-databox-sdk.yaml up -d
+fi
 
 ## test if Databox is already running
 err "testing if Databox is already running ..."
@@ -102,8 +116,9 @@ DOCKER_REPO=""
 if [ "$DEV" != "1" ]
 then
   # use images from https://hub.docker.com/r/databoxsystems/
-  export DOCKER_REPO="databoxsystems/"
+  DOCKER_REPO="databoxsystems/"
 fi
+export DOCKER_REPO=$DOCKER_REPO
 
 function _exec {
   docker run \
@@ -122,12 +137,14 @@ _exec node ./src/createCerts.js
 
 if [ "$DEV" == "1" ]; then
   # build all images locally in dev mode
+  err "Building Databox localy in dev mode"
   ./databox-fetch-components
   docker-compose build
   docker-compose -f ./docker-compose-dev-local-images.yaml build
 fi
 
 err "starting Databox"
+docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
 
 DARGS="-e DATABOX_DEV=$DEV"

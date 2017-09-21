@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 ## debug
 if [[ "$DATABOX_DEBUG" = "true" ]]; then
   set -x
@@ -28,6 +26,12 @@ fi
 if ! [ -x "$(command -v docker-compose)" ]; then
   die 2 "docker-compose is not installed;"`
        `"see https://docs.docker.com/compose/install/#install-compose"
+fi
+
+if [ "$1" == "sdk" ]
+then
+  docker-compose -f docker-databox-sdk.yaml down 
+  die 3 "SDK stoped."
 fi
 
 ## stop Databox
