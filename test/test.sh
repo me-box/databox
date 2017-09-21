@@ -14,7 +14,7 @@ function fail {
     exit 1
 }
 
-function sucsess {
+function success {
     echo -e "[${GREEN}OK${NC}] $1"
 }
 
@@ -23,7 +23,7 @@ function assert {
   then
     fail "$3" "$1"
   else
-    sucsess "$3"
+    success "$3"
   fi
 }
 

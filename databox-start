@@ -140,7 +140,12 @@ then
   # build all images locally in dev mode
   err "Building Databox localy in dev mode"
   ./databox-fetch-components
-  docker-compose build
+  #docker-compose build
+  source ./databox-build-core
+  if [ $? -nq 0 ] 
+  then
+    die 1 "Problem building core images"
+  fi 
   if [ -z "$DATABOX_TESTING" ]
   then
     # dont build these optional components when testing

@@ -1,13 +1,8 @@
 version: '3.1'
 
-# Build and start the Databox platform
-
 services:
-#Build and satart the databox platform
+#satart the databox platform
     container-manager:
-        build:
-            context: ./core-container-manager
-            dockerfile: Dockerfile${DATABOX_ARCH}
         image: ${DOCKER_REPO}container-manager
         ports:
             - '8989:8989'
@@ -38,9 +33,6 @@ services:
                     - 'node.role == manager'
 
     arbiter:
-        build:
-            context: ./core-arbiter
-            dockerfile: Dockerfile${DATABOX_ARCH}
         image: ${DOCKER_REPO}arbiter
         networks:
             - databox-cm-arbiter-net
@@ -58,9 +50,6 @@ services:
                     - 'node.role == manager'
 
     export-service:
-        build:
-            context: ./core-export-service
-            dockerfile: Dockerfile${DATABOX_ARCH}
         image: ${DOCKER_REPO}export-service
         depends_on:
             - arbiter
@@ -79,24 +68,6 @@ services:
                 constraints:
                 - 'node.role == manager'
 
-#Core apps and stores needed for testing
-    store-json:
-        build:
-            context: ./store-json
-            dockerfile: Dockerfile${DATABOX_ARCH}
-        image: store-json
-
-    driver-os-monitor:
-        build:
-            context: ./driver-os-monitor
-            dockerfile: Dockerfile${DATABOX_ARCH}
-        image: driver-os-monitor
-
-    app-server:
-        build:
-            context: ./platform-app-server
-            dockerfile: Dockerfile${DATABOX_ARCH}
-        image: app-server
         
 secrets:
   DATABOX_ROOT_CA:

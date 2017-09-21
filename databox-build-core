@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m' 
+NC='\033[0m'
+ME='databox-build-core'
+
+function fail {
+    echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: ${1} \nERROR: ${2} ${RED}FAILED${NC}"
+    exit 1
+}
+
+function success {
+    echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: ${1} ${GREEN}OK${NC}"
+}
+
+function assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
+  fi
+}
+
+build() 
+{
+    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: Starting build ${1} ..."
+    cd $1
+    OUTPUT=$(docker build -t $1 -f Dockerfile${DATABOX_ARCH} .)
+    assert $? 0 " Build ${1}"
+    cd ..
+}
+
+build "core-container-manager"
+build "platform-app-server" 
+build "core-arbiter"
+build "core-export-service" 
+build "store-json"
+build "driver-os-monitor"
+build "app-os-monitor" 
+
