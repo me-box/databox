@@ -127,7 +127,7 @@ function _exec {
 }
 
 if [ ! -d "node_modules" ]; then
-  _exec npm install
+  _exec npm install -loglevel silent 
 fi
 
 err "starting the Databox swarm"
