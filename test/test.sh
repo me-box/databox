@@ -7,7 +7,9 @@ NC='\033[0m'
 function fail {
     echo -e "[${RED}FAILED${NC}] ${1} \nERROR: ${2}"
     #output debug information
+    docker version
     docker ps
+    docker image ls 
     docker service logs databox_container-manager
     exit 1
 }
@@ -29,7 +31,15 @@ function assert {
 export DATABOX_TESTING=1 
 source ./databox-start dev
 
+echo "Sleeping...."
 sleep 60
+docker ps
+echo "Sleeping again .... "
+sleep 60 
+docker ps
+echo "Sleeping again .... "
+sleep 60 
+docker ps
 
 #can we see the CM UI
 STATUS=$(curl -sL -w "%{http_code}\\n" "http://127.0.0.1:8989/" -o /dev/null)
