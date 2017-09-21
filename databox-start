@@ -153,4 +153,7 @@ err "seeding manifests"
 _exec node ./src/seedManifests.js
 
 err "Databox started! Visit http://127.0.0.1:8989"
-docker service logs databox_container-manager -f
+if [ -z "$DATABOX_TESTING" ]
+then
+  docker service logs databox_container-manager -f
+fi
