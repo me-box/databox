@@ -1,0 +1,138 @@
+#!/bin/bash
+
+## debug
+if [[ "$DATABOX_DEBUG" = "true" ]]; then
+  set -x
+  PS4='$LINENO: '
+fi
+
+declare -r ME="$(basename $0)"
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: $@" >&2
+}
+die() {
+  rc=$1
+  shift
+  err "$@"
+  exit $rc
+}
+
+## check we have the tools
+if ! [ -x "$(command -v docker)" ]; then
+  die 1 "docker is not installed;"`
+       `"see https://docs.docker.com/engine/installation/"
+fi
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  die 2 "docker-compose is not installed;"`
+       `"see https://docs.docker.com/compose/install/#install-compose"
+fi
+
+## parse command line args
+DATABOX_SDK="0"
+DATABOX_DEV="0"
+DEV=0
+case "$1" in
+  dev )
+    DEV=1
+    export DATABOX_DEV="1"
+    ;;
+
+  sdk )
+    export DATABOX_SDK="1"
+    ;;
+esac
+
+## test if Databox is already running
+err "testing if Databox is already running ..."
+docker node ls >/dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+  die 0 "Databox is already running!"
+else
+  err "starting Databox ..."
+fi
+
+## extract a host interface IP address
+err "extracting host interface IP address ..."
+ips=($(ifconfig | sed -En 's/127.0.0.1//;s/172.//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
+EXT_IP=$ips
+if [[ "${#ips[@]}" -gt "1" ]]; then
+  err "More than one IP found! Please select one:"
+  select ip in ${ips[*]}; do
+    case $ip in
+      exit )
+        die 0 "exiting ..."
+        break
+        ;;
+
+      * )
+        EXT_IP=$ip
+        break
+        ;;
+    esac
+  done
+fi
+err "host interface IP address = ${EXT_IP}"
+
+## base images: what are we running on?
+ARCH=$(uname -m)
+case "$ARCH" in
+  armv7l )
+    NODE_IMAGE="hypriot/rpi-node:slim"
+    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  aarch64 )
+    NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
+    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  * )
+    ARCH=""
+    NODE_IMAGE="node:alpine"
+    export DATABOX_ARCH=""
+    ;;
+esac
+
+DOCKER_REPO=""
+if [ "$DEV" != "1" ]
+then
+  # use images from https://hub.docker.com/r/databoxsystems/
+  export DOCKER_REPO="databoxsystems/"
+fi
+
+function _exec {
+  docker run \
+         --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd \
+         $DARGS $NODE_IMAGE "$@"
+}
+
+if [ ! -d "node_modules" ]; then
+  _exec npm install
+fi
+
+err "starting the Databox swarm"
+docker swarm init --advertise-addr $EXT_IP > /dev/null
+mkdir -p ./certs
+_exec node ./src/createCerts.js
+
+if [ "$DEV" == "1" ]; then
+  # build all images locally in dev mode
+  ./databox-fetch-components
+  docker-compose build
+  docker-compose -f ./docker-compose-dev-local-images.yaml build
+fi
+
+err "starting Databox"
+docker stack deploy -c docker-compose.yaml databox
+
+DARGS="-e DATABOX_DEV=$DEV"
+err "seeding manifests"
+_exec node ./src/seedManifests.js
+
+err "Databox started! Visit http://127.0.0.1:8989"
+docker service logs databox_container-manager -f

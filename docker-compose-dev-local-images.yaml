@@ -1,54 +1,53 @@
 version: '3'
 
-#Build only (put your images in here)
+# Build only (put your images in here)
 services:
-#An exmaple of how to add your code to databox
   driver-os-monitor:
     build:
-        context: ./driver-os-monitor
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./driver-os-monitor
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: driver-os-monitor
 
   driver-twitter:
     build:
-        context: ./driver-twitter
-        dockerfile: Dockerfile${DATABOX_ARCH}
-    image: driver-twitter
-  
+      context: ./driver-twitter
+      dockerfile: Dockerfile${DATABOX_ARCH}
+      image: driver-twitter
+
   driver-phillips-hue:
     build:
-        context: ./driver-phillips-hue
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./driver-phillips-hue
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: driver-phillips-hue
 
   driver-sensingkit:
     build:
-        context: ./driver-sensingkit
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./driver-sensingkit
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: driver-sensingkit
-  
+
   driver-google-takeout:
     build:
-        context: ./driver-google-takeout
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./driver-google-takeout
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: driver-google-takeout
 
   app-twitter-sentiment:
     build:
-        context: ./app-twitter-sentiment
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./app-twitter-sentiment
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-twitter-sentiment
 
   app-light-graph:
     build:
-        context: ./app-light-graph
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./app-light-graph
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-light-graph
 
   app-os-monitor:
     build:
-        context: ./app-os-monitor
-        dockerfile: Dockerfile${DATABOX_ARCH}
+      context: ./app-os-monitor
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: app-os-monitor
 
   driver-tplink-smart-plug:
@@ -60,14 +59,13 @@ services:
      
 #Build the datastores 
   store-json:
-    build: 
-        context: ./store-json
-        dockerfile: Dockerfile${DATABOX_ARCH}
+    build:
+      context: ./store-json
+      dockerfile: Dockerfile${DATABOX_ARCH}
     image: store-json
-  
-  store-timeseries:
-    build: 
-        context: ./store-timeseries
-        dockerfile: Dockerfile${DATABOX_ARCH}
-    image: store-timeseries
 
+  store-timeseries:
+    build:
+      context: ./store-timeseries
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-timeseries
