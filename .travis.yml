@@ -6,6 +6,6 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
 script:
-  - test/test.sh
+  - databox-test
 services:
   - docker
