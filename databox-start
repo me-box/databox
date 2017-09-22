@@ -16,6 +16,12 @@ die() {
   err "$@"
   exit $rc
 }
+assert() {
+  if [ "$1" != "$2" ] 
+  then
+    die 1 $3
+  fi
+}
 
 ## check we have the tools
 if ! [ -x "$(command -v docker)" ]; then
@@ -154,12 +160,13 @@ then
 fi
 
 err "starting Databox"
-docker-compose -f ./docker-databox-appstore.yaml up -d
+#docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
 
 DARGS="-e DATABOX_DEV=$DEV"
 err "seeding manifests"
 _exec node ./src/seedManifests.js
+assert $? 0 "ERROR: Failed to seed manifests app-store not found"
 
 err "Databox started! Visit http://127.0.0.1:8989"
 if [ -z "$DATABOX_TESTING" ]
