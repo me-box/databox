@@ -14,7 +14,7 @@ function success {
     echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: ${1} ${GREEN}OK${NC}"
 }
 
-function assert {
+function test_assert {
   if [ "$1" != "$2" ]
   then
     fail "$3" "$1"
@@ -28,7 +28,7 @@ build()
     echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: Starting build ${1} ..."
     cd $1
     OUTPUT=$(docker build -t $2 -f Dockerfile${DATABOX_ARCH} .)
-    assert $? 0 " Build ${1}"
+    test_assert $? 0 " Build ${1}"
     cd ..
 }
 
