@@ -1,4 +1,4 @@
-core-container-manager https://github.com/Toshbrown/core-container-manager.git master
+core-container-manager https://github.com/me-box/core-container-manager.git master
 core-arbiter https://github.com/me-box/core-arbiter.git master
 core-export-service https://github.com/me-box/core-export-service.git master
 store-json https://github.com/me-box/store-json.git master
