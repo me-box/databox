@@ -1,25 +1,30 @@
 #!/bin/bash
 
-function fail {
+fail() {
     echo -e "[ERROR] ${1}"
     exit 1
 }
 
-function assert {
+assert() {
   if [ "$1" != "$2" ]
   then
     fail "$3" "$1"
   fi
 }
 
-if [ $# != 1 ]  # Must have 1 args.
-then
+usage() {
+  echo $#
   echo "Please invoke this script with the relative path to the databox component you would like to pin."
   echo "Usage: databox-pin [OPTION...] [COMPONENT DIR]"
   echo "Flags:"
   echo "-d     Delete the pin"
   echo "-h     This help message"
   exit 1
+}
+
+if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+then
+  usage
 fi  
 
 update_file() {
@@ -43,6 +48,24 @@ add_entry() {
     echo "Are you sure you want to pin ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}? [y/n]"
     read -n1 ANS
     check_y $ANS
+
+    cd $COMPONENT_DIR >/dev/null 2>&1
+    assert $? 0 "directory (${COMPONENT_DIR}) not found"
+
+    git status >/dev/null 2>&1
+    assert $? 0 "directory (${COMPONENT_DIR}) is not a git repo."
+
+    ORIGIN=$(git remote get-url --push origin)
+    #convert ssh to https pins 
+    ORIGIN=${ORIGIN//git@/https:\/\/}
+    ORIGIN=${ORIGIN//com:/com\/}
+
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+    cd ..
+
+    update_file $DATABOX_CONFIG_FILE $COMPONENT_NAME "$COMPONENT_NAME $ORIGIN $BRANCH"
+
     echo "Done pined ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}"
 }
 
@@ -50,31 +73,36 @@ del_entry() {
     echo "Are you sure you want to unpin ${COMPONENT_NAME}? [y/n]"
     read -n1 ANS
     check_y $ANS
-    echo "Done pined ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}"
+
+    ORIGIN="https://github.com/me-box/${COMPONENT_NAME}"
+    BRANCH="master"
+    update_file $DATABOX_CONFIG_FILE $COMPONENT_NAME "$COMPONENT_NAME $ORIGIN $BRANCH"
+
+    echo "Done unpined ${COMPONENT_NAME}"
 }
 
 DATABOX_CONFIG_FILE=databox-components
 
-DATABOX_DIR=${pwd}
-COMPONENT_DIR=${1}
-COMPONENT_NAME=${1//.\//}
-COMPONENT_NAME=${COMPONENT_NAME%/}
 
-cd $COMPONENT_DIR >/dev/null 2>&1
-assert $? 0 "directory (${COMPONENT_DIR}) not found"
 
-git status >/dev/null 2>&1
-assert $? 0 "directory (${COMPONENT_DIR}) is not a git repo."
 
-ORIGIN=$(git remote get-url --push origin)
-#convert ssh to https pins 
-ORIGIN=${ORIGIN//git@/https:\/\/}
-ORIGIN=${ORIGIN//com:/com\/}
+if [[ "$1" == "-d" ]]
+then 
+  shift
+  DATABOX_DIR=${pwd}
+  COMPONENT_DIR=${1}
+  COMPONENT_NAME=${1//.\//}
+  COMPONENT_NAME=${COMPONENT_NAME%/}
+  del_entry
+else
+  DATABOX_DIR=${pwd}
+  COMPONENT_DIR=${1}
+  COMPONENT_NAME=${1//.\//}
+  COMPONENT_NAME=${COMPONENT_NAME%/}
+  add_entry
+fi 
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-cd ..
 
-update_file $DATABOX_CONFIG_FILE $COMPONENT_NAME "$COMPONENT_NAME $ORIGIN $BRANCH"
 
 

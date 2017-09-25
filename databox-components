@@ -1,4 +1,3 @@
-core-container-manager https://github.com/me-box/core-container-manager.git master
 core-arbiter https://github.com/me-box/core-arbiter.git master
 core-export-service https://github.com/me-box/core-export-service.git master
 store-json https://github.com/me-box/store-json.git master
@@ -13,3 +12,4 @@ driver-phillips-hue https://github.com/me-box/driver-phillips-hue.git master
 driver-tplink-smart-plug https://github.com/me-box/driver-tplink-smart-plug.git master
 app-light-graph https://github.com/me-box/app-light-graph.git master
 app-twitter-sentiment https://github.com/me-box/app-twitter-sentiment.git master
+core-container-manager https://github.com/me-box/core-container-manager master
