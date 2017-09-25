@@ -44,16 +44,16 @@ docker ps
 
 #can we see the CM UI
 STATUS=$(curl -sL -w "%{http_code}\\n" "http://127.0.0.1:8989/" -o /dev/null)
-test_assert $STATUS 200 "Is the Container Manager avalable?"
+test_assert $STATUS 200 "Is core-container-manager available?"
 
-#is the arbitor up 
+#is the arbiter up 
 RES=$(curl -sL  "http://127.0.0.1:8989/arbiter/status")
-test_assert "$RES" "active" "Is the Arbitor avalable?"
+test_assert "$RES" "active" "Is the arbiter available?"
 
-#is the arbitor /cat endpoint ok 
+#is the arbiter /cat endpoint ok 
 EXPECTED='{"catalogue-metadata":[{"rel":"urn:X-hypercat:rels:isContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox Root Catalogue"},{"rel":"urn:X-hypercat:rels:hasHomepage","val":"http://www.databoxproject.uk/"},{"rel":"urn:X-hypercat:rels:containsContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:Xhypercat:rels:supportsSearch","val":"urn:X-hypercat:search:simple"}],"items":[]}'
 RES=$(curl -sL  "http://127.0.0.1:8989/arbiter/cat")
-test_assert "$RES" "$EXPECTED" "Is the Arbitor cat endpoint is ok?"
+test_assert "$RES" "$EXPECTED" "Is the arbiter cat endpoint is ok?"
 
 #can we install the OS monitor driver 
 PAYLOAD='{"manifest-version":1,"name":"driver-os-monitor","version":"0.1.0","description":"A Databox driver to monitor the local os","author":"Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()","license":"MIT","databox-type":"driver","tags":["monitor","os"],"homepage":"https://github.com/me-box/driver-os-monitor","repository":{"type":"git","url":"git+https://github.com/me-box/driver-os-monitor.git"},"resource-requirements":{"store":"store-json"}}'
@@ -70,6 +70,6 @@ test_assert "$RES" "$EXPECTED" "Can we install the app-os-monitor?"
 #is the OS monitor app up 
 sleep 30
 STATUS=$(curl -sL  -w "%{http_code}\\n" "http://127.0.0.1:8989/app-os-monitor/ui" -o /dev/null)
-test_assert "$STATUS" 200 "Is the app-os-monitor/ui avalable?"
+test_assert "$STATUS" 200 "Is the app-os-monitor/ui available?"
 
 exit 0
