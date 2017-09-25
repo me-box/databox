@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#include helper functions
+source ./scripts/utils
+
 ## debug
 if [[ "$DATABOX_DEBUG" = "true" ]]; then
   set -x
@@ -7,21 +10,6 @@ if [[ "$DATABOX_DEBUG" = "true" ]]; then
 fi
 
 declare -r ME="$(basename $0)"
-err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: $@" >&2
-}
-die() {
-  rc=$1
-  shift
-  err "$@"
-  exit $rc
-}
-assert() {
-  if [ "$1" != "$2" ] 
-  then
-    die 1 "ERROR: ${3}"
-  fi
-}
 
 ## check we have the tools
 if ! [ -x "$(command -v docker)" ]; then
@@ -66,7 +54,7 @@ fi
 ## test if Databox is already running
 err "testing if Databox is already running ..."
 docker node ls >/dev/null 2>&1
-assert $? 1 "Databox is already running!"
+assert_or_die $? 1 "Databox is already running!"
 
 ## extract a host interface IP address
 err "extracting host interface IP address ..."
@@ -143,24 +131,24 @@ then
   err "Building Databox localy in dev mode"
   ./databox-fetch-components
   source ./databox-build-core
-  assert $? 0 "Problem building core images"
+  assert_or_die $? 0 "Problem building core images"
   if [ -z "$DATABOX_TESTING" ]
   then
     # dont build these optional components when testing
     docker-compose -f ./docker-compose-dev-local-images.yaml build
-    assert $? 0 "Problem building optional images"
+    assert_or_die $? 0 "Problem building optional images"
   fi
 fi
 
 err "starting Databox"
 docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
-assert $? 0 "Problem with docker stack deploy"
+assert_or_die $? 0 "Problem with docker stack deploy"
 
 DARGS="-e DATABOX_DEV=$DEV"
 err "seeding manifests"
 _exec node ./src/seedManifests.js
-assert $? 0 "Failed to seed manifests app-store not found"
+assert_or_die $? 0 "Failed to seed manifests app-store not found"
 
 err "Databox started! Visit http://127.0.0.1:8989"
 if [ -z "$DATABOX_TESTING" ]

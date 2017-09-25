@@ -13,3 +13,22 @@ function datef
 {
   date +'%Y-%m-%dT%H:%M:%S%z'
 }
+
+
+err() {
+  echo "[$(datef) $ME]: $@" >&2
+}
+
+die() {
+  rc=$1
+  shift
+  err "$@"
+  exit $rc
+}
+
+assert_or_die() {
+  if [[ "$1" != "$2" ]] 
+  then
+    die 1 "ERROR: ${3}"
+  fi
+}
