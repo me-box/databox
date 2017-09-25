@@ -1,11 +1,11 @@
 #!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m' 
-NC='\033[0m'
+#include helper functions
+source ./scripts/utils
+
 
 function fail {
-    echo -e "[${RED}FAILED${NC}] ${1} \nERROR: ${2}"
+    echo -e "[$( red FAILED )] ${1} \nERROR: ${2}"
     #output debug information
     echo "docker version:"
     docker version
@@ -22,7 +22,7 @@ function fail {
 }
 
 function success {
-    echo -e "[${GREEN}OK${NC}] $1"
+    echo -e "[$( green OK )] $1"
 }
 
 function test_assert {

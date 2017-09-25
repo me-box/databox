@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m' 
-NC='\033[0m'
-ME='databox-build-core'
+#include helper functions
+source ./scripts/utils
 
 function fail {
-    echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: ${1} \nERROR: ${2} ${RED}FAILED${NC}"
+    echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"
     exit 1
 }
 
 function success {
-    echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: ${1} ${GREEN}OK${NC}"
+    echo -e "[$(datef) $ME]: ${1} $(green OK)"
 }
 
 function test_assert {
@@ -25,7 +23,7 @@ function test_assert {
 
 build() 
 {
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: Starting build ${1} ..."
+    echo "[$(datef) $ME]: Starting build ${1} ..."
     cd $1
     OUTPUT=$(docker build -t $2 -f Dockerfile${DATABOX_ARCH} .)
     test_assert $? 0 "Build ${1}" "$OUTPUT"
