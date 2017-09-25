@@ -1,7 +1,7 @@
 version: '3.1'
 
 services:
-#satart the databox platform
+#start the databox platform
     container-manager:
         image: ${DOCKER_REPO}container-manager
         ports:
@@ -68,7 +68,6 @@ services:
                 constraints:
                 - 'node.role == manager'
 
-        
 secrets:
   DATABOX_ROOT_CA:
     file: ./certs/containerManager.crt
