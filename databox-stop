@@ -31,6 +31,7 @@ fi
 ## stop Databox
 err "stopping Databox ..."
 docker stack rm databox
+docker-compose -f ./docker-databox-appstore.yaml down
 err "waiting ..."
 sleep 10 # give docker some time to remove the networks etc
 err "forcing ..."
