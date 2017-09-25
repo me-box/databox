@@ -1,9 +1,6 @@
-version: '2'
+version: '3.1'
 services:
   app-server:
-    build:
-        context: ./platform-app-server
-        dockerfile: Dockerfile${DATABOX_ARCH}
     image: ${DOCKER_REPO}app-server
     environment:
         - "LOCAL_MODE=1"
