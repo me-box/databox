@@ -44,7 +44,6 @@ update_repo_ssh()
 
 update_repo "core-container-manager" &
 update_repo "core-arbiter" &
-update_repo "core-syslog" &
 update_repo "core-export-service" &
 update_repo "platform-app-server" &
 update_repo "store-json" &

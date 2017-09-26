@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#include helper functions
+source ./scripts/utils
+
 ## debug
 if [[ "$DATABOX_DEBUG" = "true" ]]; then
   set -x
@@ -7,15 +10,6 @@ if [[ "$DATABOX_DEBUG" = "true" ]]; then
 fi
 
 declare -r ME="$(basename $0)"
-err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z') $ME]: $@" >&2
-}
-die() {
-  rc=$1
-  shift
-  err "$@"
-  exit $rc
-}
 
 ## check we have the tools
 if ! [ -x "$(command -v docker)" ]; then
@@ -37,6 +31,7 @@ fi
 ## stop Databox
 err "stopping Databox ..."
 docker stack rm databox
+docker-compose -f ./docker-databox-appstore.yaml down
 err "waiting ..."
 sleep 10 # give docker some time to remove the networks etc
 err "forcing ..."
