@@ -1,7 +1,5 @@
-version: '3.1'
-services:
-  app-server:
-    image: ${DOCKER_REPO}app-server
+app-server:
+    image: ${DOCKER_REPO}app-server 
     environment:
         - "LOCAL_MODE=1"
         - "PORT=8181"
