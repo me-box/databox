@@ -25,30 +25,26 @@ usage() {
 if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
 then
   usage
-fi  
+fi
 
 update_file() {
     FILE=$1
     COMP=$2
     LINE=$3
-    LEFT=$(grep -v "^${COMP}" $FILE) 
+    LEFT=$(grep -v "^${COMP}" $FILE)
     echo "$LEFT" > $FILE
     echo -e $LINE >> $FILE
 }
 
 check_y() {
     if [ $1 != "y" ]
-    then 
+    then
         echo "OK - no changes made"
     exit 0
     fi
 }
 
 add_entry() {
-    echo "Are you sure you want to pin ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}? [y/n]"
-    read -n1 ANS
-    check_y $ANS
-
     cd $COMPONENT_DIR >/dev/null 2>&1
     assert $? 0 "directory (${COMPONENT_DIR}) not found"
 
@@ -56,13 +52,17 @@ add_entry() {
     assert $? 0 "directory (${COMPONENT_DIR}) is not a git repo."
 
     ORIGIN=$(git remote get-url --push origin)
-    #convert ssh to https pins 
+    #convert ssh to https pins
     ORIGIN=${ORIGIN//git@/https:\/\/}
     ORIGIN=${ORIGIN//com:/com\/}
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
     cd ..
+
+    echo "Are you sure you want to pin ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}? [y/n]"
+    read -n1 ANS
+    check_y $ANS
 
     update_file $DATABOX_CONFIG_FILE $COMPONENT_NAME "$COMPONENT_NAME $ORIGIN $BRANCH"
 
@@ -87,7 +87,7 @@ DATABOX_CONFIG_FILE=databox-components
 
 
 if [[ "$1" == "-d" ]]
-then 
+then
   shift
   DATABOX_DIR=${pwd}
   COMPONENT_DIR=${1}
@@ -100,9 +100,4 @@ else
   COMPONENT_NAME=${1//.\//}
   COMPONENT_NAME=${COMPONENT_NAME%/}
   add_entry
-fi 
-
-
-
-
-
+fi
