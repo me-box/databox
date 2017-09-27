@@ -37,8 +37,6 @@ alongside the platform. To install your app, upload the manifest to the local
 app store on <http://127.0.0.1:8181> and it should then become visible in the
 UI, ready for you to install.
 
-## Known issues
-
 ### Get Started with the Graphical SDK
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the sdk run:
@@ -51,13 +49,11 @@ To stop the SDK run:
 
 	./databox-stop sdk
 
+## Contributing 
 
-### Develop system components and custom drivers
+The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
-To develop on the platform and core components you can run 
-
-  This is caused by starting Databox before docker has cleaned up the networks.
-  Should be fixed if you run `./databox-start`
+## Known issues
 
 - TLS certificates invalid.
 
