@@ -1,0 +1,15 @@
+core-arbiter https://github.com/me-box/core-arbiter.git master
+core-export-service https://github.com/me-box/core-export-service.git master
+store-json https://github.com/me-box/store-json.git master
+store-timeseries https://github.com/me-box/store-timeseries.git master
+platform-app-server https://github.com/me-box/platform-app-server.git master
+driver-os-monitor https://github.com/me-box/driver-os-monitor.git master
+app-os-monitor https://github.com/me-box/app-os-monitor.git master
+driver-twitter https://github.com/me-box/driver-twitter.git master
+driver-sensingkit https://github.com/me-box/driver-sensingkit.git master
+driver-google-takeout https://github.com/me-box/driver-google-takeout.git master
+driver-phillips-hue https://github.com/me-box/driver-phillips-hue.git master
+driver-tplink-smart-plug https://github.com/me-box/driver-tplink-smart-plug.git master
+app-light-graph https://github.com/me-box/app-light-graph.git master
+app-twitter-sentiment https://github.com/me-box/app-twitter-sentiment.git master
+core-container-manager https://github.com/me-box/core-container-manager master
