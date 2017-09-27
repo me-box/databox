@@ -45,10 +45,6 @@ check_y() {
 }
 
 add_entry() {
-    echo "Are you sure you want to pin ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}? [y/n]"
-    read -n1 ANS
-    check_y $ANS
-
     cd $COMPONENT_DIR >/dev/null 2>&1
     assert $? 0 "directory (${COMPONENT_DIR}) not found"
 
@@ -63,6 +59,10 @@ add_entry() {
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
     cd ..
+
+    echo "Are you sure you want to pin ${COMPONENT_NAME} to ${ORIGIN} ${BRANCH}? [y/n]"
+    read -n1 ANS
+    check_y $ANS
 
     update_file $DATABOX_CONFIG_FILE $COMPONENT_NAME "$COMPONENT_NAME $ORIGIN $BRANCH"
 
