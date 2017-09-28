@@ -88,10 +88,12 @@ Databox has a number of platform components, divided into two parts:  Core and U
 For Databox System Design is find [here](./documents/system_overview.md) and General API specifications are found [here](./documents/api_specification.md)
 
 ### Running the tests
-```
-terminal$ ./databox-test
 
 ```
+terminal$ ./databox-test 
+
+```
+For more details, have a look [here](./documents/testing.md)
 
 ## Contributing
 
@@ -106,7 +108,7 @@ This documentation is up-to-date till this [commit](https://github.com/me-box/da
 The list of [contributors](https://github.com/me-box/databox/contributors) who participated in this project.
 
 ## License
-MIT Licence, See [here](./LICENSE)
+MIT Licence, See [here](./LICENSE).
 
 ## Known issues
 
