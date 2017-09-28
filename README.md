@@ -84,7 +84,7 @@ Databox has a number of platform components, divided into two parts:  Core and U
 * [lib-node-databox](https://github.com/me-box/node-databox) nodejs lib for databox apps and drivers
 * [lib-python-databox](https://github.com/me-box/lib-python-databox) python lib for databox apps and drivers
 * [lib-go-databox](https://github.com/me-box/lib-go-databox) go lib for databox apps and drivers
-#### API and Sustem specifications
+#### API and System specifications
 For Databox System Design is find [here](./documents/system_overview.md) and General API specifications are found [here](./documents/api_specification.md)
 
 ### Running the tests
@@ -130,9 +130,7 @@ terminal$ ./databox-stop sdk
 
 *       To develop on the platform and core components you can sometimes get an error:
 
-        ```
                 TLS certificates invalid
-        ```
 
   This is caused by starting Databox before docker has cleaned up the networks.
   Should be fixed if you run `./databox-start`
