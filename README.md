@@ -85,7 +85,7 @@ Databox has a number of platform components, divided into two parts:  Core and U
 * [lib-python-databox](https://github.com/me-box/lib-python-databox) python lib for databox apps and drivers
 * [lib-go-databox](https://github.com/me-box/lib-go-databox) go lib for databox apps and drivers
 #### API and Sustem specifications
-For Databox System Design is find [here](https://github.com/me-box/documents/system_overview.md) and General API specifications are found [here](https://github.com/me-box/documents/api_specification.md)
+For Databox System Design is find [here](./documents/system_overview.md) and General API specifications are found [here](./documents/api_specification.md)
 
 ### Running the tests
 ```
@@ -95,7 +95,7 @@ terminal$ ./databox-test
 
 ## Contributing
 
-Please see the current [issues](https://github.com/me-box/databox/issues). [Fork](https://github.com/me-box/databox#fork-destination-box) the databox repo and fix bugs/issues and submit pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
+The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./documents/CONTRIBUTING.md) for more information. Good start is from having a look on  the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting  a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
 
 ## Versioning
 
@@ -106,7 +106,7 @@ This documentation is up-to-date till this [commit](https://github.com/me-box/da
 The list of [contributors](https://github.com/me-box/databox/contributors) who participated in this project.
 
 ## License
-MIT Licence, See [here](https://github.com/me-box/databox/blob/master/LICENSE)
+MIT Licence, See [here](./LICENSE)
 
 ## Known issues
 
