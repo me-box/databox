@@ -135,6 +135,12 @@ then
 fi
 
 err "starting Databox"
+
+docker network create -d overlay --internal --attachable databox-system-net
+docker run -d --name bridge \
+       -p 8080:8080 --network databox-system-net --cap-add NET_ADMIN \
+       -v `pwd`/arbiterToken-container-manager:/run/secrets/CM_KEY databox-bridge
+
 docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
 assert_or_die $? 0 "Problem with docker stack deploy"

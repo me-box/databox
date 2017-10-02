@@ -32,6 +32,13 @@ fi
 err "stopping Databox ..."
 docker stack rm databox
 docker-compose -f ./docker-databox-appstore.yaml down
+
+err "stopping and remvoing databox-bridge ..."
+docker stop bridge >/dev/null 2>&1
+docker rm bridge >/dev/null 2>&1
+err "removing network databox-system-net ..."
+docker network rm databox-system-net >/dev/null 2>&1
+
 err "waiting ..."
 sleep 10 # give docker some time to remove the networks etc
 err "forcing ..."
