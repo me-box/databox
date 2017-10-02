@@ -12,4 +12,4 @@ driver-phillips-hue https://github.com/me-box/driver-phillips-hue.git master
 driver-tplink-smart-plug https://github.com/me-box/driver-tplink-smart-plug.git master
 app-light-graph https://github.com/me-box/app-light-graph.git master
 app-twitter-sentiment https://github.com/me-box/app-twitter-sentiment.git master
-core-container-manager https://github.com/me-box/core-container-manager master
+core-container-manager https://github.com/me-box/core-container-manager 104-zmq
