@@ -93,9 +93,10 @@ Databox has a number of platform components, divided into two parts:  Core and U
 * [app-os-monitor](https://github.com/me-box/app-os-monitor)
                 
 ### Libraries for writing drivers and apps
-* [lib-node-databox](https://github.com/me-box/node-databox): Databox nodejs api library for building databox apps and drivers.  Read more about nodejs [here](https://nodejs.org/en/).
-* [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox python api library for building databox apps and drivers. Read more about python [here](https://docs.python.org/3.4/library/index.html).
-* [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox go api library for building databox apps and drivers. Read more about go [here](https://golang.org/).
+For writing a new driver or app for Databox, one needs [Databox Api's](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox api's in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
+* [lib-node-databox](https://github.com/me-box/node-databox): Databox nodejs api library for building databox apps and drivers. 
+* [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox python api library for building databox apps and drivers. 
+* [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox go api library for building databox apps and drivers.
 #### API and System specifications
 Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
 
