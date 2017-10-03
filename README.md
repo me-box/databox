@@ -12,26 +12,23 @@ These instructions will get you a copy of the project up and running on your loc
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
 
 
-### Installation
-1) Clone Databox Git repo and run on your machine
+### Get started
+1) Clone Databox Git repo.
 ```
-git clone -b https://github.com/me-box/databox.git
+git clone https://github.com/me-box/databox.git
 ```
 
-```
- cd databox
- ./databox-start
-     
-```
 ### Operation
 
-Once docker is installed, just run the following to get your databox up and
-running using images published to <https://hub.docker.com/r/databoxsystems>:
+Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
+running. 
 ```
+cd databox
 ./databox-start
 ```    
+The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox in your local machine.
 
-Once it's started point a web browser at <https://127.0.0.1:8989>.
+Once it's started, point a web browser at <https://127.0.0.1:8989> to access Databox UI.
 
 To stop databox and clean up,
 ```
@@ -39,12 +36,13 @@ To stop databox and clean up,
 ``` 
 ### Development
 
-To develop on the platform and core components run
+To develop on the platform and core components run the data-box start script with 'dev' parameter. See below.
 
-```./databox-start dev
+```
+./databox-start dev
 ```
 
-This will clones all the relevant repositories locally, and builds them into the
+Unlike using the pre-build images, this will clone all the relevant source repositories locally, and build them into the
 required Docker images. To try your component out, add your code into a
 directory with a Databox manifest and `Dockerfile`, and then add a reference to
 it in `docker-compose-dev-local-images.yaml`. Your image will then be built
@@ -99,7 +97,7 @@ Databox has a number of platform components, divided into two parts:  Core and U
 * [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox python api library for building databox apps and drivers. Read more about python [here](https://docs.python.org/3.4/library/index.html).
 * [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox go api library for building databox apps and drivers. Read more about go [here](https://golang.org/).
 #### API and System specifications
-Databox System Design document can be find [here](./documents/system_overview.md) and General API specifications are [here](./documents/api_specification.md).
+Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
 
 ### Running the tests
 
@@ -111,7 +109,7 @@ For more details, have a look [here](./documents/testing.md).
 
 ## Contributing
 
-The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./documents/CONTRIBUTING.md) for more information. Good start is from having a look on  the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
+The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information. Good start is from having a look on  the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
 
 ## Versioning
 
