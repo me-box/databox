@@ -5,8 +5,8 @@ sets out the process for contibuting.
 
 ## Reporting issues
 
-Found a peroblem? Got a feature request? Then plese open an issue on the main 
-[databox repository](https://github.com/me-box/databox/). First check that 
+Found a problem? Got a feature request? Then plese open an issue on the main 
+[Databox repository](https://github.com/me-box/databox/). First check that 
 [the issue database](https://github.com/me-box/databox/issues)
 doesn't already include that problem or suggestion before submitting.
 
