@@ -20,7 +20,7 @@ mock-datasource:
   image:
     tlodge/databox-datasource-mock
   command:
-    /root/start.sh
+    node index.js 
   container_name:
     mock-datasource
 
