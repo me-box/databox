@@ -51,7 +51,7 @@ To stop the SDK run:
 
 ## Contributing 
 
-The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
+The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## Known issues
 
