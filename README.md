@@ -129,7 +129,7 @@ MIT Licence, See [here](./LICENSE).
 The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## Known issues
-=======
+
 ### During development of  system components and custom drivers
 
 *  While building the platform and core components you can sometimes get an error:
