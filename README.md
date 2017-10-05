@@ -107,7 +107,7 @@ Databox System Design document can be find [here](./documents/system_overview.md
 ./databox-test 
 
 ```
-For more details, have a look [here](./documents/testing.md).
+For more details, have a look [here](./TESTING.md).
 
 ## Contributing
 
