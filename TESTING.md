@@ -16,5 +16,5 @@ functionality. More work is required but it is a start.
 # Unit tests
 
 Most core components also have unit tests these are language specific. 
-See the [core-arbitor](https://github.com/me-box/core-arbiter/tree/master/test) 
+See the [core-arbiter](https://github.com/me-box/core-arbiter/tree/master/test) 
 for an example.
