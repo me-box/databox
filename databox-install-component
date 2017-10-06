@@ -45,7 +45,7 @@ usage() {
 
 seedManifest() {
   log "Uploading Manifest for ${1} ..."
-  curl --cookie-jar ./databox-jar -sL -w http:/127.0.0.1:8181/
+  curl --cookie-jar ./databox-jar -sL http:/127.0.0.1:8181/
   STATUS=$(curl --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" http:/127.0.0.1:8181/ -o /dev/null)
   test_assert $STATUS 200 "Can't seed manifest is databox running?"
 
