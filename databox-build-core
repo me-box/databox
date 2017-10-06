@@ -21,7 +21,7 @@ function test_assert {
   fi
 }
 
-build() 
+build()
 {
     echo "[$(datef) $ME]: Starting build ${1} ..."
     cd $1
@@ -31,9 +31,7 @@ build()
 }
 
 build "core-container-manager" "container-manager"
-build "platform-app-server" "app-server" 
+build "platform-app-server" "app-server"
 build "core-arbiter" "arbiter"
 build "core-export-service" "export-service"
 build "store-json" "store-json"
-build "driver-os-monitor" "driver-os-monitor"
-build "app-os-monitor" "app-os-monitor"
