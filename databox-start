@@ -23,7 +23,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 ## parse command line args
-DOCKER_REPO="" #default to local images 
+DOCKER_REPO="" #default to local images
 DATABOX_SDK="0"
 DATABOX_DEV="0"
 DEV=0
@@ -141,6 +141,12 @@ assert_or_die $? 0 "Problem with docker stack deploy"
 
 if [ "$DEV" == "1" ]
 then
+  if [ "$DATABOX_TESTING" == "1" ]
+  then
+    docker ps
+    sleep 20
+    docker ps
+  fi
   source ./databox-install-component driver-sensingkit
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
