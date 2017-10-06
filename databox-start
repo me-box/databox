@@ -141,12 +141,6 @@ assert_or_die $? 0 "Problem with docker stack deploy"
 
 if [ "$DEV" == "1" ]
 then
-  if [ "$DATABOX_TESTING" == "1" ]
-  then
-    docker ps
-    sleep 20
-    docker ps
-  fi
   source ./databox-install-component driver-sensingkit
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
