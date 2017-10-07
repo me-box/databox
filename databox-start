@@ -39,6 +39,7 @@ case "$1" in
     ;;
 esac
 
+
 #Start the SDK
 if [ "$SDK" == "1" ]
 then
@@ -138,8 +139,9 @@ err "starting Databox"
 
 docker network create -d overlay --internal --attachable databox-system-net
 docker run -d --name bridge \
-       -p 8080:8080 --network databox-system-net --cap-add NET_ADMIN \
-       -v `pwd`/arbiterToken-container-manager:/run/secrets/CM_KEY databox-bridge
+       --network databox-system-net --cap-add NET_ADMIN \
+       -v `pwd`/certs/arbiterToken-container-manager:/run/secrets/CM_KEY databox-bridge
+_exec node ./src/createResolvConf.js "$(docker inspect bridge)"
 
 docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox

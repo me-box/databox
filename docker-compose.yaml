@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.3'
 
 services:
 #start the databox platform
@@ -11,6 +11,7 @@ services:
             - './docker-compose.yaml:/cfg/docker-compose.yaml'
             - './src/config.json:/cfg/config.json'
             - './certs:/certs'
+            - './.resolv.conf:/etc/resolv.conf'
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
             - 'DATABOX_DEV=${DATABOX_DEV}'
@@ -47,6 +48,7 @@ services:
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
             replicas: 1
+            endpoint_mode: dnsrr
             placement:
                 constraints:
                     - 'node.role == manager'
@@ -67,6 +69,7 @@ services:
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
             replicas: 1
+            endpoint_mode: dnsrr
             placement:
                 constraints:
                 - 'node.role == manager'
