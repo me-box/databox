@@ -36,3 +36,20 @@ assert_or_die() {
   fi
 }
 
+function fail {
+    echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"
+    exit 1
+}
+
+function success {
+    echo -e "[$(datef) $ME]: ${1} $(green OK)"
+}
+
+function test_assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
+  fi
+}
