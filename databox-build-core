@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #include helper functions
-source ./scripts/utils
+source ./scripts/utils.sh
 
 function fail {
     echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"

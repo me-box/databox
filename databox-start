@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #include helper functions
-source ./scripts/utils
+source ./scripts/utils.sh
 
 ## debug
 if [[ "$DATABOX_DEBUG" = "true" ]]; then
