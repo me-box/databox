@@ -50,6 +50,7 @@ alongside the platform. To install your app, upload the manifest to the local
 app store on <http://127.0.0.1:8181> and it should then become visible in the
 UI, ready for you to install.
 
+
 #### Get Started with the Graphical SDK
 
 The graphical SDK will allow you to quickly build and test simple databox apps. The current version of SDK run by default in `dev` mode. To start the sdk run:
@@ -113,7 +114,7 @@ Databox System Design document can be find [here](./documents/system_overview.md
 ./databox-test
 
 ```
-For more details, have a look [here](./documents/testing.md).
+For more details, have a look [here](./TESTING.md).
 
 ## Contributing
 
@@ -130,8 +131,11 @@ The list of [contributors](https://github.com/me-box/databox/contributors) who p
 ## License
 MIT Licence, See [here](./LICENSE).
 
-## Known issues
+## Contributing 
 
+The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
+
+## Known issues
 
 ### During development of  system components and custom drivers
 
