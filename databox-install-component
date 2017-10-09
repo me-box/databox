@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #include helper functions
-source ./scripts/utils
+source ./scripts/utils.sh
 
 ## check we have the tools
 if ! [ -x "$(command -v git)" ]; then
@@ -17,7 +17,7 @@ fi
 usage() {
   echo ""
   echo "Please invoke this script with the component you would like to install."
-  echo "Usage: databox-pin [OPTION...] [GITHUB-USER/COMPONENT-NAME]"
+  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME]"
   echo "Flags:"
   echo "-h     This help message"
   echo ""
