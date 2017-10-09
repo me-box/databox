@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
-2) Once docker is installed and running, install  docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation. 
+2) Once docker is installed and running, install  docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
 
 
@@ -21,11 +21,11 @@ git clone https://github.com/me-box/databox.git
 ### Operation
 
 Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
-running. 
+running.
 ```
 cd databox
 ./databox-start
-```    
+```
 The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox in your local machine.
 
 Once it's started, point a web browser at <https://127.0.0.1:8989> to access Databox UI.
@@ -33,7 +33,7 @@ Once it's started, point a web browser at <https://127.0.0.1:8989> to access Dat
 To stop databox and clean up,
 ```
 ./databox-stop
-``` 
+```
 ### Development
 
 To develop on the platform and core components run the data-box start script with 'dev' parameter. See below.
@@ -56,28 +56,35 @@ UI, ready for you to install.
 The graphical SDK will allow you to quickly build and test simple databox apps. The current version of SDK run by default in `dev` mode. To start the sdk run:
 ```
 ./databox-start sdk
-```        
+```
 The SDK web UI is available at http://127.0.0.1:8086
 
-To stop the SDK run: 
+To stop the SDK run:
 ```
 ./databox-stop sdk
 ```
 
-Databox has a number of platform components, divided into two parts:  Core and User components.
+When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to you local install using:
+
+```
+./databox-install-component driver-os-monitor
+```
+
+This will download and build the code on your machine and upload the Databox manifest to your local app store. You can also use this with your repositories  and forks using:
+
+```
+./databox-install-component [GITHUB_USERNAME]/[GITHUB_REPONAME]
+```
 
 ### Core Components
 
+Databox has a number of platform components, divided into two parts:  Core and User components.
+
 * [Databox container manager](https://github.com/me-box/core-container-manager)
-
 * [databox-arbiter](https://github.com/me-box/core-arbiter)
-
 * [databox-export-service](https://github.com/me-box/core-export-service)
-
 * [databox-store-json](https://github.com/me-box/store-json)
-
 * [databox-store-timeseries](https://github.com/me-box/store-timeseries)
-
 * [databox-app-server](https://github.com/me-box/platform-app-server) Server for storing and serving databox manifests
 
 ### User Components
@@ -87,24 +94,24 @@ Databox has a number of platform components, divided into two parts:  Core and U
 * [driver-phillips-hue](https://github.com/me-box/driver-phillips-hue)
 * [driver-os-monitor](https://github.com/me-box/driver-os-monitor)
 * [driver-twitter](https://github.com/me-box/driver-twitter)
-* [driver-tplink-smart-plug](https://github.com/me-box/driver-tplink-smart-plug)    
-#### Apps 
+* [driver-tplink-smart-plug](https://github.com/me-box/driver-tplink-smart-plug)
+#### Apps
 * [app-light-graph](https://github.com/me-box/app-light-graph)
 * [app-twitter-sentiment](https://github.com/me-box/app-twitter-sentiment)
 * [app-os-monitor](https://github.com/me-box/app-os-monitor)
-                
+
 ### Libraries for writing drivers and apps
-For writing a new driver or app for Databox, one needs [Databox Api's](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox api's in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
-* [lib-node-databox](https://github.com/me-box/node-databox): Databox nodejs api library for building databox apps and drivers. 
-* [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox python api library for building databox apps and drivers. 
-* [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox go api library for building databox apps and drivers.
+For writing a new driver or app for Databox, one needs [Databox API's](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox API's in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
+* [lib-node-databox](https://github.com/me-box/node-databox): Databox Nodejs API library for building databox apps and drivers.
+* [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox Python API library for building databox apps and drivers.
+* [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox Go API library for building databox apps and drivers.
 #### API and System specifications
 Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
 
 ### Running the tests
 
 ```
-./databox-test 
+./databox-test
 
 ```
 For more details, have a look [here](./TESTING.md).
@@ -136,10 +143,9 @@ The Databox project welcomes contributions via pull requests see [CONTRIBUTING.m
 ```
 TLS certificates invalid
 ```
-This is caused when Databox is started before docker has cleaned up the networks. 
+This is caused when Databox is started before docker has cleaned up the networks.
 
 This issue can be fixed if you run `./databox-start`
 
-*  In some cases, the time in docker containers on Mac can get out of sync with the system clock. This causes the HTTPS 
+*  In some cases, the time in docker containers on Mac can get out of sync with the system clock. This causes the HTTPS
    certs generated by the CM from being valid. See https://github.com/docker/for-mac/issues/17. Fix this by restarting Docker for Mac.
-
