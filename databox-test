@@ -25,15 +25,6 @@ function success {
     echo -e "[$( green OK )] $1"
 }
 
-function test_assert {
-  if [ "$1" != "$2" ]
-  then
-    fail "$3" "$1"
-  else
-    success "$3"
-  fi
-}
-
 #Start databox
 export DATABOX_TESTING=1
 source ./databox-start dev
