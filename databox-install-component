@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#include helper functions
+source ./scripts/utils
+
 ## check we have the tools
 if ! [ -x "$(command -v git)" ]; then
   die 1 "git is not installed;"`
@@ -10,9 +13,6 @@ if ! [ -x "$(command -v curl)" ]; then
   die 1 "curl is not installed;"`
        `"https://curl.haxx.se"
 fi
-
-#include helper functions
-source ./scripts/utils
 
 function fail {
     echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"
