@@ -48,6 +48,14 @@ buildImage() {
   cd ..
 }
 
+pullCanges() {
+  cd ${1}
+  log "[$(datef) $ME]: Pulling Changes ${1} ..."
+  OUTPUT=$(git pull)
+  test_assert $? 0 "Git pull ${1}" "$OUTPUT"
+  cd ..
+}
+
 if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
 then
   usage
@@ -73,6 +81,7 @@ if [ ! -d "./$COMPONENT_NAME" ]; then
   seedManifest $COMPONENT_NAME
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
+  pullCanges $COMPONENT_NAME
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
 fi
