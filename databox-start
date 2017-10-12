@@ -144,12 +144,8 @@ then
   source ./databox-install-component driver-sensingkit
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
-else
-  DARGS="-e DATABOX_DEV=$DEV"
-  err "seeding manifests"
-  _exec node ./src/seedManifests.js
-  assert_or_die $? 0 "Failed to seed manifests app-store not found"
 fi
+
 err "Databox started! Visit http://127.0.0.1:8989"
 if [ -z "$DATABOX_TESTING" ]
 then
