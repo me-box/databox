@@ -48,7 +48,7 @@ buildImage() {
   cd ..
 }
 
-pullCanges() {
+pullChanges() {
   cd ${1}
   log "[$(datef) $ME]: Pulling Changes ${1} ..."
   OUTPUT=$(git pull)
@@ -64,7 +64,7 @@ installStores() {
     test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
     buildImage "store-json"
   else
-    pullCanges "store-json"
+    pullChanges "store-json"
     buildImage "store-json"
   fi
 
@@ -74,7 +74,7 @@ installStores() {
     test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
     buildImage "store-timeseries"
   else
-    pullCanges "store-timeseries"
+    pullChanges "store-timeseries"
     buildImage "store-timeseries"
   fi
 
@@ -106,7 +106,7 @@ if [ ! -d "./$COMPONENT_NAME" ]; then
   installStores $COMPONENT_NAME
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
-  pullCanges $COMPONENT_NAME
+  pullChanges $COMPONENT_NAME
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
   installStores $COMPONENT_NAME
