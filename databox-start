@@ -43,10 +43,6 @@ esac
 if [ "$SDK" == "1" ]
 then
   err "Starting SDK"
-
-  #SDK only works in DEV mode so force it
-  DEV=1
-  export DATABOX_DEV="1"
   export HOSTMOUNT=$(pwd -P)
   docker-compose -f docker-databox-sdk.yaml up -d
 fi
