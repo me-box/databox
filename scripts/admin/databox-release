@@ -16,6 +16,7 @@ then
 fi
 
 function release {
+  docker pull databoxsystems/ghr:0.1.2
   docker run \
          --net=host -ti --rm -v "$(pwd -P)/config.json":/config.json -w / \
          $DARGS databoxsystems/ghr "$@"
