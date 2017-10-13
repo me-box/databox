@@ -1,0 +1,18 @@
+#include helper functions
+source ../utils.sh
+
+declare -r ME="$(basename $0)"
+
+## check we have the tools
+if ! [ -x "$(command -v docker)" ]; then
+  die 1 "docker is not installed;"`
+       `"see https://docs.docker.com/engine/installation/"
+fi
+
+function release {
+  docker run \
+         --net=host -ti --rm -v "$(pwd -P)/config.json":/config.json -w / \
+         $DARGS databoxsystems/ghr "$@"
+}
+
+release
