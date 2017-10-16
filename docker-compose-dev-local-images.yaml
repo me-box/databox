@@ -1,0 +1,52 @@
+version: '3'
+
+
+# Build only (put your images in here)
+services:
+  store-timeseries:
+    build:
+      context: ./store-timeseries
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: store-timeseries
+    
+  driver-twitter:
+    build:
+      context: ./driver-twitter
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-twitter
+
+  driver-phillips-hue:
+    build:
+      context: ./driver-phillips-hue
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-phillips-hue
+
+  driver-sensingkit:
+    build:
+      context: ./driver-sensingkit
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-sensingkit
+
+  driver-google-takeout:
+    build:
+      context: ./driver-google-takeout
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-google-takeout
+
+  app-twitter-sentiment:
+    build:
+      context: ./app-twitter-sentiment
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: app-twitter-sentiment
+
+  app-light-graph:
+    build:
+      context: ./app-light-graph
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: app-light-graph
+
+  driver-tplink-smart-plug:
+    build:
+      context: ./driver-tplink-smart-plug
+      dockerfile: Dockerfile${DATABOX_ARCH}
+    image: driver-tplink-smart-plug

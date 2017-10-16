@@ -1,0 +1,28 @@
+{
+	"localAppStoreName":"127.0.0.1:8181",
+	"requiredHTTPSecrets": [
+								"arbiter",
+								"export-service",
+								"syslog"
+							],
+	"requiredArbiterSecrets": [
+								"container-manager",
+								"arbiter",
+								"export-service",
+								"syslog"
+							],
+	"localAppStoreSeedManifests": [
+		"driver-twitter",
+		"driver-os-monitor",
+		"driver-sensingkit",
+		"driver-google-takeout",
+		"driver-phillips-hue",
+		"app-light-graph",
+		"app-twitter-sentiment",
+		"store-json",
+		"store-timeseries",
+		"driver-tplink-smart-plug",
+		"app-os-monitor"
+	]
+
+}

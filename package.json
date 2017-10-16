@@ -1,0 +1,39 @@
+{
+  "name": "container-manager",
+  "version": "0.1.0",
+  "description": "Databox OS container manager and dashboard server",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "start": "node src/main.js",
+    "killall": "docker kill $(docker ps -a -q)",
+    "clean": "node ./node_modules/modclean/bin/modclean.js -p ./node_modules/ -r",
+    "dockerclean": "docker kill $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi -f $(docker images -q)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/me-box/container-manager.git"
+  },
+  "keywords": [
+    "docker",
+    "databox",
+    "personal",
+    "data",
+    "dashboard",
+    "container",
+    "manager"
+  ],
+  "author": "Yousef Amar <yousef@amar.io> (http://yousefamar.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/me-box/container-manager-js/issues"
+  },
+  "homepage": "https://github.com/me-box/container-manager-js#readme",
+  "dependencies": {
+    "dockerode": "^2.4.3",
+    "jsonfile": "^3.0.0",
+    "node-forge": "^0.6.45",
+    "request": "^2.81.0",
+    "selfsigned": "^1.8.0"
+  },
+  "devDependencies": {}
+}
