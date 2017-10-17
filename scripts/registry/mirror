@@ -44,3 +44,9 @@ clone databoxsystems/app-os-monitor $1/app-os-monitor
 clone databoxsystems/store-timeseries $1/store-timeseries
 clone databoxsystems/driver-tplink-smart-plug $1/driver-tplink-smart-plug
 clone node:alpine $1/node:alpine
+
+clone tlodge/databox-redis $1/databox-redis
+clone tlodge/databox-sdk $1/databox-sdk
+clone tlodge/databox-test-server $1/databox-test-server
+clone tlodge/databox-redis $1/databox-redis
+clone tlodge/mongo $1/mongo

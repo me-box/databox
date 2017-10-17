@@ -43,3 +43,9 @@ seed $1/app-os-monitor databoxsystems/app-os-monitor
 seed $1/store-timeseries databoxsystems/store-timeseries
 seed $1/driver-tplink-smart-plug databoxsystems/driver-tplink-smart-plug
 seed $1/node:alpine node:alpine
+
+seed $1/databox-redis tlodge/databox-redis
+seed $1/databox-sdk tlodge/databox-sdk
+seed $1/databox-test-server tlodge/databox-test-server
+seed $1/databox-redis tlodge/databox-redis
+seed $1/mongo tlodge/mongo
