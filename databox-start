@@ -43,10 +43,6 @@ esac
 if [ "$SDK" == "1" ]
 then
   err "Starting SDK"
-
-  #SDK only works in DEV mode so force it
-  DEV=1
-  export DATABOX_DEV="1"
   export HOSTMOUNT=$(pwd -P)
   docker-compose -f docker-databox-sdk.yaml up -d
 fi
@@ -144,12 +140,8 @@ then
   source ./databox-install-component driver-sensingkit
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
-else
-  DARGS="-e DATABOX_DEV=$DEV"
-  err "seeding manifests"
-  _exec node ./src/seedManifests.js
-  assert_or_die $? 0 "Failed to seed manifests app-store not found"
 fi
+
 err "Databox started! Visit http://127.0.0.1:8989"
 if [ -z "$DATABOX_TESTING" ]
 then
