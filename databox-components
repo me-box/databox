@@ -4,3 +4,4 @@ store-json https://github.com/me-box/store-json.git master
 store-timeseries https://github.com/me-box/store-timeseries.git master
 platform-app-server https://github.com/me-box/platform-app-server.git master
 core-container-manager https://github.com/sevenEng/core-container-manager.git master
+databox-bridge https://github.com/sevenEng/databox-bridge master
