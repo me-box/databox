@@ -3,13 +3,15 @@
 	"requiredHTTPSecrets": [
 								"arbiter",
 								"export-service",
-								"syslog"
+								"syslog",
+								"bridge"
 							],
 	"requiredArbiterSecrets": [
 								"container-manager",
 								"arbiter",
 								"export-service",
-								"syslog"
+								"syslog",
+								"bridge"
 							],
 	"localAppStoreSeedManifests": [
 		"driver-twitter",

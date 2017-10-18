@@ -1,0 +1,19 @@
+version: '3.3'
+
+services:
+  databox-bridge:
+    image: ${DOCKER_REPO}databox-bridge
+    networks:
+      databox-system-net:
+        aliases:
+          - bridge
+    volumes:
+      - './certs/arbiterToken-bridge:/run/secrets/DATABOX_BRIDGE_KEY'
+      - './certs/bridge.pem:/run/secrets/bridge.pem'
+    cap_add:
+      - NET_ADMIN
+
+networks:
+  databox-system-net:
+    external: true
+

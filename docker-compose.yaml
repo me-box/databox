@@ -26,6 +26,7 @@ services:
             - DATABOX_ROOT_CA
             - CM_KEY
             - DATABOX_CM.pem
+            - DATABOX_BRIDGE_KEY
         depends_on:
             - arbiter
         deploy:
@@ -89,6 +90,8 @@ secrets:
     file: ./certs/export-service.pem
   DATABOX_EXPORT_SERVICE_KEY:
     file: ./certs/arbiterToken-export-service
+  DATABOX_BRIDGE_KEY:
+    file: ./certs/arbiterToken-bridge
 
 networks:
     databox-system-net:
