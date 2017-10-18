@@ -1,0 +1,20 @@
+
+{
+    "Username":"",
+     "AccessToken": "",
+	"MainRepo": ["me-box","databox"],
+	"CoreRepos":[
+		["me-box","core-container-manager"],
+		["me-box","core-arbiter"],
+		["me-box","core-export-service"],
+		["me-box","store-json"],
+		["me-box","store-timeseries"],
+		["me-box","lib-node-databox"],
+		["me-box","lib-go-databox"]
+	],
+	"OtherRepos": [
+					["me-box","app-os-monitor"],
+					["me-box","driver-os-monitor"],
+					["me-box","driver-sensingkit"]
+				]
+}

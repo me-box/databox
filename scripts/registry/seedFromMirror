@@ -1,0 +1,51 @@
+#!/bin/bash
+
+
+if ! [ -x "$(command -v docker)" ]; then
+  echo 1 "docker is not installed see https://docs.docker.com/engine/installation/"
+  exit 1
+fi
+
+
+usage() {
+  echo $#
+  echo "Please invoke this script with the IP of the local registry you want pull from."
+  echo "Usage: seedFromMirror [registry host name and port]"
+  echo "Flags:"
+  echo "-h     This help message"
+  exit 1
+}
+
+if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+then
+  usage
+fi
+
+seed () {
+    docker pull $2
+    docker tag $2 $1
+}
+
+seed $1/store-json databoxsystems/store-json
+seed $1/driver-os-monitor databoxsystems/driver-os-monitor
+seed $1/driver-twitter databoxsystems/driver-twitter
+seed $1/driver-sensingkit databoxsystems/driver-sensingkit
+seed $1/app-light-graph databoxsystems/app-light-graph
+seed $1/arbiter databoxsystems/arbiter
+seed $1/container-manager databoxsystems/container-manager
+seed $1/export-service databoxsystems/export-service
+seed $1/app-server databoxsystems/app-server
+seed $1/driver-google-takeout databoxsystems/driver-google-takeout
+seed $1/app-twitter-sentiment databoxsystems/app-twitter-sentiment
+seed $1/base-image-ocaml databoxsystems/base-image-ocaml
+seed $1/driver-phillips-hue databoxsystems/driver-phillips-hue
+seed $1/app-os-monitor databoxsystems/app-os-monitor
+seed $1/store-timeseries databoxsystems/store-timeseries
+seed $1/driver-tplink-smart-plug databoxsystems/driver-tplink-smart-plug
+seed $1/node:alpine node:alpine
+
+seed $1/databox-redis tlodge/databox-redis
+seed $1/databox-sdk tlodge/databox-sdk
+seed $1/databox-test-server tlodge/databox-test-server
+seed $1/databox-redis tlodge/databox-redis
+seed $1/mongo tlodge/mongo

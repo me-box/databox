@@ -121,3 +121,5 @@ lib-go-databox/
 driver-tplink-smart-plug/
 
 sdk/
+
+scripts/admin/config\.json

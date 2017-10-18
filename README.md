@@ -80,28 +80,28 @@ This will download and build the code on your machine and upload the Databox man
 
 Databox has a number of platform components, divided into two parts:  Core and User components.
 
-* [Databox container manager](https://github.com/me-box/core-container-manager)
-* [databox-arbiter](https://github.com/me-box/core-arbiter)
-* [databox-export-service](https://github.com/me-box/core-export-service)
-* [databox-store-json](https://github.com/me-box/store-json)
-* [databox-store-timeseries](https://github.com/me-box/store-timeseries)
-* [databox-app-server](https://github.com/me-box/platform-app-server) Server for storing and serving databox manifests
+* [Databox-container-manager](https://github.com/me-box/core-container-manager) Container manager controls build, installation and running funtions of the other databox components. 
+* [databox-arbiter](https://github.com/me-box/core-arbiter) Arbiter manages the flow of data by minting tokens and controlling store discovery.
+* [databox-export-service](https://github.com/me-box/core-export-service) This service controls the data to be exported to external URLs.
+* [databox-store-json](https://github.com/me-box/store-json) This is a datastore used by apps and drivers to store and retrieve JSON data.
+* [databox-store-timeseries](https://github.com/me-box/store-timeseries)  This is a datastore used by apps and drivers to store and retrieve JSON data or JPEG images.
+* [databox-app-server](https://github.com/me-box/platform-app-server) This is a Server for storing and serving databox manifests.
 
 ### User Components
 #### Drivers
-* [driver-sensingkit](https://github.com/me-box/driver-sensingkit)
-* [driver-google-takeout](https://github.com/me-box/driver-google-takeout)
-* [driver-phillips-hue](https://github.com/me-box/driver-phillips-hue)
-* [driver-os-monitor](https://github.com/me-box/driver-os-monitor)
-* [driver-twitter](https://github.com/me-box/driver-twitter)
-* [driver-tplink-smart-plug](https://github.com/me-box/driver-tplink-smart-plug)
+* [driver-sensingkit](https://github.com/me-box/driver-sensingkit) This driver provides SensingKit mobile sensor data.
+* [driver-google-takeout](https://github.com/me-box/driver-google-takeout) This driver supports bulk import of google takeout data.
+* [driver-phillips-hue](https://github.com/me-box/driver-phillips-hue) This drivers allows connection to Phillips Hue Platform.
+* [driver-os-monitor](https://github.com/me-box/driver-os-monitor) This driver monitors the databox hardware by fetching Memory consumption and CPU load.
+* [driver-twitter](https://github.com/me-box/driver-twitter) This driver streams data from a twitter account into a datastore.
+* [driver-tplink-smart-plug](https://github.com/me-box/driver-tplink-smart-plug) This driver collects data from TP-Link smart plugs.
 #### Apps
-* [app-light-graph](https://github.com/me-box/app-light-graph)
-* [app-twitter-sentiment](https://github.com/me-box/app-twitter-sentiment)
-* [app-os-monitor](https://github.com/me-box/app-os-monitor)
+* [app-light-graph](https://github.com/me-box/app-light-graph) An app that plots mobile phone light sensor data.
+* [app-twitter-sentiment](https://github.com/me-box/app-twitter-sentiment) An app that used data from driver-twitter to calculate tweet sentiment.
+* [app-os-monitor](https://github.com/me-box/app-os-monitor) An app to plot the output of the data feteched by [driver-os-monitor](https://github.com/me-box/driver-os-monitor).
 
 ### Libraries for writing drivers and apps
-For writing a new driver or app for Databox, one needs [Databox API's](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox API's in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
+For writing a new driver or app for Databox, one needs [Databox APIs](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox APIs in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
 * [lib-node-databox](https://github.com/me-box/node-databox): Databox Nodejs API library for building databox apps and drivers.
 * [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox Python API library for building databox apps and drivers.
 * [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox Go API library for building databox apps and drivers.

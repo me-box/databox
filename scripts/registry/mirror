@@ -1,0 +1,52 @@
+#!/bin/bash
+
+
+if ! [ -x "$(command -v docker)" ]; then
+  echo 1 "docker is not installed see https://docs.docker.com/engine/installation/"
+  exit 1
+fi
+
+
+usage() {
+  echo $#
+  echo "Please invoke this script with the IP of the local registry you want to mirror to."
+  echo "Usage: mirror [registry host name and port]"
+  echo "Flags:"
+  echo "-h     This help message"
+  exit 1
+}
+
+if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+then
+  usage
+fi
+
+clone () {
+    docker pull $1
+    docker tag $1 $2
+    docker push $2
+}
+
+clone databoxsystems/store-json $1/store-json
+clone databoxsystems/driver-os-monitor $1/driver-os-monitor
+clone databoxsystems/driver-twitter $1/driver-twitter
+clone databoxsystems/driver-sensingkit $1/driver-sensingkit
+clone databoxsystems/app-light-graph $1/app-light-graph
+clone databoxsystems/arbiter $1/arbiter
+clone databoxsystems/container-manager $1/container-manager
+clone databoxsystems/export-service $1/export-service
+clone databoxsystems/app-server $1/app-server
+clone databoxsystems/driver-google-takeout $1/driver-google-takeout
+clone databoxsystems/app-twitter-sentiment $1/app-twitter-sentiment
+clone databoxsystems/base-image-ocaml $1/base-image-ocaml
+clone databoxsystems/driver-phillips-hue $1/driver-phillips-hue
+clone databoxsystems/app-os-monitor $1/app-os-monitor
+clone databoxsystems/store-timeseries $1/store-timeseries
+clone databoxsystems/driver-tplink-smart-plug $1/driver-tplink-smart-plug
+clone node:alpine $1/node:alpine
+
+clone tlodge/databox-redis $1/databox-redis
+clone tlodge/databox-sdk $1/databox-sdk
+clone tlodge/databox-test-server $1/databox-test-server
+clone tlodge/databox-redis $1/databox-redis
+clone tlodge/mongo $1/mongo

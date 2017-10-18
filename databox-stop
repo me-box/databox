@@ -43,4 +43,10 @@ err "waiting ..."
 sleep 10 # give docker some time to remove the networks etc
 err "forcing ..."
 docker swarm leave --force
+
+if [[ $(docker ps -aq -f status=created -f status=exited -f "label=databox.type") ]]
+then
+  err "Removing  and exited containers ..."
+  docker rm $(docker ps -aq -f status=created -f status=exited -f "label=databox.type")
+fi
 err "done!"

@@ -48,6 +48,38 @@ buildImage() {
   cd ..
 }
 
+pullChanges() {
+  cd ${1}
+  log "[$(datef) $ME]: Pulling Changes ${1} ..."
+  OUTPUT=$(git pull)
+  test_assert $? 0 "Git pull ${1}" "$OUTPUT"
+  cd ..
+}
+
+installStores() {
+
+  if [ ! -d "./store-json" ]
+  then
+    OUTPUT=$(git clone "https://github.com/me-box/store-json.git")
+    test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
+    buildImage "store-json"
+  else
+    pullChanges "store-json"
+    buildImage "store-json"
+  fi
+
+  if [ ! -d "./store-timeseries" ]
+  then
+    OUTPUT=$(git clone "https://github.com/me-box/store-timeseries")
+    test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
+    buildImage "store-timeseries"
+  else
+    pullChanges "store-timeseries"
+    buildImage "store-timeseries"
+  fi
+
+}
+
 if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
 then
   usage
@@ -71,8 +103,11 @@ if [ ! -d "./$COMPONENT_NAME" ]; then
   test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
+  installStores $COMPONENT_NAME
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
+  pullChanges $COMPONENT_NAME
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
+  installStores $COMPONENT_NAME
 fi
