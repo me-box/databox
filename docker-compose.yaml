@@ -17,11 +17,8 @@ services:
             - 'DATABOX_DEV=${DATABOX_DEV}'
             - 'DATABOX_SDK=${DATABOX_SDK}'
         networks:
-#           - databox-cm-arbiter-net
-            - databox-cm-app-server-net
-#           - databox-driver-net
-#           - databox-app-net
             - databox-system-net
+            - databox-cm-app-server-net
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
@@ -38,9 +35,6 @@ services:
     arbiter:
         image: ${DOCKER_REPO}arbiter
         networks:
-#           - databox-cm-arbiter-net
-#           - databox-driver-net
-#           - databox-app-net
             - databox-system-net
         secrets:
             - DATABOX_ROOT_CA
@@ -61,8 +55,8 @@ services:
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
         networks:
-#           - databox-app-net
             - databox-system-net
+            - databox-export-net
         secrets:
             - DATABOX_ROOT_CA
             - DATABOX_EXPORT_SERVICE_PEM.json
@@ -96,13 +90,7 @@ secrets:
 networks:
     databox-system-net:
         external: true
-#   databox-cm-arbiter-net:
-#       driver: overlay
     databox-cm-app-server-net:
         driver: overlay
-    databox-driver-net:
+    databox-export-net:
         driver: overlay
-    databox-app-net:
-        driver: overlay
-#    databox-cloud-net:
-#        driver: overlay
