@@ -22,4 +22,4 @@ function release {
          $DARGS databoxsystems/ghr "$@"
 }
 
-release
+release $@
