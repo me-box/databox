@@ -99,12 +99,16 @@ case "$ARCH" in
 esac
 
 DOCKER_REPO=""
+DATABOX_VERSION="latest"
 if [ "$DEV" != "1" ]
 then
   # use images from https://hub.docker.com/r/databoxsystems/
   DOCKER_REPO="databoxsystems/"
+  DATABOX_VERSION=$(<./Version)
 fi
+err "Starting version ${DATABOX_VERSION}"
 export DOCKER_REPO=$DOCKER_REPO
+export DATABOX_VERSION=$DATABOX_VERSION
 
 function _exec {
   docker run \
