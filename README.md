@@ -78,12 +78,7 @@ To develop on the platform and core components run the data-box start script wit
 ```
 
 Unlike using the pre-build images, this will clone all the relevant source repositories locally, and build them into the
-required Docker images. To try your component out, add your code into a
-directory with a Databox manifest and `Dockerfile`, and then add a reference to
-it in `docker-compose-dev-local-images.yaml`. Your image will then be built
-alongside the platform. To install your app, upload the manifest to the local
-app store on <http://127.0.0.1:8181> and it should then become visible in the
-UI, ready for you to install.
+required Docker images. 
 
 When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to you local install using:
 
