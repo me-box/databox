@@ -11,6 +11,7 @@ These instructions will get you a copy of the project up and running on your loc
 2) Once docker is installed and running, install  docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
 
+> Note: currently supported platforms are Linux and MacOS. Running on other platforms is passable using a virtual machine running Linux with bridge mode networking.
 
 ### Get started
 1) Clone Databox Git repo.
@@ -34,7 +35,41 @@ To stop databox and clean up,
 ```
 ./databox-stop
 ```
-### Development
+
+# Development
+
+## Get Started with the Graphical SDK
+
+The graphical SDK will allow you to quickly build and test simple databox apps. To start the sdk run:
+```
+./databox-start sdk
+```
+The SDK web UI is available at http://127.0.0.1:8086
+
+To stop the SDK run:
+```
+./databox-stop sdk
+```
+
+## Developing apps and drivers without the SDK
+
+It is possible to develop Databox apps and driver without the SDK. Currently, [Python](https://github.com/me-box/lib-python-databox), [Golang](https://github.com/me-box/lib-go-databox) and [NodeJs](https://github.com/me-box/node-databox) all have support libraries. Building outside the SDK allows you to make smaller more efficient containers and use more third-party libraries.
+
+Developing apps and drivers 'does not' require data box to be started in dev mode.
+
+To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make you app available to install locally on your databox you will need to upload the manifest to http://127.0.0.1:8181 and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built  then you should be up to install the app on you local Databox.
+
+If you would like to modify one of the currently available actual drivers you can do so by doing the following:
+```
+./databox-install-component driver-os-monitor
+```
+
+This will download and build the code on your machine and upload the Databox manifest to your local app store. You can also use this with your repositories and forks using:
+```
+./databox-install-component [GITHUB_USERNAME]/[GITHUB_REPONAME]
+```
+
+## Developing core components
 
 To develop on the platform and core components run the data-box start script with 'dev' parameter. See below.
 
@@ -50,20 +85,6 @@ alongside the platform. To install your app, upload the manifest to the local
 app store on <http://127.0.0.1:8181> and it should then become visible in the
 UI, ready for you to install.
 
-
-#### Get Started with the Graphical SDK
-
-The graphical SDK will allow you to quickly build and test simple databox apps. The current version of SDK run by default in `dev` mode. To start the sdk run:
-```
-./databox-start sdk
-```
-The SDK web UI is available at http://127.0.0.1:8086
-
-To stop the SDK run:
-```
-./databox-stop sdk
-```
-
 When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to you local install using:
 
 ```
@@ -76,31 +97,34 @@ This will download and build the code on your machine and upload the Databox man
 ./databox-install-component [GITHUB_USERNAME]/[GITHUB_REPONAME]
 ```
 
-### Core Components
+# Databox Components
 
-Databox has a number of platform components, divided into two parts:  Core and User components.
+Databox has a number of platform components, divided into two parts:  Core and Other components.  Core components are required for Databox function.  Other components of things like apps and drivers to demonstrate Databoxes functionality.
 
-* [Databox-container-manager](https://github.com/me-box/core-container-manager) Container manager controls build, installation and running funtions of the other databox components. 
+## Core
+
+* [Databox-container-manager](https://github.com/me-box/core-container-manager) Container manager controls build, installation and running functions of the other databox components.
 * [databox-arbiter](https://github.com/me-box/core-arbiter) Arbiter manages the flow of data by minting tokens and controlling store discovery.
 * [databox-export-service](https://github.com/me-box/core-export-service) This service controls the data to be exported to external URLs.
-* [databox-store-json](https://github.com/me-box/store-json) This is a datastore used by apps and drivers to store and retrieve JSON data.
-* [databox-store-timeseries](https://github.com/me-box/store-timeseries)  This is a datastore used by apps and drivers to store and retrieve JSON data or JPEG images.
+* [databox-store-json](https://github.com/me-box/store-json) This is a data store used by apps and drivers to store and retrieve JSON data.
+* [databox-store-timeseries](https://github.com/me-box/store-timeseries)  This is a data store used by apps and drivers to store and retrieve JSON data or JPEG images.
 * [databox-app-server](https://github.com/me-box/platform-app-server) This is a Server for storing and serving databox manifests.
 
-### User Components
-#### Drivers
+## Other
+
+### Drivers
 * [driver-sensingkit](https://github.com/me-box/driver-sensingkit) This driver provides SensingKit mobile sensor data.
 * [driver-google-takeout](https://github.com/me-box/driver-google-takeout) This driver supports bulk import of google takeout data.
 * [driver-phillips-hue](https://github.com/me-box/driver-phillips-hue) This drivers allows connection to Phillips Hue Platform.
 * [driver-os-monitor](https://github.com/me-box/driver-os-monitor) This driver monitors the databox hardware by fetching Memory consumption and CPU load.
 * [driver-twitter](https://github.com/me-box/driver-twitter) This driver streams data from a twitter account into a datastore.
 * [driver-tplink-smart-plug](https://github.com/me-box/driver-tplink-smart-plug) This driver collects data from TP-Link smart plugs.
-#### Apps
+### Apps
 * [app-light-graph](https://github.com/me-box/app-light-graph) An app that plots mobile phone light sensor data.
 * [app-twitter-sentiment](https://github.com/me-box/app-twitter-sentiment) An app that used data from driver-twitter to calculate tweet sentiment.
-* [app-os-monitor](https://github.com/me-box/app-os-monitor) An app to plot the output of the data feteched by [driver-os-monitor](https://github.com/me-box/driver-os-monitor).
+* [app-os-monitor](https://github.com/me-box/app-os-monitor) An app to plot the output of the data generated by [driver-os-monitor](https://github.com/me-box/driver-os-monitor).
 
-### Libraries for writing drivers and apps
+## Libraries for writing drivers and apps
 For writing a new driver or app for Databox, one needs [Databox APIs](./documents/api_specification.md). To make app/driver development easy, we have wrapped Databox APIs in [nodejs](https://nodejs.org/en/), [python](https://docs.python.org/3.4/library/index.html) and [go](https://golang.org/). Using any of these libraries, a developer can build their databox app/driver.
 * [lib-node-databox](https://github.com/me-box/node-databox): Databox Nodejs API library for building databox apps and drivers.
 * [lib-python-databox](https://github.com/me-box/lib-python-databox): Databox Python API library for building databox apps and drivers.
@@ -108,7 +132,7 @@ For writing a new driver or app for Databox, one needs [Databox APIs](./document
 #### API and System specifications
 Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
 
-### Running the tests
+## Running the tests
 
 ```
 ./databox-test
@@ -131,21 +155,28 @@ The list of [contributors](https://github.com/me-box/databox/contributors) who p
 ## License
 MIT Licence, See [here](./LICENSE).
 
-## Contributing 
+## Contributing
 
 The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## Known issues
 
-### During development of  system components and custom drivers
+1. While building the platform and core components you can sometimes get an error:
 
-*  While building the platform and core components you can sometimes get an error:
-```
-TLS certificates invalid
-```
-This is caused when Databox is started before docker has cleaned up the networks.
+   ```
+   [some-network-name] failed to create
+   ```
 
-This issue can be fixed if you run `./databox-start`
+   This is caused when Databox is started before docker has cleaned up the networks.
 
-*  In some cases, the time in docker containers on Mac can get out of sync with the system clock. This causes the HTTPS
-   certs generated by the CM from being valid. See https://github.com/docker/for-mac/issues/17. Fix this by restarting Docker for Mac.
+   This issue can be fixed if you run `./databox-start`
+
+2. In some cases, the time in docker containers on Mac can get out of sync with the system clock.
+
+   This stops the HTTPS certs generated by the CM from being valid. See https://github.com/docker/for-mac/issues/17. And results in the following error:
+
+   ```
+   TLS certificates invalid
+   ```
+
+   Fix this by restarting Docker for Mac.
