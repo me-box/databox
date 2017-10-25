@@ -1,0 +1,14 @@
+{
+	"localAppStoreName":"127.0.0.1:8181",
+	"requiredHTTPSecrets": [
+								"arbiter",
+								"export-service",
+								"syslog"
+							],
+	"requiredArbiterSecrets": [
+								"container-manager",
+								"arbiter",
+								"export-service",
+								"syslog"
+							]
+}

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+#include helper functions
+source ./scripts/utils.sh
+
+function fail {
+    echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"
+    exit 1
+}
+
+function success {
+    echo -e "[$(datef) $ME]: ${1} $(green OK)"
+}
+
+function test_assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$4"
+  else
+    success "$3"
+  fi
+}
+
+build()
+{
+    echo "[$(datef) $ME]: Starting build ${1} ..."
+    cd $1
+    OUTPUT=$(docker build -t $2 -f Dockerfile${DATABOX_ARCH} .)
+    test_assert $? 0 "Build ${1}" "$OUTPUT"
+    cd ..
+}
+
+build "core-container-manager" "container-manager"
+build "platform-app-server" "app-server"
+build "core-arbiter" "arbiter"
+build "core-export-service" "export-service"
+build "store-json" "store-json"
