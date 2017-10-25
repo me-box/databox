@@ -6,6 +6,7 @@ if ! [ -x "$(command -v docker)" ]; then
   exit 1
 fi
 
+DBOX_VER=$(<../../Version)
 
 usage() {
   echo $#
@@ -31,9 +32,9 @@ seed $1/driver-os-monitor databoxsystems/driver-os-monitor
 seed $1/driver-twitter databoxsystems/driver-twitter
 seed $1/driver-sensingkit databoxsystems/driver-sensingkit
 seed $1/app-light-graph databoxsystems/app-light-graph
-seed $1/arbiter databoxsystems/arbiter
-seed $1/container-manager databoxsystems/container-manager
-seed $1/export-service databoxsystems/export-service
+seed $1/arbiter:${DBOX_VER} databoxsystems/arbiter:${DBOX_VER}
+seed $1/container-manager:${DBOX_VER} databoxsystems/container-manager:${DBOX_VER}
+seed $1/export-service:${DBOX_VER} databoxsystems/export-service:${DBOX_VER}
 seed $1/app-server databoxsystems/app-server
 seed $1/driver-google-takeout databoxsystems/driver-google-takeout
 seed $1/app-twitter-sentiment databoxsystems/app-twitter-sentiment
