@@ -112,6 +112,7 @@ export DATABOX_VERSION=$DATABOX_VERSION
 
 function _exec {
   docker run \
+         --user "$(id -u $(whoami))" \
          --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd \
          $DARGS $NODE_IMAGE "$@"
 }
