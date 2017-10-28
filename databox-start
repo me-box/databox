@@ -135,7 +135,7 @@ err "starting Databox"
 
 docker network create -d overlay --internal --attachable databox-system-net
 
-docker-compose -f ./docker-databox-bridge.yaml up -d
+docker-compose -f ./docker-core-network.yaml up -d
 _exec node ./src/createResolvConf.js "$(docker inspect $(docker ps -q --filter="name=bridge"))"
 
 docker-compose -f ./docker-databox-appstore.yaml up -d
@@ -146,7 +146,7 @@ if [ "$DEV" == "1" ]
 then
   #source ./databox-install-component driver-sensingkit
   echo "sleeping..."
-  sleep 15
+  sleep 10
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
 fi

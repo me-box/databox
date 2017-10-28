@@ -3,6 +3,7 @@ version: '3.2'
 services:
   databox-bridge:
     image: ${DOCKER_REPO}databox-bridge
+    command: ./start.sh --logs junction:debug
     networks:
       databox-system-net:
         aliases:
