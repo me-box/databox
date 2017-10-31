@@ -1,16 +1,13 @@
 version: '3.2'
 
 services:
-  databox-bridge:
-    image: ${DOCKER_REPO}databox-bridge
-    command: ./start.sh --logs junction:debug
+  databox-network:
+    image: ${DOCKER_REPO}databox-network
     networks:
-      databox-system-net:
-        aliases:
-          - bridge
+      - databox-system-net
     volumes:
-      - './certs/arbiterToken-bridge:/run/secrets/DATABOX_BRIDGE_KEY'
-      - './certs/bridge.pem:/run/secrets/bridge.pem'
+      - './certs/arbiterToken-databox-network:/run/secrets/DATABOX_NETWORK_KEY'
+      - './certs/databox-network.pem:/run/secrets/databox-network.pem'
     cap_add:
       - NET_ADMIN
 

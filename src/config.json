@@ -4,13 +4,13 @@
 								"arbiter",
 								"export-service",
 								"syslog",
-								"bridge"
+								"databox-network"
 							],
 	"requiredArbiterSecrets": [
 								"container-manager",
 								"arbiter",
 								"export-service",
 								"syslog",
-								"bridge"
+								"databox-network"
 							]
 }

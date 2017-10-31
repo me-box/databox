@@ -136,7 +136,7 @@ err "starting Databox"
 docker network create -d overlay --internal --attachable databox-system-net
 
 docker-compose -f ./docker-core-network.yaml up -d
-_exec node ./src/createResolvConf.js "$(docker inspect $(docker ps -q --filter="name=bridge"))"
+_exec node ./src/createResolvConf.js "$(docker inspect $(docker ps -q --filter="name=databox-network"))"
 
 docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
