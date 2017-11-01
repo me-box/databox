@@ -14,6 +14,9 @@ function datef
   date +'%Y-%m-%dT%H:%M:%S%z'
 }
 
+log() {
+  echo "[$(datef) $ME]: $@"
+}
 
 err() {
   echo "[$(datef) $ME]: $@" >&2
@@ -27,8 +30,26 @@ die() {
 }
 
 assert_or_die() {
-  if [[ "$1" != "$2" ]] 
+  if [[ "$1" != "$2" ]]
   then
     die 1 "ERROR: ${3}"
+  fi
+}
+
+function fail {
+    echo -e "[$(datef) $ME]: ${1} \nERROR: ${2} $(red FAILED)"
+    exit 1
+}
+
+function success {
+    echo -e "[$(datef) $ME]: ${1} $(green OK)"
+}
+
+function test_assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
   fi
 }

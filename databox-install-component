@@ -1,0 +1,113 @@
+#!/bin/bash
+
+#include helper functions
+source ./scripts/utils.sh
+
+## check we have the tools
+if ! [ -x "$(command -v git)" ]; then
+  die 1 "git is not installed;"`
+       `"see https://git-scm.com/"
+fi
+
+if ! [ -x "$(command -v curl)" ]; then
+  die 1 "curl is not installed;"`
+       `"https://curl.haxx.se"
+fi
+
+usage() {
+  echo ""
+  echo "Please invoke this script with the component you would like to install."
+  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME]"
+  echo "Flags:"
+  echo "-h     This help message"
+  echo ""
+  exit 1
+}
+
+seedManifest() {
+  log "Uploading Manifest for ${1} ..."
+  STATUS=$(curl --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" http://127.0.0.1:8181/ -o /dev/null)
+  test_assert $STATUS 200 "Seeding manifest"
+
+  PAYLOAD=$(<${1}/databox-manifest.json)
+  PAYLOAD="manifest=${PAYLOAD}"
+
+  EXPECTED='{"success":true}'
+  RES=$(curl --cookie ./databox-jar -s -X POST -d "${PAYLOAD}" -L 'http://127.0.0.1:8181/app/post')
+  test_assert $RES $EXPECTED "Uploading manifest"
+
+  rm ./databox-jar
+}
+
+
+buildImage() {
+  cd ${1}
+  log "[$(datef) $ME]: Starting build ${1} ..."
+  OUTPUT=$(docker build -t $1 -f Dockerfile${DATABOX_ARCH} .)
+  test_assert $? 0 "Build ${1}" "$OUTPUT"
+  cd ..
+}
+
+pullChanges() {
+  cd ${1}
+  log "[$(datef) $ME]: Pulling Changes ${1} ..."
+  OUTPUT=$(git pull)
+  test_assert $? 0 "Git pull ${1}" "$OUTPUT"
+  cd ..
+}
+
+installStores() {
+
+  if [ ! -d "./store-json" ]
+  then
+    OUTPUT=$(git clone "https://github.com/me-box/store-json.git")
+    test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
+    buildImage "store-json"
+  else
+    pullChanges "store-json"
+    buildImage "store-json"
+  fi
+
+  if [ ! -d "./store-timeseries" ]
+  then
+    OUTPUT=$(git clone "https://github.com/me-box/store-timeseries")
+    test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
+    buildImage "store-timeseries"
+  else
+    pullChanges "store-timeseries"
+    buildImage "store-timeseries"
+  fi
+
+}
+
+if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+then
+  usage
+fi
+
+COMPONENT=$1
+
+if [[ $COMPONENT != *"/"* ]]; then
+  COMPONENT="me-box/${COMPONENT}"
+fi
+
+oIFS="$IFS"
+IFS=/ arr=( $COMPONENT )
+IFS="$oIFS"
+USER=${arr[0]}
+COMPONENT_NAME=${arr[1]}
+
+if [ ! -d "./$COMPONENT_NAME" ]; then
+  log "Getting the code..... "
+  OUTPUT=$(git clone "https://github.com/${COMPONENT}.git")
+  test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
+  buildImage $COMPONENT_NAME
+  seedManifest $COMPONENT_NAME
+  installStores $COMPONENT_NAME
+else
+  log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
+  pullChanges $COMPONENT_NAME
+  buildImage $COMPONENT_NAME
+  seedManifest $COMPONENT_NAME
+  installStores $COMPONENT_NAME
+fi

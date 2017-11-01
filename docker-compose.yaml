@@ -3,7 +3,7 @@ version: '3.1'
 services:
 #start the databox platform
     container-manager:
-        image: ${DOCKER_REPO}container-manager
+        image: ${DOCKER_REPO}container-manager:${DATABOX_VERSION}
         ports:
             - '8989:8989'
         volumes:
@@ -15,6 +15,7 @@ services:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
             - 'DATABOX_DEV=${DATABOX_DEV}'
             - 'DATABOX_SDK=${DATABOX_SDK}'
+            - 'DATABOX_VERSION=${DATABOX_VERSION}'
         networks:
             - databox-cm-arbiter-net
             - databox-cm-app-server-net
@@ -33,7 +34,7 @@ services:
                     - 'node.role == manager'
 
     arbiter:
-        image: ${DOCKER_REPO}arbiter
+        image: ${DOCKER_REPO}arbiter:${DATABOX_VERSION}
         networks:
             - databox-cm-arbiter-net
             - databox-driver-net
@@ -50,7 +51,7 @@ services:
                     - 'node.role == manager'
 
     export-service:
-        image: ${DOCKER_REPO}export-service
+        image: ${DOCKER_REPO}export-service:${DATABOX_VERSION}
         depends_on:
             - arbiter
         environment:

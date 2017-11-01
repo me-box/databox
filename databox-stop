@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #include helper functions
-source ./scripts/utils
+source ./scripts/utils.sh
 
 ## debug
 if [[ "$DATABOX_DEBUG" = "true" ]]; then
@@ -24,7 +24,7 @@ fi
 
 if [ "$1" == "sdk" ]
 then
-  docker-compose -f docker-databox-sdk.yaml down 
+  docker-compose -f docker-databox-sdk.yaml down
   die 3 "SDK stoped."
 fi
 
@@ -36,4 +36,10 @@ err "waiting ..."
 sleep 10 # give docker some time to remove the networks etc
 err "forcing ..."
 docker swarm leave --force
+
+if [[ $(docker ps -aq -f status=created -f status=exited -f "label=databox.type") ]]
+then
+  err "Removing  and exited containers ..."
+  docker rm $(docker ps -aq -f status=created -f status=exited -f "label=databox.type")
+fi
 err "done!"
