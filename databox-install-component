@@ -58,24 +58,14 @@ pullChanges() {
 
 installStores() {
 
-  if [ ! -d "./store-json" ]
+  if [ ! -d "./core-store" ]
   then
-    OUTPUT=$(git clone "https://github.com/me-box/store-json.git")
+    OUTPUT=$(git clone "https://github.com/me-box/core-store.git")
     test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
-    buildImage "store-json"
+    buildImage "core-store"
   else
-    pullChanges "store-json"
-    buildImage "store-json"
-  fi
-
-  if [ ! -d "./store-timeseries" ]
-  then
-    OUTPUT=$(git clone "https://github.com/me-box/store-timeseries")
-    test_assert $? 0 "Pulling the code from https://github.com/${1}.git \n\n ${OUTPUT}"
-    buildImage "store-timeseries"
-  else
-    pullChanges "store-timeseries"
-    buildImage "store-timeseries"
+    pullChanges "core-store"
+    buildImage "core-store"
   fi
 
 }
