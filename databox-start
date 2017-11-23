@@ -54,19 +54,19 @@ assert_or_die $? 1 "Databox is already running!"
 
 ## extract a host interface IP address
 err "extracting host interface IP address ..."
-ips=($(ifconfig | sed -En 's/127.0.0.1//;s/172.//;s/169.//;s/.inet (addr:)?(([0-9]+.){3}[0-9]+).*/\2/p'))
-EXT_IP=$ips
+ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}'))
+EXT_IP=${ips}
 if [[ "${#ips[@]}" -gt "1" ]]; then
   err "More than one IP found! Please select one:"
   select ip in ${ips[*]}; do
-    case $ip in
+    case ${ip} in
       exit )
         die 0 "exiting ..."
         break
         ;;
 
       * )
-        EXT_IP=$ip
+        EXT_IP=${ip}
         break
         ;;
     esac
@@ -107,13 +107,13 @@ then
   DATABOX_VERSION=$(<./Version)
 fi
 err "Starting version ${DATABOX_VERSION}"
-export DOCKER_REPO=$DOCKER_REPO
-export DATABOX_VERSION=$DATABOX_VERSION
+export DOCKER_REPO=${DOCKER_REPO}
+export DATABOX_VERSION=${DATABOX_VERSION}
 
 function _exec {
   docker run \
          --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd \
-         $DARGS $NODE_IMAGE "$@"
+         ${DARGS} ${NODE_IMAGE} "$@"
 }
 
 if [ ! -d "node_modules" ]; then
@@ -121,9 +121,9 @@ if [ ! -d "node_modules" ]; then
 fi
 
 err "starting the Databox swarm"
-docker swarm init --advertise-addr $EXT_IP > /dev/null
+docker swarm init --advertise-addr ${EXT_IP} > /dev/null
 mkdir -p ./certs
-_exec node ./src/createCerts.js
+_exec node ./src/createCerts.js ${ips[@]}
 
 if [ "$DEV" == "1" ]
 then
