@@ -4,10 +4,12 @@ services:
   databox-network:
     image: ${DOCKER_REPO}databox-network
     networks:
-      - databox-system-net
+      databox-system-net:
+        aliases:
+          - databox-network
     volumes:
       - './certs/arbiterToken-databox-network:/run/secrets/DATABOX_NETWORK_KEY'
-      - './certs/databox-network.pem:/run/secrets/databox-network.pem'
+      - './certs/databox-network.pem:/run/secrets/DATABOX_NETWORK.pem'
     cap_add:
       - NET_ADMIN
 
