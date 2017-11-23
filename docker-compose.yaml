@@ -56,7 +56,6 @@ services:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
         networks:
             - databox-system-net
-            - databox-export-net
         secrets:
             - DATABOX_ROOT_CA
             - DATABOX_EXPORT_SERVICE_PEM.json
@@ -91,6 +90,4 @@ networks:
     databox-system-net:
         external: true
     databox-cm-app-server-net:
-        driver: overlay
-    databox-export-net:
         driver: overlay
