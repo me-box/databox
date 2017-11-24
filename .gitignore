@@ -123,3 +123,5 @@ driver-tplink-smart-plug/
 sdk/
 
 scripts/admin/config\.json
+
+core-store/
