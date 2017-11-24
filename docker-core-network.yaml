@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   databox-network:
-    image: ${DOCKER_REPO}databox-network
+    image: ${DOCKER_REPO}core-network
     networks:
       databox-system-net:
         aliases:
@@ -16,4 +16,3 @@ services:
 networks:
   databox-system-net:
     external: true
-
