@@ -14,6 +14,8 @@ if ! [ -x "$(command -v curl)" ]; then
        `"https://curl.haxx.se"
 fi
 
+DATABOX_VERSION=$(<./Version)
+
 usage() {
   echo ""
   echo "Please invoke this script with the component you would like to install."
@@ -39,11 +41,18 @@ seedManifest() {
   rm ./databox-jar
 }
 
+installStores() {
+  log "Installing Stores"
+  OUTPUT=$(docker pull databoxsystems/core-store:${DATABOX_VERSION}; docker tag databoxsystems/core-store:${DATABOX_VERSION} core-store:${DATABOX_VERSION})
+  test_assert $? 0 "Pull core-store " "$OUTPUT"
+  OUTPUT=$(docker pull databoxsystems/store-json:${DATABOX_VERSION}; docker tag databoxsystems/store-json:${DATABOX_VERSION} store-json:${DATABOX_VERSION})
+  test_assert $? 0 "Pull store-json ${1}" "$OUTPUT"
+}
 
 buildImage() {
   cd ${1}
   log "[$(datef) $ME]: Starting build ${1} ..."
-  OUTPUT=$(docker build -t $1 -f Dockerfile${DATABOX_ARCH} .)
+  OUTPUT=$(docker build -t $1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
   test_assert $? 0 "Build ${1}" "$OUTPUT"
   cd ..
 }
@@ -80,9 +89,11 @@ if [ ! -d "./$COMPONENT_NAME" ]; then
   test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
+  installStores
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
   pullChanges $COMPONENT_NAME
   buildImage $COMPONENT_NAME
   seedManifest $COMPONENT_NAME
+  installStores
 fi
