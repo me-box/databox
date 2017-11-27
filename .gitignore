@@ -127,3 +127,5 @@ scripts/admin/config\.json
 core-store/
 
 core-network/
+
+\.resolv\.conf
