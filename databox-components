@@ -1,4 +1,4 @@
-core-arbiter https://github.com/me-box/core-arbiter.git master
+core-arbiter https://github.com/me-box/core-arbiter.git fet/core-store
 core-export-service https://github.com/me-box/core-export-service.git master
 store-json https://github.com/me-box/store-json.git master
 store-timeseries https://github.com/me-box/store-timeseries.git master
