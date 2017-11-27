@@ -1,9 +1,9 @@
-version: '3.1'
+version: '3.3'
 
 services:
 #start the databox platform
     container-manager:
-        image: ${DOCKER_REPO}container-manager:${DATABOX_VERSION}
+        image: ${DOCKER_REPO}container-manager:${DATABOX_CORE_IMAGE_VERSION}
         ports:
             - '8989:8989'
         volumes:
@@ -11,20 +11,20 @@ services:
             - './docker-compose.yaml:/cfg/docker-compose.yaml'
             - './src/config.json:/cfg/config.json'
             - './certs:/certs'
+            - './.resolv.conf:/etc/resolv.conf'
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
             - 'DATABOX_DEV=${DATABOX_DEV}'
             - 'DATABOX_SDK=${DATABOX_SDK}'
             - 'DATABOX_VERSION=${DATABOX_VERSION}'
         networks:
-            - databox-cm-arbiter-net
+            - databox-system-net
             - databox-cm-app-server-net
-            - databox-driver-net
-            - databox-app-net
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
             - DATABOX_CM.pem
+            - DATABOX_NETWORK_KEY
         depends_on:
             - arbiter
         deploy:
@@ -34,11 +34,9 @@ services:
                     - 'node.role == manager'
 
     arbiter:
-        image: ${DOCKER_REPO}arbiter:${DATABOX_VERSION}
+        image: ${DOCKER_REPO}arbiter:${DATABOX_CORE_IMAGE_VERSION}
         networks:
-            - databox-cm-arbiter-net
-            - databox-driver-net
-            - databox-app-net
+            - databox-system-net
         secrets:
             - DATABOX_ROOT_CA
             - CM_KEY
@@ -46,18 +44,19 @@ services:
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
             replicas: 1
+            endpoint_mode: dnsrr
             placement:
                 constraints:
                     - 'node.role == manager'
 
     export-service:
-        image: ${DOCKER_REPO}export-service:${DATABOX_VERSION}
+        image: ${DOCKER_REPO}export-service:${DATABOX_CORE_IMAGE_VERSION}
         depends_on:
             - arbiter
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
         networks:
-            - databox-app-net
+            - databox-system-net
         secrets:
             - DATABOX_ROOT_CA
             - DATABOX_EXPORT_SERVICE_PEM.json
@@ -65,6 +64,7 @@ services:
             - DATABOX_EXPORT_SERVICE_KEY
         deploy:
             replicas: 1
+            endpoint_mode: dnsrr
             placement:
                 constraints:
                 - 'node.role == manager'
@@ -84,15 +84,11 @@ secrets:
     file: ./certs/export-service.pem
   DATABOX_EXPORT_SERVICE_KEY:
     file: ./certs/arbiterToken-export-service
+  DATABOX_NETWORK_KEY:
+    file: ./certs/arbiterToken-databox-network
 
 networks:
-    databox-cm-arbiter-net:
-        driver: overlay
+    databox-system-net:
+        external: true
     databox-cm-app-server-net:
         driver: overlay
-    databox-driver-net:
-        driver: overlay
-    databox-app-net:
-        driver: overlay
-#    databox-cloud-net:
-#        driver: overlay
