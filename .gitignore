@@ -125,3 +125,5 @@ sdk/
 scripts/admin/config\.json
 
 core-store/
+
+core-network/
