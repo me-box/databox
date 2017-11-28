@@ -39,6 +39,7 @@ case "$1" in
     ;;
 esac
 
+
 #Start the SDK
 if [ "$SDK" == "1" ]
 then
@@ -139,13 +140,21 @@ then
 fi
 
 err "starting Databox"
+
+docker network create -d overlay --attachable databox-system-net
+
+docker-compose -f ./docker-core-network.yaml up -d
+_exec node ./src/createResolvConf.js "$(docker inspect $(docker ps -q --filter="name=databox-network"))"
+
 docker-compose -f ./docker-databox-appstore.yaml up -d
 docker stack deploy -c docker-compose.yaml databox
 assert_or_die $? 0 "Problem with docker stack deploy"
 
 if [ "$DEV" == "1" ]
 then
-  source ./databox-install-component driver-sensingkit
+  #source ./databox-install-component driver-sensingkit
+  echo "sleeping..."
+  sleep 10
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
 fi

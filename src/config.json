@@ -3,12 +3,14 @@
 	"requiredHTTPSecrets": [
 								"arbiter",
 								"export-service",
-								"syslog"
+								"syslog",
+								"databox-network"
 							],
 	"requiredArbiterSecrets": [
 								"container-manager",
 								"arbiter",
 								"export-service",
-								"syslog"
+								"syslog",
+								"databox-network"
 							]
 }
