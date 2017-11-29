@@ -111,9 +111,9 @@ then
 fi
 
 err "Starting version ${DATABOX_VERSION}"
-export DOCKER_REPO=$DOCKER_REPO
-export DATABOX_VERSION=$DATABOX_VERSION
-export DATABOX_CORE_IMAGE_VERSION=$DATABOX_CORE_IMAGE_VERSION
+export DOCKER_REPO=${DOCKER_REPO}
+export DATABOX_VERSION=${DATABOX_VERSION}
+export DATABOX_CORE_IMAGE_VERSION=${DATABOX_CORE_IMAGE_VERSION}
 
 function _exec {
   docker run \
@@ -125,9 +125,11 @@ if [ ! -d "node_modules" ]; then
   _exec npm install -loglevel silent
 fi
 
-err "starting the Databox swarm"
+err "Starting the Databox swarm"
 docker swarm init --advertise-addr ${EXT_IP} > /dev/null
 mkdir -p ./certs
+
+err "Creating Certificates"
 _exec node ./src/createCerts.js ${ips[@]}
 
 if [ "$DEV" == "1" ]
@@ -139,7 +141,7 @@ then
   assert_or_die $? 0 "Problem building core images"
 fi
 
-err "starting Databox"
+err "Starting Databox"
 
 docker network create -d overlay --attachable databox-system-net
 
@@ -153,13 +155,13 @@ assert_or_die $? 0 "Problem with docker stack deploy"
 if [ "$DEV" == "1" ]
 then
   #source ./databox-install-component driver-sensingkit
-  echo "sleeping..."
+  err "Sleeping..."
   sleep 10
   source ./databox-install-component driver-os-monitor
   source ./databox-install-component app-os-monitor
 fi
 
-err "Databox started! Visit http://127.0.0.1:8989"
+err "Databox started! Visit http://localhost:8448"
 if [ -z "$DATABOX_TESTING" ]
 then
   docker service logs databox_container-manager -f

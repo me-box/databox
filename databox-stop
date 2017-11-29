@@ -29,24 +29,25 @@ then
 fi
 
 ## stop Databox
-err "stopping Databox ..."
+err "Stopping Databox ..."
+export DOCKER_REPO=""
 docker stack rm databox
 docker-compose -f ./docker-databox-appstore.yaml down
 
 rm -f .resolv.conf
-err "stopping and remvoing databox-bridge ..."
+err "Stopping and Removing databox-bridge ..."
 docker-compose -f ./docker-core-network.yaml down
-err "removing network databox-system-net ..."
+err "Removing network databox-system-net ..."
 docker network rm databox-system-net >/dev/null 2>&1
 
-err "waiting ..."
+err "Waiting ..."
 sleep 10 # give docker some time to remove the networks etc
-err "forcing ..."
+err "Forcing ..."
 docker swarm leave --force
 
 if [[ $(docker ps -aq -f status=created -f status=exited -f "label=databox.type") ]]
 then
-  err "Removing  and exited containers ..."
+  err "Removing exited containers ..."
   docker rm $(docker ps -aq -f status=created -f status=exited -f "label=databox.type")
 fi
-err "done!"
+err "Done!"

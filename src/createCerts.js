@@ -18,8 +18,6 @@ httpsHelper.init()
 		if (ips.indexOf('127.0.0.1') === -1) {
 			ips.push('127.0.0.1')
 		}
-		console.log(ips);
-
 		proms.push(httpsHelper.createClientCert('container-manager', ips));
 
 		return Promise.all(proms);
