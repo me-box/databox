@@ -59,19 +59,25 @@ ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /([0-9]+\.[0-9
 EXT_IP=${ips}
 if [[ "${#ips[@]}" -gt "1" ]]; then
   err "More than one IP found! Please select one:"
-  select ip in ${ips[*]}; do
-    case ${ip} in
-      exit )
-        die 0 "exiting ..."
-        break
-        ;;
+  if [[ "${DATABOX_TESTING}" == 1 ]]
+  then
+    err "running in testing mode select second IP ${ips[1]}"
+    EXT_IP=${ips[1]}
+  else
+    select ip in ${ips[*]}; do
+      case ${ip} in
+        exit )
+          die 0 "exiting ..."
+          break
+          ;;
 
-      * )
-        EXT_IP=${ip}
-        break
-        ;;
-    esac
-  done
+        * )
+          EXT_IP=${ip}
+          break
+          ;;
+      esac
+    done
+  fi
 fi
 err "host interface IP address = ${EXT_IP}"
 
