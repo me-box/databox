@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#include helper functions
-source ./scripts/utils.sh
-
-
 function fail {
     echo -e "[$( red FAILED )] ${1} \nERROR: ${2}"
     #output debug information
@@ -23,6 +19,15 @@ function fail {
 
 function success {
     echo -e "[$( green OK )] $1"
+}
+
+function test_assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
+  fi
 }
 
 #Start databox
