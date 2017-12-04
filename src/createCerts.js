@@ -3,31 +3,30 @@ process.setMaxListeners(200);
 const conman = require('./container-manager.js');
 const Config = require('./config.json');
 const httpsHelper = require('./https-helper');
-const DATABOX_DEV = process.env.DATABOX_DEV
-
-var containerMangerUIServer = null;
 
 httpsHelper.init()
 	.then(() => {
+		let proms = Config.requiredArbiterSecrets.map((name) => {
+			return conman.generateArbiterToken(name);
+		});
 
-			let proms = Config.requiredArbiterSecrets.map((name)=>{
-				return conman.generateArbiterToken(name);
-			});
+		proms = proms.concat(Config.requiredHTTPSecrets.map((name) => {
+			return httpsHelper.createClientCert(name);
+		}));
 
-			let proms1 = Config.requiredHTTPSecrets.map((name)=>{
-				return httpsHelper.createClientCert(name);
-			});
-			
-			return Promise.all(proms1.concat(proms));
+		const ips = process.argv.slice(2);
+		if (ips.indexOf('127.0.0.1') === -1) {
+			ips.push('127.0.0.1')
+		}
+		proms.push(httpsHelper.createClientCert('container-manager', ips));
 
+		return Promise.all(proms);
 	})
-	.then(()=>{
+	.then(() => {
 		console.log("Done!");
 	})
-		
 	.catch(err => {
 		console.log(err);
 		const stack = new Error().stack;
 		console.log(stack);
 	});
-

@@ -3,15 +3,14 @@
 function red {
   echo "\033[0;31m${1}\033[0m"
 }
+
 function green {
   echo "\033[0;32m${1}\033[0m"
 }
 
-ME='databox-build-core'
-
 function datef
 {
-  date +'%Y-%m-%dT%H:%M:%S%z'
+  date +'%Y-%m-%d %H:%M:%S'
 }
 
 log() {

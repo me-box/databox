@@ -3,8 +3,8 @@ const forge = require('node-forge');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
 
-const attrs = [{ name: 'commonName', value: 'databox' }];
-const config = { days: 365, keySize: 2048, days: 3650, algorithm: 'sha256' };
+const attrs = [{name: 'commonName', value: 'databox'}];
+const config = {days: 365, keySize: 2048, algorithm: 'sha256'};
 let rootPems;
 
 const certPath = './certs/';
@@ -13,124 +13,131 @@ const devPemCertPath = './certs/containerManager.pem';
 const devCAPath = './certs/containerManager.crt';
 
 //Generate the CM root cert at startup.
-const init = function() {
-    return new Promise( (resolve, reject) =>  {
+const init = function () {
+	return new Promise((resolve, reject) => {
 
-        fs.readFile(devPemCertPath, function (err, obj) {
-            
-            //return cached certs if we have them and 
-            if(err === null) {
-                rootPems = obj;
-                resolve({rootCAcert:rootPems.cert});
-                return;
-            }
+		fs.readFile(devPemCertPath, function (err, obj) {
 
-            selfsigned.generate(attrs, config, function (err, pems) {
-                if(err) {
-                    reject(err);
-                }
-                rootPems = pems;
-                //Cash the certs in dev mode. These are new certs so display the update instructions and exit.
-                jsonfile.writeFileSync(devCertPath, pems);
-                fs.writeFileSync(devPemCertPath,pems.private + pems.public + pems.cert);
-                fs.writeFileSync(devCAPath, rootPems.cert);
+			//return cached certs if we have them and
+			if (err === null) {
+				rootPems = obj;
+				resolve({rootCAcert: rootPems.cert});
+				return;
+			}
 
-                resolve({rootCAcert:rootPems.cert});
-            });
-        });
-            
-    });
+			selfsigned.generate(attrs, config, function (err, pems) {
+				if (err) {
+					reject(err);
+				}
+				rootPems = pems;
+				//Cash the certs in dev mode. These are new certs so display the update instructions and exit.
+				jsonfile.writeFileSync(devCertPath, pems);
+				fs.writeFileSync(devPemCertPath, pems.private + pems.public + pems.cert);
+				fs.writeFileSync(devCAPath, rootPems.cert);
+
+				resolve({rootCAcert: rootPems.cert});
+			});
+		});
+	});
 };
 
-const getRootCert =  function () {
-    return rootPems.cert;
+const getRootCert = function () {
+	return rootPems.cert;
 };
 
 //based on code extracted from the selfsigned module Licence MIT 
-const createClientCert =  function (commonName) {
-    
+const createClientCert = function (commonName, ips) {
 
-    return new Promise( (resolve, reject) =>  {
-        
-        var certFullpath = certPath + commonName + ".json";
-        var certPemFullpath = certPath + commonName + ".pem";
+	return new Promise((resolve, reject) => {
 
-        fs.readFile(certPemFullpath, function (err, data) {
-                
-            //return cached certs if we have them 
-            if(err === null) {
-                resolve(data);
-                return;
-            }
+		const certFullpath = certPath + commonName + ".json";
+		const certPemFullpath = certPath + commonName + ".pem";
 
-            function toPositiveHex(hexString){
-                var mostSiginficativeHexAsInt = parseInt(hexString[0], 16);
-                if (mostSiginficativeHexAsInt < 8){
-                    return hexString;
-                }
+		fs.readFile(certPemFullpath, function (err, data) {
 
-                mostSiginficativeHexAsInt -= 8;
-                return mostSiginficativeHexAsInt.toString() + hexString.substring(1);
-            }
+			//return cached certs if we have them
+			if (err === null) {
+				resolve(data);
+				return;
+			}
 
-            var pki = forge.pki;
-            pem = {};
+			function toPositiveHex(hexString) {
+				let mostSiginficativeHexAsInt = parseInt(hexString[0], 16);
+				if (mostSiginficativeHexAsInt < 8) {
+					return hexString;
+				}
 
-            var clientkeys = forge.pki.rsa.generateKeyPair(2048);
-            var clientcert = forge.pki.createCertificate();
-            clientcert.serialNumber = toPositiveHex(forge.util.bytesToHex(forge.random.getBytesSync(9)));
-            clientcert.validity.notBefore = new Date();
-            clientcert.validity.notAfter = new Date();
-            clientcert.validity.notAfter.setFullYear(clientcert.validity.notBefore.getFullYear() + 10);
+				mostSiginficativeHexAsInt -= 8;
+				return mostSiginficativeHexAsInt.toString() + hexString.substring(1);
+			}
 
-            var clientAttrs = [{ name: 'commonName', value: commonName }];
+			const clientkeys = forge.pki.rsa.generateKeyPair({bits: 2048});
+			const clientcert = forge.pki.createCertificate();
+			clientcert.serialNumber = toPositiveHex(forge.util.bytesToHex(forge.random.getBytesSync(9)));
+			clientcert.validity.notBefore = new Date();
+			clientcert.validity.notAfter = new Date();
+			clientcert.validity.notAfter.setFullYear(clientcert.validity.notBefore.getFullYear() + 10);
 
-            clientcert.setSubject(clientAttrs);
-            // Set the issuer to the parent key
-            clientcert.setIssuer(attrs);
+			const clientAttrs = [{name: 'commonName', value: commonName}];
 
-            clientcert.setExtensions([{
-                name: 'basicConstraints',
-                cA: true
-            }, {
-                name: 'keyUsage',
-                keyCertSign: true,
-                digitalSignature: true,
-                nonRepudiation: true,
-                keyEncipherment: true,
-                dataEncipherment: true
-            }, {
-                name: 'subjectAltName',
-                altNames: [
-                    {
-                        type: 2, // DNS name
-                        value: commonName
-                    },
-                    {
-                        type: 2, // DNS name
-                        value: 'localhost'
-                    }
-                ]
-            }]);
+			clientcert.setSubject(clientAttrs);
+			// Set the issuer to the parent key
+			clientcert.setIssuer(attrs);
 
-            clientcert.publicKey = clientkeys.publicKey;
+			const altNames = [
+				{
+					type: 2, // DNS name
+					value: commonName
+				},
+				{
+					type: 2, // DNS name
+					value: 'localhost'
+				}
+			];
 
-            // Sign client cert with root cert
-            try {
-                rootPrivateKey = pki.privateKeyFromPem(rootPems.private);
-                clientcert.sign(rootPrivateKey);
-            } catch (e) {
-                reject("ERROR",e);
-            }
-            pem.clientprivate = forge.pki.privateKeyToPem(clientkeys.privateKey);
-            pem.clientpublic = forge.pki.publicKeyToPem(clientkeys.publicKey);
-            pem.clientcert = forge.pki.certificateToPem(clientcert);
-            console.log(certFullpath, commonName);
-            jsonfile.writeFileSync(certFullpath, pem);
-            fs.writeFileSync(certPemFullpath,pem.clientprivate + pem.clientpublic + pem.clientcert);
-            resolve(pem);
-        });
-    });
+			if (ips) {
+				for (const ip of ips) {
+					altNames.push({
+						type: 7,
+						ip: ip
+					})
+				}
+			}
+
+			clientcert.setExtensions([{
+				name: 'basicConstraints',
+				cA: true
+			}, {
+				name: 'keyUsage',
+				keyCertSign: true,
+				digitalSignature: true,
+				nonRepudiation: true,
+				keyEncipherment: true,
+				dataEncipherment: true
+			}, {
+				name: 'subjectAltName',
+				altNames: altNames
+			}]);
+
+			clientcert.publicKey = clientkeys.publicKey;
+
+			// Sign client cert with root cert
+			try {
+				clientcert.sign(forge.pki.privateKeyFromPem(rootPems.private), forge.md.sha256.create());
+			} catch (e) {
+				reject("ERROR", e);
+			}
+			const pem = {
+				clientprivate: forge.pki.privateKeyToPem(clientkeys.privateKey),
+				clientpublic: forge.pki.publicKeyToPem(clientkeys.publicKey),
+				clientcert: forge.pki.certificateToPem(clientcert)
+			};
+			console.log(certFullpath, commonName);
+			jsonfile.writeFileSync(certFullpath, pem);
+			fs.writeFileSync(certPemFullpath, pem.clientprivate + pem.clientpublic + pem.clientcert);
+			resolve(pem);
+		});
+	});
 };
 
-module.exports = {init:init, createClientCert:createClientCert, getRootCert:getRootCert};
+module.exports = {init: init, createClientCert: createClientCert, getRootCert: getRootCert};
