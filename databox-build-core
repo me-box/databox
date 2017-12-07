@@ -30,10 +30,15 @@ build()
     cd ..
 }
 
-build "core-container-manager" "container-manager"
-build "platform-app-server" "app-server"
-build "core-arbiter" "arbiter"
-build "core-export-service" "export-service"
-build "store-json" "store-json"
-build "core-store" "core-store"
-build "core-network" "core-network"
+build "core-container-manager" "container-manager" &
+build "platform-app-server" "app-server" &
+build "core-arbiter" "arbiter" &
+
+wait
+
+build "core-export-service" "export-service" &
+build "store-json" "store-json" &
+build "core-store" "core-store" &
+build "core-network" "core-network" &
+
+wait
