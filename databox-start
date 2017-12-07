@@ -160,11 +160,12 @@ assert_or_die $? 0 "Problem with docker stack deploy"
 
 if [ "$DEV" == "1" ]
 then
-  #source ./databox-install-component driver-sensingkit
   err "Sleeping..."
   sleep 10
-  source ./databox-install-component driver-os-monitor
-  source ./databox-install-component app-os-monitor
+  ./databox-install-component driver-sensingkit &
+  ./databox-install-component driver-os-monitor &
+  ./databox-install-component app-os-monitor &
+  wait
 fi
 
 err "Databox started! Visit http://localhost:8448"
