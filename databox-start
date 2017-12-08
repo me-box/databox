@@ -131,8 +131,7 @@ if [ ! -d "node_modules" ]; then
   _exec npm install -loglevel silent
 fi
 
-err "Starting the Databox swarm"
-docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+
 mkdir -p ./certs
 
 err "Creating Certificates"
@@ -146,6 +145,9 @@ then
   source ./databox-build-core
   assert_or_die $? 0 "Problem building core images"
 fi
+
+err "Starting the Databox swarm"
+docker swarm init --advertise-addr ${EXT_IP} > /dev/null
 
 err "Starting Databox"
 
