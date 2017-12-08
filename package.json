@@ -1,6 +1,6 @@
 {
   "name": "container-manager",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Databox OS container manager and dashboard server",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",

@@ -131,8 +131,7 @@ if [ ! -d "node_modules" ]; then
   _exec npm install -loglevel silent
 fi
 
-err "Starting the Databox swarm"
-docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+
 mkdir -p ./certs
 
 err "Creating Certificates"
@@ -147,6 +146,9 @@ then
   assert_or_die $? 0 "Problem building core images"
 fi
 
+err "Starting the Databox swarm"
+docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+
 err "Starting Databox"
 
 docker network create -d overlay --attachable databox-system-net
@@ -160,11 +162,12 @@ assert_or_die $? 0 "Problem with docker stack deploy"
 
 if [ "$DEV" == "1" ]
 then
-  #source ./databox-install-component driver-sensingkit
   err "Sleeping..."
   sleep 10
-  source ./databox-install-component driver-os-monitor
-  source ./databox-install-component app-os-monitor
+  ./databox-install-component driver-sensingkit &
+  ./databox-install-component driver-os-monitor &
+  ./databox-install-component app-os-monitor &
+  wait
 fi
 
 err "Databox started! Visit http://localhost:8448"
