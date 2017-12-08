@@ -29,11 +29,24 @@ cd databox
 ```
 The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox in your local machine.
 
-Once it's started, point a web browser at <https://127.0.0.1:8989> to access Databox UI.
+Once it's started, point a web browser at <http://127.0.0.1:8448> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <http://127.0.0.1:8989>, or the IOS and android app).
 
 To stop databox and clean up,
 ```
 ./databox-stop
+```
+
+# Upgrading from 0.2.0 to 0.3.0
+
+It is recommended to remove the ./certs directory before upgrading. Use the following commands in the root databox directory:
+
+```
+
+   ./databox-stop
+   rm -rf ./certs
+   git pull
+   ./databox-start
+
 ```
 
 # Development
@@ -78,7 +91,7 @@ To develop on the platform and core components run the data-box start script wit
 ```
 
 Unlike using the pre-build images, this will clone all the relevant source repositories locally, and build them into the
-required Docker images. 
+required Docker images.
 
 When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to you local install using:
 
