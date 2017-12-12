@@ -3,5 +3,5 @@ core-export-service https://github.com/me-box/core-export-service.git master
 store-json https://github.com/me-box/store-json.git master
 core-store https://github.com/me-box/core-store.git master
 platform-app-server https://github.com/me-box/platform-app-server.git master
-core-container-manager https://github.com/ktg/core-container-manager master
+core-container-manager https://github.com/ktg/core-container-manager.git master
 core-network https://github.com/me-box/core-network.git master
