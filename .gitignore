@@ -128,6 +128,6 @@ scripts/admin/config\.json
 
 core-store/
 
-\.resolv\.conf
-
 core-network/
+
+\.resolv\.conf
