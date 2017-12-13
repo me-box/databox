@@ -3,7 +3,14 @@ const forge = require('node-forge');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
 
-const attrs = [{name: 'commonName', value: 'databox'}];
+const attrs = [
+	{name: 'commonName', value: 'Databox'},
+	{name: 'organizationName', value: 'University of Nottingham'},
+	{name: 'countryName', value: 'UK'},
+	{shortName: 'ST', value: 'Nottinghamshire'},
+	{name: 'localityName', value: 'Nottingham'},
+	{shortName: 'OU', value: 'Mixed Reality Lab'}
+];
 const config = {days: 365, keySize: 2048, algorithm: 'sha256'};
 let rootPems;
 
@@ -78,7 +85,14 @@ const createClientCert = function (commonName, ips) {
 			clientcert.validity.notAfter = new Date();
 			clientcert.validity.notAfter.setFullYear(clientcert.validity.notBefore.getFullYear() + 10);
 
-			const clientAttrs = [{name: 'commonName', value: commonName}];
+			const clientAttrs = [
+				{name: 'commonName', value: commonName},
+				{name: 'organizationName', value: 'University of Nottingham'},
+				{name: 'countryName', value: 'UK'},
+				{shortName: 'ST', value: 'Nottinghamshire'},
+				{name: 'localityName', value: 'Nottingham'},
+				{shortName: 'OU', value: 'Mixed Reality Lab'}
+			];
 
 			clientcert.setSubject(clientAttrs);
 			// Set the issuer to the parent key
