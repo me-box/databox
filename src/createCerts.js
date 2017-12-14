@@ -16,9 +16,10 @@ httpsHelper.init()
 
 		const ips = process.argv.slice(2);
 		if (ips.indexOf('127.0.0.1') === -1) {
-			ips.push('127.0.0.1')
+			ips.push('127.0.0.1');
 		}
 		proms.push(httpsHelper.createClientCert('container-manager', ips));
+		proms.push(httpsHelper.createClientCert('app-server', ips));
 
 		return Promise.all(proms);
 	})

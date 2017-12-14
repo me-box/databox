@@ -52,7 +52,7 @@ const getRootCert = function () {
 	return rootPems.cert;
 };
 
-//based on code extracted from the selfsigned module Licence MIT 
+//based on code extracted from the selfsigned module Licence MIT
 const createClientCert = function (commonName, ips) {
 
 	return new Promise((resolve, reject) => {
@@ -146,7 +146,7 @@ const createClientCert = function (commonName, ips) {
 				clientpublic: forge.pki.publicKeyToPem(clientkeys.publicKey),
 				clientcert: forge.pki.certificateToPem(clientcert)
 			};
-			console.log(certFullpath, commonName);
+			console.log(certPemFullpath, commonName);
 			jsonfile.writeFileSync(certFullpath, pem);
 			fs.writeFileSync(certPemFullpath, pem.clientprivate + pem.clientpublic + pem.clientcert);
 			resolve(pem);
