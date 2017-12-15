@@ -28,14 +28,14 @@ usage() {
 
 seedManifest() {
   log "Uploading Manifest for ${1} ..."
-  STATUS=$(curl --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" http://127.0.0.1:8181/ -o /dev/null)
+  STATUS=$(curl --insecure --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" https://127.0.0.1:8181/ -o /dev/null)
   test_assert ${STATUS} 200 "Seeding manifest"
 
   PAYLOAD=$(<${1}/databox-manifest.json)
   PAYLOAD="manifest=${PAYLOAD}"
 
   EXPECTED='{"success":true}'
-  RES=$(curl --cookie ./databox-jar -s -X POST -d "${PAYLOAD}" -L 'http://127.0.0.1:8181/app/post')
+  RES=$(curl --insecure --cookie ./databox-jar -s -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1:8181/app/post')
   test_assert ${RES} ${EXPECTED} "Uploading manifest"
 
   rm ./databox-jar
