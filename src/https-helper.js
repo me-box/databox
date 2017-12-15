@@ -120,7 +120,7 @@ const createClientCert = function (commonName, ips) {
 
 			clientcert.setExtensions([{
 				name: 'basicConstraints',
-				cA: true
+				cA: false
 			}, {
 				name: 'keyUsage',
 				keyCertSign: true,
