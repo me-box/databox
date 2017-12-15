@@ -31,7 +31,7 @@
   "dependencies": {
     "dockerode": "^2.4.3",
     "jsonfile": "^3.0.0",
-    "node-forge": "^0.6.45",
+    "node-forge": "^0.7.1",
     "request": "^2.81.0",
     "selfsigned": "^1.8.0"
   },

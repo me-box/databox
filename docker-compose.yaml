@@ -5,8 +5,8 @@ services:
     container-manager:
         image: ${DOCKER_REPO}container-manager:${DATABOX_CORE_IMAGE_VERSION}
         ports:
-            - '8989:8989'
-            - '8448:8448'
+            - '443:443'
+            - '80:80'
         volumes:
             - '/var/run/docker.sock:/var/run/docker.sock'
             - './docker-compose.yaml:/cfg/docker-compose.yaml'
