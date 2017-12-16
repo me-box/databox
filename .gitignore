@@ -131,3 +131,9 @@ core-store/
 core-network/
 
 \.resolv\.conf
+
+certs-old/
+
+\.vscode/settings\.json
+
+driver-obm/

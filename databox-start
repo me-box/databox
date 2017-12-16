@@ -132,6 +132,24 @@ if [ ! -d "node_modules" ]; then
 fi
 
 
+
+if [ -d "./certs" ] && [ ! -f "./certs/app-server.pem" ]; then
+    echo "******************* Important Message *************************"
+    echo "*    You are upgrading from an old version of databox.        *"
+    echo "*    Your certificates need to be regenerated, and            *"
+    echo "*    you will need to reinstall the root crt                  *"
+    echo "*    on your system.                                          *"
+    echo "*                                                             *"
+    echo "*    Your old certs will be backed up to ./certs-old.         *"
+    echo "*                                                             *"
+    echo "*    press any key to continue CTRL+c to exit.                *"
+    echo "****************************************************************"
+
+    read -n 1 -s
+
+    mv ./certs ./certs-old
+fi
+
 mkdir -p ./certs
 
 err "Creating Certificates"
