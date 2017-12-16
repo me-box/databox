@@ -1,17 +1,17 @@
 # Databox
-The Databox platform is an open-source personal networked device, augmented by cloud-hosted services, that collates, curates, and mediates access to an individual’s personal data by verified and audited third party applications and services. The Databox will form the heart of an individual’s personal data processing ecosystem, providing a platform for managing secure access to data and enabling authorised third parties to provide the owner with authenticated services, including services that may be accessed while roaming outside the home environment. Databox project is led by Dr Hamed Haddadi (Imperial College) in collaboration with Dr Richard Mortier (University of Cambridge) and Professors Derek McAuley, Tom Rodden, Chris Greenhalgh, and Andy Crabtree (University of Nottingham) and funded by EPSRC. See http://www.databoxproject.uk/ for more information.
+The Databox platform is an open-source personal networked device, augmented by cloud-hosted services, that collates, curates, and mediates access to an individual’s personal data by verified and audited third-party applications and services. The Databox will form the heart of an individual’s personal data processing ecosystem, providing a platform for managing secure access to data and enabling authorised third parties to provide the owner with authenticated services, including services that may be accessed while roaming outside the home environment. Databox project is led by Dr Hamed Haddadi (Imperial College) in collaboration with Dr Richard Mortier (University of Cambridge) and Professors Derek McAuley, Tom Rodden, Chris Greenhalgh, and Andy Crabtree (University of Nottingham) and funded by EPSRC. See http://www.databoxproject.uk/ for more information.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine. For development and testing purposes, see Development section below.
+These instructions will get a copy of the Databox up and running on your local machine. For development and testing purposes, see Development section below.
 
 ### Prerequisites
 
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
-2) Once docker is installed and running, install  docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
+2) Once docker is installed and running, install docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
 
-> Note: currently supported platforms are Linux and MacOS. Running on other platforms is passable using a virtual machine running Linux with bridge mode networking.
+> Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking.
 
 ### Get started
 1) Clone Databox Git repo.
@@ -27,33 +27,22 @@ running.
 cd databox
 ./databox-start
 ```
-The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox in your local machine.
+The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox on your local machine.
 
-Once it's started, point a web browser at <http://127.0.0.1:8448> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <http://127.0.0.1:8989>, or the IOS and android app).
+Once it's started, point a web browser at <http://127.0.0.1> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <https://127.0.0.1>, or the iOS and Android app).
+
+> Note: Using the databox iOS and Android apps with MacOS may require you to modify your firewall to enable external access to port 80 and 443. 
 
 To stop databox and clean up,
 ```
 ./databox-stop
 ```
 
-# Upgrading from 0.2.0 to 0.3.0
-
-It is recommended to remove the ./certs directory before upgrading. Use the following commands in the root databox directory:
-
-```
-
-   ./databox-stop
-   rm -rf ./certs
-   git pull
-   ./databox-start
-
-```
-
 # Development
 
 ## Get Started with the Graphical SDK
 
-The graphical SDK will allow you to quickly build and test simple databox apps. To start the sdk run:
+The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
 ./databox-start sdk
 ```
@@ -70,7 +59,7 @@ It is possible to develop Databox apps and driver without the SDK. Currently, [P
 
 Developing apps and drivers 'does not' require data box to be started in dev mode.
 
-To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make you app available to install locally on your databox you will need to upload the manifest to http://127.0.0.1:8181 and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built  then you should be up to install the app on you local Databox.
+To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make your app available to install locally on your databox you will need to upload the manifest to http://127.0.0.1:8181 and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built then you should be up to install the app on your local Databox.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:
 ```
@@ -90,10 +79,10 @@ To develop on the platform and core components run the data-box start script wit
 ./databox-start dev
 ```
 
-Unlike using the pre-build images, this will clone all the relevant source repositories locally, and build them into the
+Unlike using the pre-built images, this will clone all the relevant source repositories locally, and build them into the
 required Docker images.
 
-When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to you local install using:
+When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to your local install using:
 
 ```
 ./databox-install-component driver-os-monitor
@@ -150,11 +139,11 @@ For more details, have a look [here](./TESTING.md).
 
 ## Contributing
 
-The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information. Good start is from having a look on  the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
+The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information. A good start is to look at the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
 
 ## Versioning
 
-This documentation is up-to-date till this [commit](https://github.com/me-box/databox/tree/a62ed323d98c0a6fd32f020eca9352f8da687c09). The master branches on all components points to the current release and are tagged in git using [semver](http://semver.org/).
+This documentation is up-to-date till this [commit](https://github.com/me-box/databox/tree/45bb7b2f47f595d12a952d9902ffd99061dae6eb). The master branches on all components point to the current release and are tagged in git using [semver](http://semver.org/).
 
 ## Authors
 
@@ -167,24 +156,3 @@ MIT Licence, See [here](./LICENSE).
 
 The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
-## Known issues
-
-1. While building the platform and core components you can sometimes get an error:
-
-   ```
-   [some-network-name] failed to create
-   ```
-
-   This is caused when Databox is started before docker has cleaned up the networks.
-
-   This issue can be fixed if you run `./databox-start`
-
-2. In some cases, the time in docker containers on Mac can get out of sync with the system clock.
-
-   This stops the HTTPS certs generated by the CM from being valid. See https://github.com/docker/for-mac/issues/17. And results in the following error:
-
-   ```
-   TLS certificates invalid
-   ```
-
-   Fix this by restarting Docker for Mac.
