@@ -170,7 +170,7 @@ then
   wait
 fi
 
-err "Databox started! Visit http://localhost:8448"
+err "Databox started! Visit http://localhost"
 if [ -z "$DATABOX_TESTING" ]
 then
   docker service logs databox_container-manager -f
