@@ -11,7 +11,7 @@ These instructions will get a copy of the Databox up and running on your local m
 2) Once docker is installed and running, install docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
 
-> Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking.
+> Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking. Also note that more than one CPU core must be allocated to the VM.
 
 ### Get started
 1) Clone Databox Git repo.
