@@ -50,7 +50,7 @@ fi
 
 ## test if Databox is already running
 err "testing if Databox is already running ..."
-docker node ls >/dev/null 2>&1
+docker stack ps databox >/dev/null 2>&1
 assert_or_die $? 1 "Databox is already running!"
 
 ## extract a host interface IP address
@@ -164,8 +164,12 @@ then
   assert_or_die $? 0 "Problem building core images"
 fi
 
-err "Starting the Databox swarm"
-docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+docker node ls >/dev/null 2>&1
+if [[ "$?" == "1" ]]
+then
+  err "Starting the Databox swarm"
+  docker swarm init --advertise-addr ${EXT_IP} 2>&1
+fi
 
 err "Starting Databox"
 
