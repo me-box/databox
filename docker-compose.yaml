@@ -12,6 +12,7 @@ services:
             - './docker-compose.yaml:/cfg/docker-compose.yaml'
             - './src/config.json:/cfg/config.json'
             - './certs:/certs'
+            - './slaStore:/slaStore'
             - './.resolv.conf:/etc/resolv.conf'
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
