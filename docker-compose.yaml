@@ -9,10 +9,10 @@ services:
             - '80:80'
         volumes:
             - '/var/run/docker.sock:/var/run/docker.sock'
-            - './docker-compose.yaml:/cfg/docker-compose.yaml'
-            - './src/config.json:/cfg/config.json'
-            - './certs:/certs'
-            - './.resolv.conf:/etc/resolv.conf'
+            - '${DATABOX_PATH}/docker-compose.yaml:/cfg/docker-compose.yaml'
+            - '${DATABOX_PATH}/src/config.json:/cfg/config.json'
+            - '${DATABOX_PATH}/certs:/certs'
+            - '${DATABOX_PATH}/.resolv.conf:/etc/resolv.conf'
         environment:
             - 'DATABOX_ARBITER_ENDPOINT=https://arbiter:8080'
             - 'DATABOX_DEV=${DATABOX_DEV}'
@@ -78,21 +78,21 @@ services:
 
 secrets:
   DATABOX_ROOT_CA:
-    file: ./certs/containerManager.crt
+    file: ${DATABOX_PATH}/certs/containerManager.crt
   CM_KEY:
-    file: ./certs/arbiterToken-container-manager
+    file: ${DATABOX_PATH}/certs/arbiterToken-container-manager
   DATABOX_CM.pem:
-    file: ./certs/containerManager.pem
+    file: ${DATABOX_PATH}/certs/containerManager.pem
   DATABOX_ARBITER.pem:
-    file: ./certs/arbiter.pem
+    file: ${DATABOX_PATH}/certs/arbiter.pem
   DATABOX_EXPORT_SERVICE_PEM.json:
-    file: ./certs/export-service.json
+    file: ${DATABOX_PATH}/certs/export-service.json
   DATABOX_EXPORT_SERVICE.pem:
-    file: ./certs/export-service.pem
+    file: ${DATABOX_PATH}/certs/export-service.pem
   DATABOX_EXPORT_SERVICE_KEY:
-    file: ./certs/arbiterToken-export-service
+    file: ${DATABOX_PATH}/certs/arbiterToken-export-service
   DATABOX_NETWORK_KEY:
-    file: ./certs/arbiterToken-databox-network
+    file: ${DATABOX_PATH}/certs/arbiterToken-databox-network
 
 networks:
     databox-system-net:
