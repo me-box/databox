@@ -45,8 +45,6 @@ installStores() {
   log "Installing Stores"
   OUTPUT=$(docker pull databoxsystems/core-store:${DATABOX_VERSION}; docker tag databoxsystems/core-store:${DATABOX_VERSION} core-store:${DATABOX_VERSION})
   test_assert $? 0 "Pull core-store " "$OUTPUT"
-  OUTPUT=$(docker pull databoxsystems/store-json:${DATABOX_VERSION}; docker tag databoxsystems/store-json:${DATABOX_VERSION} store-json:${DATABOX_VERSION})
-  test_assert $? 0 "Pull store-json ${1}" "$OUTPUT"
 }
 
 buildImage() {
