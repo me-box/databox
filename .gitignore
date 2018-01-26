@@ -137,3 +137,7 @@ certs-old/
 \.vscode/settings\.json
 
 driver-obm/
+
+slaStore/sladatastore\.db
+
+slaStore/
