@@ -1,0 +1,28 @@
+
+PWD=$(pwd)
+SERVICE=`cat <<EOF
+[Unit]
+Description=Databox Service
+After=docker
+Requires=docker.socket
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/
+ExecStartPre=${PWD}/databox-stop
+ExecStart=${PWD}/databox-start
+ExecStop=${PWD}/databox-stop
+
+[Install]
+WantedBy=multi-user.target
+EOF
+`
+
+echo "$SERVICE"
+
+echo "$SERVICE" > /etc/systemd/system/databox.service
+
+systemctl daemon-reload
+systemctl enable databox.service
+

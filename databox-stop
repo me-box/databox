@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#makesure we are in the right dir 
+MY_PATH="`dirname \"$0\"`"              # relative
+MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
+cd "${MY_PATH}"
+
 #include helper functions
 source ./scripts/utils.sh
 
