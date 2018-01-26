@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#makesure we are in the right dir 
+#makesure we are in the right dir
 MY_PATH="`dirname \"$0\"`"              # relative
 MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
 cd "${MY_PATH}"
@@ -118,7 +118,7 @@ DATABOX_CORE_IMAGE_VERSION=$(<./Version)
 DOCKER_REPO="databoxsystems/"
 if [ "$DEV" == "1" ]
 then
-  DOCKER_REPO=""
+  DOCKER_REPO="databoxsystems/"
   DATABOX_CORE_IMAGE_VERSION="latest"
 fi
 

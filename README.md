@@ -31,7 +31,7 @@ The above script pulls Databox pre-build images published on [Docker hub](<https
 
 Once it's started, point a web browser at <http://127.0.0.1> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <https://127.0.0.1>, or the iOS and Android app).
 
-> Note: Using the databox iOS and Android apps with MacOS may require you to modify your firewall to enable external access to port 80 and 443. 
+> Note: Using the databox iOS and Android apps with MacOS may require you to modify your firewall to enable external access to port 80 and 443.
 
 To stop databox and clean up,
 ```
@@ -103,7 +103,6 @@ Databox has a number of platform components, divided into two parts:  Core and O
 * [Databox-container-manager](https://github.com/me-box/core-container-manager) Container manager controls build, installation and running functions of the other databox components.
 * [databox-arbiter](https://github.com/me-box/core-arbiter) Arbiter manages the flow of data by minting tokens and controlling store discovery.
 * [databox-export-service](https://github.com/me-box/core-export-service) This service controls the data to be exported to external URLs.
-* [databox-store-json](https://github.com/me-box/store-json) This is a data store used by apps and drivers to store and retrieve JSON data.
 * [databox-store-timeseries](https://github.com/me-box/store-timeseries)  This is a data store used by apps and drivers to store and retrieve JSON data or JPEG images.
 * [databox-app-server](https://github.com/me-box/platform-app-server) This is a Server for storing and serving databox manifests.
 
@@ -155,4 +154,3 @@ MIT Licence, See [here](./LICENSE).
 ## Contributing
 
 The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
-

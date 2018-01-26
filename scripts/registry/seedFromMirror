@@ -27,7 +27,6 @@ seed () {
     docker tag $2 $1
 }
 
-seed $1/store-json databoxsystems/store-json
 seed $1/driver-os-monitor databoxsystems/driver-os-monitor
 seed $1/driver-twitter databoxsystems/driver-twitter
 seed $1/driver-sensingkit databoxsystems/driver-sensingkit
@@ -41,7 +40,6 @@ seed $1/app-twitter-sentiment databoxsystems/app-twitter-sentiment
 seed $1/base-image-ocaml databoxsystems/base-image-ocaml
 seed $1/driver-phillips-hue databoxsystems/driver-phillips-hue
 seed $1/app-os-monitor databoxsystems/app-os-monitor
-seed $1/store-timeseries databoxsystems/store-timeseries
 seed $1/driver-tplink-smart-plug databoxsystems/driver-tplink-smart-plug
 seed $1/node:alpine node:alpine
 
