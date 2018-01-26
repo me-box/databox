@@ -34,12 +34,16 @@ DATABOX_SDK="0"
 DATABOX_DEV="0"
 DEV=0
 SDK=0
+LATEST=0
 case "$1" in
   dev )
     DEV=1
     export DATABOX_DEV="1"
     ;;
-
+  latest )
+    LATEST=1
+    export DATABOX_DEV="1"
+    ;;
   sdk )
     SDK=1
     ;;
@@ -120,6 +124,12 @@ if [ "$DEV" == "1" ]
 then
   DOCKER_REPO="databoxsystems/"
   DATABOX_CORE_IMAGE_VERSION="latest"
+fi
+if [ "$LATEST" == "1" ]
+then
+  DOCKER_REPO="databoxsystems/"
+  DATABOX_CORE_IMAGE_VERSION="latest"
+  DATABOX_VERSION="latest"
 fi
 
 err "Starting version ${DATABOX_VERSION}"
