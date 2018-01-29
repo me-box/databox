@@ -169,7 +169,7 @@ fi
 mkdir -p ./certs
 
 err "Creating Certificates"
-_exec node ./src/createCerts.js ${ips[@]}
+_exec node ./src/createCerts.js ${EXT_IP} ${ips[@]}
 
 if [ "$DEV" == "1" ]
 then
