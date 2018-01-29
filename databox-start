@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#makesure we are in the right dir
+MY_PATH="`dirname \"$0\"`"              # relative
+MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
+cd "${MY_PATH}"
+export DATABOX_PATH="${MY_PATH}"
+
 #include helper functions
 source ./scripts/utils.sh
 
@@ -28,12 +34,16 @@ DATABOX_SDK="0"
 DATABOX_DEV="0"
 DEV=0
 SDK=0
+LATEST=0
 case "$1" in
   dev )
     DEV=1
     export DATABOX_DEV="1"
     ;;
-
+  latest )
+    LATEST=1
+    export DATABOX_DEV="1"
+    ;;
   sdk )
     SDK=1
     ;;
@@ -50,12 +60,12 @@ fi
 
 ## test if Databox is already running
 err "testing if Databox is already running ..."
-docker node ls >/dev/null 2>&1
+docker stack ps databox >/dev/null 2>&1
 assert_or_die $? 1 "Databox is already running!"
 
 ## extract a host interface IP address
 err "extracting host interface IP address ..."
-ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}'))
+ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | grep -v 172. |awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}'))
 EXT_IP=${ips}
 if [[ "${#ips[@]}" -gt "1" ]]; then
   err "More than one IP found! Please select one:"
@@ -115,6 +125,12 @@ then
   DOCKER_REPO=""
   DATABOX_CORE_IMAGE_VERSION="latest"
 fi
+if [ "$LATEST" == "1" ]
+then
+  DOCKER_REPO="databoxsystems/"
+  DATABOX_CORE_IMAGE_VERSION="latest"
+  DATABOX_VERSION="latest"
+fi
 
 err "Starting version ${DATABOX_VERSION}"
 export DOCKER_REPO=${DOCKER_REPO}
@@ -123,17 +139,17 @@ export DATABOX_CORE_IMAGE_VERSION=${DATABOX_CORE_IMAGE_VERSION}
 
 function _exec {
   docker run \
-         --net=host -ti --rm -v "$(pwd -P)":/cwd -w /cwd \
+         --net=host -i --rm -v ${MY_PATH}:/cwd -w /cwd \
          ${DARGS} ${NODE_IMAGE} "$@"
 }
 
-if [ ! -d "node_modules" ]; then
+if [ ! -d "${MY_PATH}/node_modules" ]; then
   _exec npm install -loglevel silent
 fi
 
 
 
-if [ -d "./certs" ] && [ ! -f "./certs/app-server.pem" ]; then
+if [ -d "${MY_PATH}/certs" ] && [ ! -f "${MY_PATH}/certs/app-server.pem" ]; then
     echo "******************* Important Message *************************"
     echo "*    You are upgrading from an old version of databox.        *"
     echo "*    Your certificates need to be regenerated, and            *"
@@ -164,8 +180,12 @@ then
   assert_or_die $? 0 "Problem building core images"
 fi
 
-err "Starting the Databox swarm"
-docker swarm init --advertise-addr ${EXT_IP} > /dev/null
+docker node ls >/dev/null 2>&1
+if [[ "$?" == "1" ]]
+then
+  err "Starting the Databox swarm"
+  docker swarm init --advertise-addr ${EXT_IP} 2>&1
+fi
 
 err "Starting Databox"
 

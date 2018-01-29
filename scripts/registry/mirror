@@ -28,7 +28,6 @@ clone () {
     docker push $2
 }
 
-clone databoxsystems/store-json $1/store-json
 clone databoxsystems/driver-os-monitor $1/driver-os-monitor
 clone databoxsystems/driver-twitter $1/driver-twitter
 clone databoxsystems/driver-sensingkit $1/driver-sensingkit
@@ -42,7 +41,6 @@ clone databoxsystems/app-twitter-sentiment $1/app-twitter-sentiment
 clone databoxsystems/base-image-ocaml $1/base-image-ocaml
 clone databoxsystems/driver-phillips-hue $1/driver-phillips-hue
 clone databoxsystems/app-os-monitor $1/app-os-monitor
-clone databoxsystems/store-timeseries $1/store-timeseries
 clone databoxsystems/driver-tplink-smart-plug $1/driver-tplink-smart-plug
 clone node:alpine $1/node:alpine
 

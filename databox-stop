@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#makesure we are in the right dir
+MY_PATH="`dirname \"$0\"`"              # relative
+MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
+cd "${MY_PATH}"
+
 #include helper functions
 source ./scripts/utils.sh
 
@@ -31,6 +36,22 @@ fi
 ## stop Databox
 err "Stopping Databox ..."
 export DOCKER_REPO=""
+## stop drivers first to give stores time to write data
+if [[ $(docker ps -aq -f status=created -f status=running -f "label=databox.type=driver") ]]
+then
+  err "stopping drivers ..."
+  docker stop $(docker ps -aq -f status=running -f "label=databox.type=driver")
+fi
+if [[ $(docker ps -aq -f status=running -f "label=databox.type=app") ]]
+then
+  err "stopping apps ..."
+  docker stop $(docker ps -aq -f status=running -f "label=databox.type=app")
+fi
+if [[ $(docker ps -aq -f status=running -f "label=databox.type=store") ]]
+then
+  err "stopping stores ..."
+  docker stop $(docker ps -aq -f status=running -f "label=databox.type=store")
+fi
 docker stack rm databox
 docker-compose -f ./docker-databox-appstore.yaml down
 
