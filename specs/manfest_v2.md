@@ -32,7 +32,7 @@ Notes:
 ### Description
 
 - overview: [String]
-- purpose: [Purpose]
+- purpose: [Purpose](#purpose)
 - risks: [String]
 - benefits: [String]
 
