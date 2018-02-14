@@ -42,7 +42,10 @@ const init = function () {
 
 				// Delete cert directory if root certs are re-created,
 				// since all other cert need to be recreated too
-				fs.rmdirSync(certPath);
+				if(fs.existsSync(certPath)) {
+					fs.rmdirSync(certPath);
+				}
+				fs.mkdirSync(certPath);
 
 				//Cash the certs in dev mode. These are new certs so display the update instructions and exit.
 				jsonfile.writeFileSync(devCertPath, rootPems);
