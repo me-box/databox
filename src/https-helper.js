@@ -15,9 +15,10 @@ const config = {days: 365, keySize: 2048, algorithm: 'sha256'};
 let rootPems;
 
 const certPath = './certs/';
-const devCertPath = './certs/certs.json';
-const devPemCertPath = './certs/containerManager.pem';
-const devCAPath = './certs/containerManager.crt';
+const devCertPath = certPath + 'certs.json';
+const devPemCertPath = certPath + 'rootCert.pem';
+const devDerCertPath = certPath + 'rootCert.der';
+const devCAPath = certPath + 'rootCert.crt';
 
 //Generate the CM root cert at startup.
 const init = function () {
@@ -36,11 +37,27 @@ const init = function () {
 				if (err) {
 					reject(err);
 				}
+
 				rootPems = pems;
+
+				// Delete cert directory if root certs are re-created,
+				// since all other cert need to be recreated too
+				if(fs.existsSync(certPath)) {
+					fs.rmdirSync(certPath);
+				}
+				fs.mkdirSync(certPath);
+
 				//Cash the certs in dev mode. These are new certs so display the update instructions and exit.
-				jsonfile.writeFileSync(devCertPath, pems);
-				fs.writeFileSync(devPemCertPath, pems.private + pems.public + pems.cert);
+				jsonfile.writeFileSync(devCertPath, rootPems);
+
+				fs.writeFileSync(devPemCertPath, rootPems.private + rootPems.public + rootPems.cert);
 				fs.writeFileSync(devCAPath, rootPems.cert);
+
+				const cert = forge.pki.certificateFromPem(rootPems.cert);
+				const asn = forge.pki.certificateToAsn1(cert);
+				const der = forge.asn1.toDer(asn).getBytes();
+
+				fs.writeFileSync(devDerCertPath, der, 'binary');
 
 				resolve({rootCAcert: rootPems.cert});
 			});
@@ -154,4 +171,4 @@ const createClientCert = function (commonName, ips) {
 	});
 };
 
-module.exports = {init: init, createClientCert: createClientCert, getRootCert: getRootCert};
+module.exports = {init: init, createClientCert: createClientCert};

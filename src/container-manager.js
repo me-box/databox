@@ -1,16 +1,12 @@
 const Config = require('./config.json');
-const os = require('os');
 const crypto = require('crypto');
-const jsonfile = require('jsonfile');
 const fs = require('fs');
 
 const Docker = require('dockerode');
 const docker = new Docker();
 
-const ip = '127.0.0.1';
-
 //ARCH to append -arm to the end of a container name if running on arm
-var ARCH = '';
+const ARCH = '';
 
 const certPath = './certs/';
 
@@ -30,7 +26,7 @@ const generateArbiterToken = function (name) {
 	
 			crypto.randomBytes(32, function (err, buffer) {
 				if (err) reject(err);
-				var token = buffer.toString('base64');
+				const token = buffer.toString('base64');
 				fs.writeFileSync(fullpath, token);
 				resolve(token);
 			});
@@ -42,9 +38,6 @@ exports.generateArbiterToken = generateArbiterToken;
 //Pull latest image from any repo defaults to dockerIO
 const pullDockerIOImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		const parts = imageName.split(':');
-		const name = parts[0];
-		const version = parts[1];
 		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(imageName, resolve,reject);
 	});
@@ -53,9 +46,6 @@ const pullDockerIOImage = function (imageName) {
 //Pull latest image from Config.registryUrl
 const pullImage = function (imageName) {
 	return new Promise((resolve, reject) => {
-		const parts = imageName.split(':');
-		const name = parts[0];
-		const version = parts[1];
 		console.log('[Pulling Image] ' + imageName );
 		dockerImagePull(Config.registryUrl + "/" + imageName, resolve,reject);
 	});

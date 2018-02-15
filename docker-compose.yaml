@@ -79,11 +79,11 @@ services:
 
 secrets:
   DATABOX_ROOT_CA:
-    file: ${DATABOX_PATH}/certs/containerManager.crt
+    file: ${DATABOX_PATH}/certs/rootCert.crt
   CM_KEY:
     file: ${DATABOX_PATH}/certs/arbiterToken-container-manager
   DATABOX_CM.pem:
-    file: ${DATABOX_PATH}/certs/containerManager.pem
+    file: ${DATABOX_PATH}/certs/rootCert.pem
   DATABOX_ARBITER.pem:
     file: ${DATABOX_PATH}/certs/arbiter.pem
   DATABOX_EXPORT_SERVICE_PEM.json:
