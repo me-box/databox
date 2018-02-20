@@ -10,8 +10,17 @@ services:
     volumes:
       - './certs/arbiterToken-databox-network:/run/secrets/DATABOX_NETWORK_KEY'
       - './certs/databox-network.pem:/run/secrets/DATABOX_NETWORK.pem'
+      - '${BCAST_FIFO}:/tmp/relay'
+    command: ["-f", "/tmp/relay"]
     cap_add:
       - NET_ADMIN
+
+  databox-broadcast-relay:
+    image: ${DOCKER_REPO}core-network-relay:${DATABOX_CORE_IMAGE_VERSION}
+    network_mode: "host"
+    volumes:
+      - '${BCAST_FIFO}:/tmp/relay'
+    command: ["-f", "/tmp/relay", "-h", "${BCAST_IP}"]
 
 networks:
   databox-system-net:

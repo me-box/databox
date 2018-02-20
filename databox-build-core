@@ -25,7 +25,16 @@ build()
 {
     echo "[$(datef) $ME]: Starting build ${1} ..."
     cd $1
-    OUTPUT=$(docker build -t $2 -f Dockerfile${DATABOX_ARCH} .)
+
+    DOCKERFILE=""
+    if [ -z "$3" ]
+    then
+      DOCKERFILE="Dockerfile${DATABOX_ARCH}"
+    else
+      DOCKERFILE="${3}${DATABOX_ARCH}"
+    fi
+
+    OUTPUT=$(docker build -t $2 -f ${DOCKERFILE} .)
     test_assert $? 0 "Build ${1}" "$OUTPUT"
     cd ..
 }
@@ -36,3 +45,4 @@ build "core-arbiter" "arbiter"
 build "core-export-service" "export-service"
 build "core-store" "core-store"
 build "core-network" "core-network"
+build "core-network" "core-network-relay" "Dockerfile-relay"
