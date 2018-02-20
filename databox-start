@@ -192,6 +192,14 @@ err "Starting Databox"
 
 docker network create -d overlay --attachable databox-system-net
 
+BCAST_FIFO="/tmp/databox_relay"
+export BCAST_FIFO=${BCAST_FIFO}
+export BCAST_IP=${EXT_IP}
+
+if [ ! -p "${BCAST_FIFO}" ]; then
+  mkfifo ${BCAST_FIFO}
+fi
+
 docker-compose -f ./docker-core-network.yaml up -d
 _exec node ./src/createResolvConf.js "$(docker inspect $(docker ps -q --filter="name=databox-network"))"
 
