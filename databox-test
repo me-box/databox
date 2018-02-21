@@ -38,6 +38,8 @@ awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'$KEY'\042/){print $(i+1)}}}' | tr -d 
 
 UI_AUTH_TOKEN=$(cat ./certs/container-mananager-auth.json | jsonValue "token" 1)
 
+rm ./slaStore/sladatastore.db
+
 #Start databox
 export DATABOX_TESTING=1
 source ./databox-start dev
