@@ -71,8 +71,8 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
   err "More than one IP found! Please select one:"
   if [[ "${DATABOX_TESTING}" == 1 ]]
   then
-    err "running in testing mode select second IP ${ips[1]}"
-    EXT_IP=${ips[1]}
+    err "running in testing mode using 127.0.0.1"
+    EXT_IP="127.0.0.1"
   else
     select ip in ${ips[*]}; do
       case ${ip} in
@@ -124,6 +124,7 @@ if [ "$DEV" == "1" ]
 then
   DOCKER_REPO=""
   DATABOX_CORE_IMAGE_VERSION="latest"
+  DATABOX_VERSION="latest"
 fi
 if [ "$LATEST" == "1" ]
 then
