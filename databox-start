@@ -144,9 +144,8 @@ function _exec {
          ${DARGS} ${NODE_IMAGE} "$@"
 }
 
-if [ ! -d "${MY_PATH}/node_modules" ]; then
-  _exec npm install -loglevel silent
-fi
+_exec npm install -loglevel silent
+
 
 
 
