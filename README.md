@@ -155,7 +155,7 @@ MIT Licence, See [here](./LICENSE).
 
 The Databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
-## Development of databox was supported by the folowing funding
+## Development of databox was supported by the following funding
 
 ```
 EP/N028260/1, Databox: Privacy-Aware Infrastructure for Managing Personal Data
