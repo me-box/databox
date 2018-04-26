@@ -60,6 +60,8 @@ err "Stopping and Removing databox-bridge ..."
 docker-compose -f ./docker-core-network.yaml down
 err "Removing network databox-system-net ..."
 docker network rm databox-system-net >/dev/null 2>&1
+err "Deleting broadcast relay fifo ..."
+rm /tmp/databox_relay
 
 err "Waiting ..."
 sleep 10 # give docker some time to remove the networks etc
