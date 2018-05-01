@@ -24,8 +24,15 @@ if ! [ -x "$(command -v docker)" ]; then
 fi
 
 if ! [ -x "$(command -v docker-compose)" ]; then
-  die 2 "docker-compose is not installed;"`
+  die 1 "docker-compose is not installed;"`
        `"see https://docs.docker.com/compose/install/#install-compose"
+fi
+
+#test docker dns configuration
+docker run busybox nslookup google.com >/dev/null 2>&1
+if [[ "$?" == "1" ]]
+then
+  die 1 "[ERROR] DNS test failed: Your docker DNS resolution seems to be broken. Help can be found here https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/"
 fi
 
 ## parse command line args

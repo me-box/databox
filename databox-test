@@ -81,15 +81,6 @@ awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'$KEY'\042/){print $(i+1)}}}' | tr -d 
 # make sure we don't load anything from here
 rm ./slaStore/sladatastore.db >/dev/null 2>&1
 
-
-#test docker dns configuration
-docker run busybox nslookup google.com >/dev/null 2>&1
-if [[ "$?" == "1" ]]
-then
-  echo -e "[$( red FAILED )] TEST DNS \nERROR: Your docker DNS resolution seems to be broken. Help can be found here https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/"
-  exit 1
-fi
-
 #Start databox
 export DATABOX_TESTING=1
 
