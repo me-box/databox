@@ -41,7 +41,29 @@ rm ./slaStore/sladatastore.db
 
 #Start databox
 export DATABOX_TESTING=1
-source ./databox-start dev
+
+case "$1" in
+  dev )
+    echo "Testing databox in dev mode building all components from source code"
+    source ./databox-start dev
+    ;;
+  latest )
+    echo "Testing databox in latest using :latest images from databoxsystems on docker hub"
+    source ./databox-start latest
+    ;;
+   release )
+    echo "Testing databox release using images from databoxsystems on docker hub"
+    source ./databox-start
+    ;;
+  *)
+    echo $'\nRun Databox integration tests:\n'
+    echo $'Usage: databox-test {dev|latest|release}\n'
+    echo $'dev - Tests databox in dev mode building all components from source code'
+    echo $'latest - Tests databox using :latest images from databoxsystems on docker hub (built from master branches on Github)'
+    echo $'release - Tests databox release using images from databoxsystems on docker hub (built from tagged branches on Github) \n\n'
+    exit 1
+esac
+
 
 UI_AUTH_TOKEN=$(cat ./certs/container-mananager-auth.json | jsonValue "token" 1)
 
