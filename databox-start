@@ -28,7 +28,6 @@ if ! [ -x "$(command -v docker-compose)" ]; then
        `"see https://docs.docker.com/compose/install/#install-compose"
 fi
 
-err "host interface IP address = ${EXT_IP}"
 
 ## base images: what are we running on?
 ARCH=$(uname -m)
@@ -123,6 +122,7 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
   fi
 fi
 
+err "host interface IP address = ${EXT_IP}"
 
 DOCKER_REPO=""
 DATABOX_VERSION=$(<./Version)
