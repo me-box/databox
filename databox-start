@@ -28,8 +28,34 @@ if ! [ -x "$(command -v docker-compose)" ]; then
        `"see https://docs.docker.com/compose/install/#install-compose"
 fi
 
+err "host interface IP address = ${EXT_IP}"
+
+## base images: what are we running on?
+ARCH=$(uname -m)
+case "$ARCH" in
+  armv7l )
+    NODE_IMAGE="hypriot/rpi-node:slim"
+    DEV=1 #ARM is only supported in dev mode with locally built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  aarch64 )
+    NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
+    DEV=1 #ARM is only supported in dev mode with locally built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  * )
+    ARCH=""
+    NODE_IMAGE="node:alpine"
+    export DATABOX_ARCH=""
+    ;;
+esac
+
 #test docker dns configuration
-docker run busybox nslookup google.com >/dev/null 2>&1
+docker run $NODE_IMAGE nslookup google.com >/dev/null 2>&1
 if [[ "$?" == "1" ]]
 then
   die 1 "[ERROR] DNS test failed: Your docker DNS resolution seems to be broken. Help can be found here https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/"
@@ -96,31 +122,7 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
     done
   fi
 fi
-err "host interface IP address = ${EXT_IP}"
 
-## base images: what are we running on?
-ARCH=$(uname -m)
-case "$ARCH" in
-  armv7l )
-    NODE_IMAGE="hypriot/rpi-node:slim"
-    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
-    export DATABOX_ARCH="-"${ARCH}
-    export DATABOX_DEV="1"
-    ;;
-
-  aarch64 )
-    NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
-    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
-    export DATABOX_ARCH="-"${ARCH}
-    export DATABOX_DEV="1"
-    ;;
-
-  * )
-    ARCH=""
-    NODE_IMAGE="node:alpine"
-    export DATABOX_ARCH=""
-    ;;
-esac
 
 DOCKER_REPO=""
 DATABOX_VERSION=$(<./Version)
