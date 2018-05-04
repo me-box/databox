@@ -39,6 +39,7 @@ httpsHelper.init()
 			const token = crypto.randomBytes(24).toString('base64');
 			const auth = {
 				ip: process.argv[2],
+				ipExternal: process.argv[3],
 				token: token
 			};
 			const auth_str = JSON.stringify(auth);
