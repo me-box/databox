@@ -9,16 +9,13 @@ before_install:
 script:
 - "./databox-test latest"
 after_success:
-- pwd
-- ls -lah
 - chmod -R 0777 ./documents
 - "./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json"
 - git config --global user.email "toshbrown@gmail.com"
 - git config --global user.name "Toshbrown"
 - git add ./documents/Documentation.md
 - git rm origin
-- git remote add origin https://toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
-- git status
+- git remote add origin https://${GH_TOKEN}@github.com/me-box/databox.git
 - git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci] "
 - git push origin ${TRAVIS_BRANCH} -fq> /dev/null
 services:
