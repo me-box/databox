@@ -14,8 +14,10 @@ after_success:
 - git config --global user.email "toshbrown@gmail.com"
 - git config --global user.name "Toshbrown"
 - git add ./documents/Documentation.md
-- git rm origin
+- git remote rm origin
+- git remote -v
 - git remote add origin https://Toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
+- git remote -v
 - git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci]"
 - git push origin ${TRAVIS_BRANCH}
 - echo ${TRAVIS_BRANCH}
