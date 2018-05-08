@@ -13,11 +13,14 @@ after_success:
 - "./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json"
 - git config --global user.email "toshbrown@gmail.com"
 - git config --global user.name "Toshbrown"
-- git add ./documents/Documentation.md
 - git remote rm origin
 - git remote -v
 - git remote add origin https://Toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
 - git remote -v
+- git status
+- git checkout -b ${TRAVIS_BRANCH}
+- git status
+- git add ./documents/Documentation.md
 - git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci]"
 - git push origin ${TRAVIS_BRANCH}
 - echo ${TRAVIS_BRANCH}
