@@ -141,3 +141,7 @@ driver-obm/
 slaStore/sladatastore\.db
 
 slaStore/
+
+OBM-DataBox/
+
+certs-old-0\.4\.0/

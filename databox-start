@@ -66,13 +66,13 @@ assert_or_die $? 1 "Databox is already running!"
 ## extract a host interface IP address
 err "extracting host interface IP address ..."
 ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | grep -v 172. |awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}'))
-EXT_IP=${ips}
+HOST_IP=${ips}
 if [[ "${#ips[@]}" -gt "1" ]]; then
   err "More than one IP found! Please select one:"
   if [[ "${DATABOX_TESTING}" == 1 ]]
   then
     err "running in testing mode using 127.0.0.1"
-    EXT_IP="127.0.0.1"
+    HOST_IP="127.0.0.1"
   else
     select ip in ${ips[*]}; do
       case ${ip} in
@@ -82,14 +82,29 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
           ;;
 
         * )
-          EXT_IP=${ip}
+          HOST_IP=${ip}
           break
           ;;
       esac
     done
   fi
 fi
-err "host interface IP address = ${EXT_IP}"
+err "host interface IP address = ${HOST_IP}"
+
+## Get the external IP of the databox used for NATed set-ups over HTTPS
+cd dockerfiles/curl
+docker build -t databoxsystems/curl . >/dev/null
+if [ "$?" != "0" ]
+then
+  die 1 'Error building databoxsystems/curl. Is docker working?'
+fi
+cd ../..
+EXT_IP=$(docker run -t databoxsystems/curl -s http://whatismyip.akamai.com/)
+if [ "$?" != "0" ]
+then
+  die 1 'Error getting external IP address. Do you have network connectivity?'
+fi
+err "External interface IP address = ${EXT_IP}"
 
 ## base images: what are we running on?
 ARCH=$(uname -m)
@@ -147,29 +162,27 @@ function _exec {
 _exec npm install -loglevel silent
 
 
-
-
-if [ -d "${MY_PATH}/certs" ] && [ ! -f "${MY_PATH}/certs/app-server.pem" ]; then
+if [ -d "${MY_PATH}/certs" ] && [ ! -d "${MY_PATH}/certs-old-0.4.0" ] && [ "${DATABOX_VERSION}" == "0.4.0" ]; then
     echo "******************* Important Message *************************"
     echo "*    You are upgrading from an old version of databox.        *"
     echo "*    Your certificates need to be regenerated, and            *"
     echo "*    you will need to reinstall the root crt                  *"
     echo "*    on your system.                                          *"
     echo "*                                                             *"
-    echo "*    Your old certs will be backed up to ./certs-old.         *"
+    echo "*    Your old certs will be backed up to ./certs-old-0.4.0    *"
     echo "*                                                             *"
     echo "*    press any key to continue CTRL+c to exit.                *"
     echo "****************************************************************"
 
     read -n 1 -s
 
-    mv ./certs ./certs-old
+    mv ${MY_PATH}/certs ${MY_PATH}/certs-old-0.4.0
 fi
 
 mkdir -p ./certs
 
 err "Creating Certificates"
-_exec node ./src/createCerts.js ${EXT_IP} ${ips[@]}
+_exec node ./src/createCerts.js ${HOST_IP} ${EXT_IP} ${ips[@]}
 
 if [ "$DEV" == "1" ]
 then
@@ -184,7 +197,7 @@ docker node ls >/dev/null 2>&1
 if [[ "$?" == "1" ]]
 then
   err "Starting the Databox swarm"
-  docker swarm init --advertise-addr ${EXT_IP} 2>&1
+  docker swarm init --advertise-addr ${HOST_IP} 2>&1
 fi
 
 err "Starting Databox"
@@ -193,7 +206,7 @@ docker network create -d overlay --attachable databox-system-net
 
 BCAST_FIFO="/tmp/databox_relay"
 export BCAST_FIFO=${BCAST_FIFO}
-export BCAST_IP=${EXT_IP}
+export BCAST_IP=${HOST_IP}
 
 if [ ! -p "${BCAST_FIFO}" ]; then
   mkfifo ${BCAST_FIFO}
