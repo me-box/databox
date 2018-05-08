@@ -18,9 +18,10 @@ after_success:
 - git remote add origin https://Toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
 - git remote -v
 - git status
-- git checkout -b ${TRAVIS_BRANCH}
+- git checkout ${TRAVIS_BRANCH}
 - git status
 - git add ./documents/Documentation.md
+- git status
 - git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci]"
 - git push origin ${TRAVIS_BRANCH}
 - echo ${TRAVIS_BRANCH}
