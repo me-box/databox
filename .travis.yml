@@ -9,7 +9,7 @@ before_install:
 script:
 - "./databox-test latest"
 after_success:
-- "./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config.json"
+- "./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json"
 - cat /documents/Documentation.md
 services:
 - docker
