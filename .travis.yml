@@ -13,7 +13,7 @@ after_success:
 - ls -lah
 - chmod -R 0777 ./documents
 - "./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json"
-- cat /documents/Documentation.md
+- cat ./documents/Documentation.md
 services:
 - docker
 env:
