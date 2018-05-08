@@ -141,3 +141,5 @@ driver-obm/
 slaStore/sladatastore\.db
 
 slaStore/
+
+certs-old-0\.4\.0/

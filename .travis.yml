@@ -1,11 +1,15 @@
 sudo: required
 language: bash
 before_install:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get -y install docker-ce
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu
+  $(lsb_release -cs) stable"
+- sudo apt-get update
+- sudo apt-get -y install docker-ce
 script:
-  - ./databox-test dev
+- "./databox-test dev"
 services:
-  - docker
+- docker
+env:
+  global:
+    secure: FdeSf6+eOE/dQ1c0eW9srfnGs2dvdsTKYx2BRGuDUnJPlxED9Vlrbrly2KAcGkPpCRyGVJFOiCZFd0BgGU9Hr2XtSuWT5rCMNRke2ARzxmz1xfZi290aFtJTLNuiK3yod3aQ/v7JAcBtAtMEbzHYWwzbCDR59NLpx0OUYHoNcP3DkplREFOVYOPV/9HkyETmDkuixXa4E30M4rE2ZfZauF7+ExOXsbvgMCM0XuyUVjTmmcyPDb4FDTzaU8mkKN7wJ5hGZVQ6QlhOPPvXfndWKfqZIWrKxq87hj0tRTx0t07nXhnEd6ZRKODb2gLi4pNLKPUW12yT59JWTO2/6RIV7fmoGSRK3H9XrzUCgdUjljzTuTb2FiE4hGgPkyFH/oMZObBZr+cgRkCfG0MtyFTvH9Zrwa1cxadq4UbwfQqP1AYWgwoVAzjybVIGzrsMFz3w16mvxn0wFtnrIlg7sYv4uiOUcSWgGY804lNtfSIf25V+iQYiO8m3RTSaNQB9AJQtwP+NzIQvXqu1hg08eiInqA5L9+K6vdwUfFFGxIAgp+g2WJSV2AANaA4Hx2K1CjvyuBQCpfBziR8DYSvcq3VzPK/eiEszYapKR3sogOe7v4M++gnocCdbdBM/bVlXG9FNeRC7FpqeO7No/I1f3gxAJ0uZ5v3oZfVkluQC1zY+WhE=
