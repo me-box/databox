@@ -20,7 +20,7 @@ after_success:
 - git remote add origin https://toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
 - git status
 - git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci] "
-- git push origin ${TRAVIS_BRANCH} -fq> / dev / null
+- git push origin ${TRAVIS_BRANCH} -fq> /dev/null
 services:
 - docker
 env:
