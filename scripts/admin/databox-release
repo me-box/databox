@@ -18,7 +18,7 @@ fi
 function release {
   docker pull databoxsystems/githubreleasetool:latest
   docker run \
-         --net=host -ti --rm -v "$(pwd -P)/config.json":/config.json -w / \
+         --net=host -ti --rm -v "$(pwd -P)":/databox -w / \
          $DARGS databoxsystems/githubreleasetool:latest "$@"
 }
 
