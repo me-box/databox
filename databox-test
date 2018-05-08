@@ -175,10 +175,12 @@ RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/j
 EXPECTED='{"status":"success"}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
 
+sleep 5
+
 #can we reinstall os-monitor the app and driver
 install_osmon_app_and_driver
 
 #second test of the app
-sleep 15
+sleep 20
 test_app_os_monitor
 exit 0
