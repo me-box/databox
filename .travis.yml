@@ -16,8 +16,9 @@ after_success:
 - git add ./documents/Documentation.md
 - git rm origin
 - git remote add origin https://Toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
-- git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci] "
-- git push origin ${TRAVIS_BRANCH} -fq> /dev/null
+- git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci]"
+- git push origin ${TRAVIS_BRANCH}
+- echo ${TRAVIS_BRANCH}
 services:
 - docker
 env:
