@@ -7,7 +7,7 @@ before_install:
 - sudo apt-get update
 - sudo apt-get -y install docker-ce
 script:
-- "./databox-test latest"
+- "./databox-test dev"
 after_success:
 - "./scripts/admin/travis-build-docs"
 services:
