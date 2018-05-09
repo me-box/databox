@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [[ "$(pwd)" != */databox ]]
+then
+    echo "script must be run from the databox root directory!"
+    exit 1
+fi
+
+#Check the env vars are set will exit if these are not present.
+OK="${GH_TOKEN:?GH_TOKEN must be set}" #to an encrypted github user token with write access to github.com/me-box/databox.git
+OK="${TRAVIS_BRANCH:?TRAVIS_BRANCH must be set}"
+OK="${TRAVIS_BUILD_NUMBER:?TRAVIS_BUILD_NUMBER be must set}"
+OK="${TRAVIS_PULL_REQUEST:?TRAVIS_PULL_REQUEST be must set}"
+
+#only run on commits to master branch
+#if [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ $TRAVIS_BRANCH == “master” ]]
+#then
+#    echo "Not updating docs, were not on the master branch"
+#    exit 0
+#fi
+
+#update the docs
+chmod -R 0777 ./documents
+"./scripts/admin/databox-release --AccessToken=${GH_TOKEN} --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json"
+git config --global user.email "toshbrown@gmail.com"
+git config --global user.name "Toshbrown"
+git remote rm origin
+git remote add origin https://Toshbrown:${GH_TOKEN}@github.com/me-box/databox.git
+git checkout ${TRAVIS_BRANCH}
+git add ./documents/Documentation.md
+git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} updated documents [skip ci]"
+git push origin ${TRAVIS_BRANCH}
