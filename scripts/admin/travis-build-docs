@@ -12,12 +12,12 @@ OK="${TRAVIS_BRANCH:?TRAVIS_BRANCH must be set}"
 OK="${TRAVIS_BUILD_NUMBER:?TRAVIS_BUILD_NUMBER be must set}"
 OK="${TRAVIS_PULL_REQUEST:?TRAVIS_PULL_REQUEST be must set}"
 
-#only run on commits to master branch
-#if [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ $TRAVIS_BRANCH == “master” ]]
-#then
-#    echo "Not updating docs, were not on the master branch"
-#    exit 0
-#fi
+#only build docs on commits to master branch
+if [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ $TRAVIS_BRANCH == “master” ]]
+then
+    echo "Not updating docs, were not on the master branch"
+    exit 0
+fi
 
 #update the docs
 chmod -R 0777 ./documents
