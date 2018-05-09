@@ -85,6 +85,17 @@ rm ./slaStore/sladatastore.db >/dev/null 2>&1
 export DATABOX_TESTING=1
 
 case "$1" in
+  travis )
+    echo "travis build checking build type needed"
+    if [[ "$(git diff --name-only master)" == *"databox-components"* ]]
+    then
+      echo "databox-components has been modified building from source"
+      source ./databox-start dev
+    else
+      echo "databox-components has not been modified using :latest images from databoxsystems on docker hub"
+      source ./databox-start latest
+    fi
+  ;;
   dev )
     echo "Testing databox in dev mode building all components from source code"
     source ./databox-start dev
