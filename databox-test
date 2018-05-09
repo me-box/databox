@@ -87,10 +87,10 @@ export DATABOX_TESTING=1
 case "$1" in
   travis )
     echo "travis build checking build type needed"
+    git remote rm origin
+    git remote add origin https://github.com/me-box/databox.git
     git pull origin master
-    git diff origin/master --name-only
-    git diff origin/master origin/${TRAVIS_BRANCH} --name-only
-    if [[ "$(git diff origin/master --name-only)" == *"databox-components"* ]]
+    if [[ "$(git diff HEAD origin/master --name-only)" == *"databox-components"* ]]
     then
       echo "databox-components has been modified building from source"
       source ./databox-start dev
