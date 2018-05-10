@@ -29,48 +29,6 @@ function test_app_os_monitor {
   test_assert_contains "$RES" "$EXPECTED" "Can we get data from app-os-monitor?"
 }
 
-function red {
-  echo "\033[0;31m${1}\033[0m"
-}
-
-function fail {
-    echo -e "[$( red FAILED )] ${1} \nERROR: ${2}"
-    #output debug information
-    echo "docker version:"
-    docker version
-    echo "docker ps \n"
-    docker ps
-    #echo "docker image ls \n"
-    #docker image ls
-    echo "docker service ls \n"
-    docker service ls
-    echo "service logs databox_container-manager \n"
-    docker service logs databox_container-manager
-    echo "\n"
-    exit 1
-}
-
-function success {
-    echo -e "[$( green OK )] $1"
-}
-
-function test_assert {
-  if [ "$1" != "$2" ]
-  then
-    fail "$3" "$1"
-  else
-    success "$3"
-  fi
-}
-
-function test_assert_contains {
-  if [[ "$1" != *"$2"* ]]
-  then
-    fail "$3" "$1"
-  else
-    success "$3"
-  fi
-}
 
 function jsonValue() {
 KEY=$1
@@ -83,6 +41,7 @@ rm ./slaStore/sladatastore.db >/dev/null 2>&1
 
 #Start databox
 export DATABOX_TESTING=1
+
 
 case "$1" in
   travis )
@@ -120,7 +79,34 @@ case "$1" in
     exit 1
 esac
 
+#
+# override fail function to provide better debug output mist be after source ./databox-start
+#
+function fail {
+    echo -e "[$( red FAILED )] ${1} \nERROR: ${2}"
+    output debug information
+    echo "docker version:"
+    docker version
+    echo "docker ps \n"
+    docker ps
+    echo "docker image ls \n"
+    docker image ls
+    echo "docker service ls \n"
+    docker service ls
+    echo "service logs databox_container-manager \n"
+    docker service logs databox_container-manager
+    echo "\n"
+    exit 1
+}
 
+function test_assert_contains {
+  if [[ "$1" != *"$2"* ]]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
+  fi
+}
 
 
 UI_AUTH_TOKEN=$(cat ./certs/container-mananager-auth.json | jsonValue "token" 1)
