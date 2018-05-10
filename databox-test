@@ -96,6 +96,13 @@ function fail {
     echo "service logs databox_container-manager \n"
     docker service logs databox_container-manager
     echo "\n"
+    echo "service service logs app-os-monitor \n"
+    docker service logs app-os-monitor
+    echo "\n"
+    echo "service service logs driver-os-monitor  \n"
+    docker service logs driver-os-monitor
+    echo "\n"
+
     exit 1
 }
 
