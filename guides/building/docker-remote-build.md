@@ -1,0 +1,1 @@
+By default, the Docker daemon and client communicate via a Unix socket. It is possible however to use Docker remotely over HTTP. The instructions for setting this up in a secure manner are documented at <https://docs.docker.com/engine/security/https/>. I've been using this technique to connect to a Cubietruck running Docker in order to build ARM images.
