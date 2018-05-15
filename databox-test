@@ -57,27 +57,32 @@ case "$1" in
     then
       echo "databox-components has been modified building from source"
       source ./databox-start dev
+      DATABOX_CMD="./databox-start dev"
       export DATABOX_SLA_REG="localhost"
     else
       echo "databox-components has not been modified using :latest images from databoxsystems on docker hub"
       source ./databox-start latest
       export DATABOX_SLA_REG="databoxsystems"
+      DATABOX_CMD="./databox-start latest"
     fi
   ;;
   dev )
     echo "Testing databox in dev mode building all components from source code"
     source ./databox-start dev
     export DATABOX_SLA_REG="localhost"
+    DATABOX_CMD="./databox-start dev"
     ;;
   latest )
     echo "Testing databox in latest using :latest images from databoxsystems on docker hub"
     source ./databox-start latest
     export DATABOX_SLA_REG="databoxsystems"
+    DATABOX_CMD="./databox-start latest"
     ;;
    release )
     echo "Testing databox release using images from databoxsystems on docker hub"
     source ./databox-start
     export DATABOX_SLA_REG="databoxsystems"
+    DATABOX_CMD="./databox-start"
     ;;
   *)
     echo $'\nRun Databox integration tests:\n'
@@ -200,5 +205,16 @@ install_osmon_app_and_driver
 #second test of the app
 sleep 30
 test_app_os_monitor
+
+echo "Stopping data box"
+./databox-stop
+
+echo "Restarting data box"
+source ${DATABOX_CMD}
+
+#third test of the app
+sleep 30
+test_app_os_monitor
+
 
 exit 0
