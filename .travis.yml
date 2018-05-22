@@ -1,11 +1,17 @@
 sudo: required
 language: bash
 before_install:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get -y install docker-ce
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu
+  $(lsb_release -cs) stable"
+- sudo apt-get update
+- sudo apt-get -y install docker-ce
 script:
-  - ./databox-test
+- "./databox-test travis"
+after_success:
+- "./scripts/admin/travis-build-docs"
 services:
-  - docker
+- docker
+env:
+  global:
+  - secure: rDyHkaVuT/R2WsVx6uoCUtrSYwPkNkXG+7Q0u0lulPYJ5L+JZkcnz+Pa4z0cWu1czKGV/KM1OVNX4ngf4Y6yYfBP13spA0Q1VLGNUzKA0Y4uQrNz0luVZI8LM93l6U26KCEVKrUJ9cPK8mZR4NCUH8YSLmi5rxOg7Aln0LUqk18WEa3TlNNJKvbAk6fp3XywwASH7F4Wum6GLH0XlDbg1A/AVjFQTYkn8nD98efyXanVRsl4wa0vddl9rZLUy3ym8hpB8K2blreRmp6mUyTmDTbxB2Gm3CFmcDGsRbrNxfN/qnQLH1CT/f638/67ZlKR4n6OW2KEPejOgQQEFLg4NrvefovIS/twiGB2k7wGgtbjnrpJXhM4QRO3oU/YLgGcHUg67Wt97/5F7zleKGK6sTuCCIrhO5jtw6t7akcnIkDUWBWKTPGxFoxnmQfa11gyciBNj7ha9t+sict76zA5Q4NreNnVcGUpasjg11i21QZMUfmbwE3FGRo6oUYvac8x1F65tuBEdcpRDMneZNYD1bVahbRJuT03nemzs/KJeSZ0BH4Nqt16ovbQOvwhLn7QNC0yEtya3zXYFD7PB5rT47T1gj9FIxyiS9BA9Yot5gUSKFPphsVSkFWWwak6MaJ33kqBO05dSkaHPQ6/NB1LaOMlK7uDY72UIAGvEjE7i/o=

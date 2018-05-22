@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#makesure we are in the right dir
+#make sure we are in the right dir
 MY_PATH="`dirname \"$0\"`"              # relative
 MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
 cd "${MY_PATH}"
@@ -24,8 +24,40 @@ if ! [ -x "$(command -v docker)" ]; then
 fi
 
 if ! [ -x "$(command -v docker-compose)" ]; then
-  die 2 "docker-compose is not installed;"`
+  die 1 "docker-compose is not installed;"`
        `"see https://docs.docker.com/compose/install/#install-compose"
+fi
+
+
+## base images: what are we running on?
+ARCH=$(uname -m)
+case "$ARCH" in
+  armv7l )
+    NODE_IMAGE="hypriot/rpi-node:slim"
+    DEV=1 #ARM is only supported in dev mode with locally built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  aarch64 )
+    NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
+    DEV=1 #ARM is only supported in dev mode with locally built images (for now)
+    export DATABOX_ARCH="-"${ARCH}
+    export DATABOX_DEV="1"
+    ;;
+
+  * )
+    ARCH=""
+    NODE_IMAGE="node:alpine"
+    export DATABOX_ARCH=""
+    ;;
+esac
+
+#test docker dns configuration
+docker run $NODE_IMAGE nslookup google.com >/dev/null 2>&1
+if [[ "$?" == "1" ]]
+then
+  die 1 "[ERROR] DNS test failed: Your docker DNS resolution seems to be broken. Help can be found here https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/"
 fi
 
 ## parse command line args
@@ -91,6 +123,7 @@ if [[ "${#ips[@]}" -gt "1" ]]; then
 fi
 err "host interface IP address = ${HOST_IP}"
 
+
 ## Get the external IP of the databox used for NATed set-ups over HTTPS
 cd dockerfiles/curl
 docker build -t databoxsystems/curl . >/dev/null
@@ -105,30 +138,6 @@ then
   die 1 'Error getting external IP address. Do you have network connectivity?'
 fi
 err "External interface IP address = ${EXT_IP}"
-
-## base images: what are we running on?
-ARCH=$(uname -m)
-case "$ARCH" in
-  armv7l )
-    NODE_IMAGE="hypriot/rpi-node:slim"
-    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
-    export DATABOX_ARCH="-"${ARCH}
-    export DATABOX_DEV="1"
-    ;;
-
-  aarch64 )
-    NODE_IMAGE="forumi0721alpineaarch64/alpine-aarch64-nodejs"
-    DEV=1 #ARM is only supported in dev mode with localy built images (for now)
-    export DATABOX_ARCH="-"${ARCH}
-    export DATABOX_DEV="1"
-    ;;
-
-  * )
-    ARCH=""
-    NODE_IMAGE="node:alpine"
-    export DATABOX_ARCH=""
-    ;;
-esac
 
 DOCKER_REPO=""
 DATABOX_VERSION=$(<./Version)
@@ -187,7 +196,7 @@ _exec node ./src/createCerts.js ${HOST_IP} ${EXT_IP} ${ips[@]}
 if [ "$DEV" == "1" ]
 then
   # build all images locally in dev mode
-  err "Building Databox localy in dev mode"
+  err "Building Databox locally in dev mode"
   ./databox-fetch-components
   source ./databox-build-core
   assert_or_die $? 0 "Problem building core images"
