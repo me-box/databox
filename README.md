@@ -8,9 +8,8 @@ These instructions will get a copy of the Databox up and running on your local m
 ### Prerequisites
 
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
-2) Once docker is installed and running, install docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
-3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
-4) Requires golang grater than 10.0 Read [here](https://golang.org/doc/install) (This will not be needed in future)
+2) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
+3) Requires golang grater than 10.0 Read [here](https://golang.org/doc/install) (Required for now, will only be needed to build from source in future)
 
 > Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking. Also note that more than one CPU core must be allocated to the VM.
 
