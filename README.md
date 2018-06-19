@@ -10,6 +10,7 @@ These instructions will get a copy of the Databox up and running on your local m
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
 2) Once docker is installed and running, install docker-compose. Read [here](https://docs.docker.com/compose/install/) for installation.
 3) Requires Git (if it is not already on your machine). Read [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for git installation.
+4) Requires golang grater than 10.0 Read [here](https://golang.org/doc/install) (This will not be needed in future)
 
 > Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking. Also note that more than one CPU core must be allocated to the VM.
 
@@ -25,7 +26,8 @@ Make sure Docker is installed and running before starting Databox.  Run the foll
 running.
 ```
 cd databox
-./databox-start
+make deps && make build
+make start
 ```
 The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox on your local machine.
 
@@ -35,7 +37,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-./databox-stop
+make stop
 ```
 
 # Development
@@ -44,20 +46,18 @@ To stop databox and clean up,
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-./databox-start sdk
+./bin/databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-./databox-stop sdk
+./bin/databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
 
 It is possible to develop Databox apps and driver without the SDK. Currently, [Python](https://github.com/me-box/lib-python-databox), [Golang](https://github.com/me-box/lib-go-databox) and [NodeJs](https://github.com/me-box/node-databox) all have support libraries. Building outside the SDK allows you to make smaller more efficient containers and use more third-party libraries.
-
-Developing apps and drivers 'does not' require data box to be started in dev mode.
 
 To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make your app available to install locally on your databox you will need to upload the manifest to http://127.0.0.1:8181 and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built then you should be up to install the app on your local Databox.
 
@@ -73,25 +73,11 @@ This will download and build the code on your machine and upload the Databox man
 
 ## Developing core components
 
-To develop on the platform and core components run the data-box start script with 'dev' parameter. See below.
+To develop on the platform and core components the databox start command allows you to replace the databoxsystems core images with your oen. For example to replace the arbiter.
 
 ```
-./databox-start dev
-```
-
-Unlike using the pre-built images, this will clone all the relevant source repositories locally, and build them into the
-required Docker images.
-
-When you start in development mode only the `core-components` are built from source. If you wish to develop one of the available apps or drivers then you can add them to your local install using:
-
-```
-./databox-install-component driver-os-monitor
-```
-
-This will download and build the code on your machine and upload the Databox manifest to your local app store. You can also use this with your repositories  and forks using:
-
-```
-./databox-install-component [GITHUB_USERNAME]/[GITHUB_REPONAME]
+docker build databoxdev/arbiter .                                     # build your updated arbiter image
+./bin/databox start --release 0.4.0 --arbiter databoxdev/arbiter      # start databox using the new code
 ```
 
 # Databox Components
