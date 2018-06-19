@@ -41,11 +41,6 @@ seedManifest() {
   rm ./databox-jar
 }
 
-installStores() {
-  log "Installing Stores"
-  OUTPUT=$(docker pull databoxsystems/core-store:${DATABOX_VERSION}; docker tag databoxsystems/core-store:${DATABOX_VERSION} core-store:${DATABOX_VERSION})
-  test_assert $? 0 "Pull core-store " "$OUTPUT"
-}
 
 buildImage() {
   cd ${1}
@@ -87,11 +82,9 @@ if [ ! -d "./$COMPONENT_NAME" ]; then
   test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
   buildImage ${COMPONENT_NAME}
   seedManifest ${COMPONENT_NAME}
-  installStores
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
   pullChanges ${COMPONENT_NAME}
   buildImage ${COMPONENT_NAME}
   seedManifest ${COMPONENT_NAME}
-  installStores
 fi
