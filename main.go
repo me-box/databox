@@ -258,10 +258,11 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 	service := swarm.ServiceSpec{
 		TaskTemplate: swarm.TaskSpec{
 			ContainerSpec: &swarm.ContainerSpec{
-				Image:  options.ContainerManagerImage + ":" + options.Version,
-				Labels: map[string]string{"databox.type": "container-manager"},
+				Image:    options.ContainerManagerImage + ":" + options.Version,
+				Hostname: "container-manager",
+				Labels:   map[string]string{"databox.type": "container-manager"},
 				Env: []string{
-					"DATABOX_ARBITER_ENDPOINT=https://arbiter:8080",
+					"DATABOX_ARBITER_ENDPOINT=tcp://arbiter:4444",
 					"DATABOX_SDK=0",
 				},
 				Mounts: []mount.Mount{

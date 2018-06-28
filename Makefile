@@ -1,6 +1,8 @@
 .PHONY: all
 all: build
 
+defaultDataboxOptions=--release latest -v -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -store toshdatabox/core-store
+
 .PHONY: deps
 deps:
 	go get -u github.com/pebbe/zmq4
@@ -23,13 +25,18 @@ start:
 	#TODO using toshdatabox/core-container-manager until the old CM is retired
 	bin/databox start --release latest -v -cm toshdatabox/core-container-manager
 
+.PHONY: startdev
+startdev:
+	#runing latest for local dev
+	bin/databox start $(defaultDataboxOptions)
+
 .PHONY: startlatest
 startlatest:
-	bin/databox start --release latest
+	bin/databox start $(defaultDataboxOptions) --release latest
 
 .PHONY: startflushslas
 startflushslas:
-	bin/databox start --flushSLAs true
+	bin/databox start $(defaultDataboxOptions) --flushSLAs true
 
 .PHONY: stop
 stop:

@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#Some bad default password for testing
+UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
+
+#Default test command
+# TODO --release latest is to force the use of zest 0.0.7
+DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -store toshdatabox/core-store -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -v"
+
+echo $DATABOX_COMMAND
+
 function red {
   echo "\033[0;31m${1}\033[0m"
 }
@@ -87,13 +96,6 @@ function setup_auth_cookie {
   test_assert $STATUS 200 "Is /api/connect available?"
 }
 
-#Some bad default password for testing
-UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
-
-# TODO --release latest is to force the use of zest 0.0.7
-# TODO using toshdatabox/core-container-manager until the old CM is retired
-DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -cm toshdatabox/core-container-manager -v "
-
 #Start databox
 go run *.go stop
 $DATABOX_COMMAND --flushSLAs
@@ -101,7 +103,7 @@ $DATABOX_COMMAND --flushSLAs
 rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
-sleep 80
+sleep 100
 docker ps
 
 #setup the auth cookie
@@ -110,16 +112,6 @@ setup_auth_cookie
 #can we see the CM UI
 STATUS=$(curl -sL --cookie ./databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
 test_assert $STATUS 200 "Is core-container-manager available?"
-
-#is the arbiter up
-RES=$(curl -sL --cookie ./databox-jar  --insecure --http1.1 "https://127.0.0.1/arbiter/status")
-test_assert "$RES" "active" "Is the arbiter available?"
-
-#is the arbiter /cat endpoint ok
-#EXPECTED='{"catalogue-metadata":[{"rel":"urn:X-hypercat:rels:isContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox Root Catalogue"},{"rel":"urn:X-hypercat:rels:hasHomepage","val":"http://www.databoxproject.uk/"},{"rel":"urn:X-hypercat:rels:containsContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:Xhypercat:rels:supportsSearch","val":"urn:X-hypercat:search:simple"}],"items":[]}'
-#RES=$(curl -sL  --cookie ./databox-jar --insecure --http1.1 "https://127.0.0.1/arbiter/cat")
-#test_assert "$RES" "$EXPECTED" "Is the arbiter cat endpoint is ok?"
-
 
 #first install of the app and driver
 install_osmon_app_and_driver
@@ -174,7 +166,7 @@ go run *.go stop
 
 echo "Restarting databox"
 $DATABOX_COMMAND
-sleep 80
+sleep 100
 
 #restarting databox clears session token get a new one
 setup_auth_cookie
