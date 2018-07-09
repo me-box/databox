@@ -5,7 +5,9 @@ UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
 
 #Default test command
 # TODO --release latest is to force the use of zest 0.0.7
+#DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -v"
 DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -store toshdatabox/core-store -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -v"
+DATABOX_SLA_REG="databoxsystems"
 
 echo $DATABOX_COMMAND
 
@@ -55,7 +57,6 @@ function test_assert_contains {
   fi
 }
 
-DATABOX_SLA_REG="databoxsystems"
 
 function install_osmon_app_and_driver {
   #function to install app driver pair
@@ -172,7 +173,7 @@ sleep 100
 setup_auth_cookie
 
 #third test of the app
-test_app_os_monitor "forth"
+test_app_os_monitor "fourth"
 
 
 exit 0
