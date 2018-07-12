@@ -1,8 +1,22 @@
 .PHONY: all
 all: build build-linux-amd64 build-linux-arm64
 
-defaultDataboxOptions=--release latest -v -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -store toshdatabox/core-store
+defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
+											-arbiter dev/core-arbiter \
+											-cm dev/container-manager \
+											-store dev/core-store \
+											-export-service dev/core-store \
+											-core-network dev/core-network \
+											-core-network-relay dev/core-network-relay
 
+defaultDataboxOptions=--release latest -v -app-server toshdatabox/app-server \
+											-arbiter toshdatabox/core-arbiter \
+											-cm toshdatabox/container-manager \
+											-store toshdatabox/core-store \
+											-export-service toshdatabox/core-store \
+											-core-network toshdatabox/core-network \
+											-core-network-relay toshdatabox/core-network-relay \
+											-registry toshdatabox
 .PHONY: deps
 deps:
 	go get -u github.com/pebbe/zmq4
@@ -36,17 +50,16 @@ build-linux-arm64:
 .PHONY: start
 start:
 	#TODO runing latest for now so that we can use core-store with zest 0.0.7
-	#TODO using toshdatabox/core-container-manager until the old CM is retired
-	bin/databox start --release latest -v -cm toshdatabox/core-container-manager
+	bin/databox start --release latest -v $(defaultDataboxOptions) --flushSLAs true
 
 .PHONY: startdev
 startdev:
 	#runing latest for local dev
-	bin/databox start $(defaultDataboxOptions)
+	bin/databox start $(defaultDevDataboxOptions) --flushSLAs true
 
 .PHONY: startlatest
 startlatest:
-	bin/databox start $(defaultDataboxOptions) --release latest
+	bin/databox start $(defaultDataboxOptions)
 
 .PHONY: startflushslas
 startflushslas:
@@ -62,4 +75,8 @@ logs:
 
 .PHONY: test
 test:
-	./databox-test
+	./databox-test "$(defaultDataboxOptions)"
+
+.PHONY: test-dev
+test-dev:
+	./databox-test "$(defaultDevDataboxOptions)"

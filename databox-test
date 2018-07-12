@@ -3,11 +3,10 @@
 #Some bad default password for testing
 UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
 
-#Default test command
-# TODO --release latest is to force the use of zest 0.0.7
-#DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -v"
-DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} --release latest -store toshdatabox/core-store -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -v"
-DATABOX_SLA_REG="databoxsystems"
+#Default test command from first argument
+DATABOX_COMMAND="go run *.go start --password ${UI_AUTH_TOKEN} ${1}"
+#DATABOX_SLA_REG="databoxsystems"
+DATABOX_SLA_REG="local"
 
 echo $DATABOX_COMMAND
 
