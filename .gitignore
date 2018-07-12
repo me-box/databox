@@ -23,3 +23,13 @@ databox-jar
 app-os-monitor/
 
 sdk/
+
+build/
+
+driver-os-monitor/
+
+driver-sensingkit/
+
+lib-node-databox/
+
+nodeZestClient/
