@@ -44,9 +44,9 @@ seedManifest() {
 
 buildImage() {
   cd ${1}
-  log "Starting build ${1} ..."
-  OUTPUT=$(docker build -t $1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
-  test_assert $? 0 "Build ${1}" "$OUTPUT"
+  log "Starting build local/${1} ..."
+  OUTPUT=$(docker build -t local/$1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
+  test_assert $? 0 "Build local/${1}" "$OUTPUT"
   cd ..
 }
 
