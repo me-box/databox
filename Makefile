@@ -1,5 +1,5 @@
 .PHONY: all
-all: build
+all: build build-linux-amd64 build-linux-arm64
 
 defaultDataboxOptions=--release latest -v -arbiter toshdatabox/core-arbiter -cm toshdatabox/core-container-manager -store toshdatabox/core-store
 
