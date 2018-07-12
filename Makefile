@@ -19,6 +19,20 @@ build:
 	rm -rf ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
 	go build -o bin/databox *.go
 
+.PHONY: build-linux-amd64
+build-linux-amd64:
+	docker build -t local/databox-amd64 -f ./Dockerfile-amd64 .
+	docker create --name databox-amd64 -it local/databox-amd64
+	docker cp databox-amd64:/bin/databox ./bin/databox.amd64
+	docker rm databox-amd64
+
+PHONY: build-linux-arm64
+build-linux-arm64:
+	docker build -t local/databox-arm64 -f ./Dockerfile-arm64 .
+	docker create --name databox-arm64 -it local/databox-arm64
+	docker cp databox-arm64:/bin/databox ./bin/databox.arm64
+	docker rm databox-arm64
+
 .PHONY: start
 start:
 	#TODO runing latest for now so that we can use core-store with zest 0.0.7
