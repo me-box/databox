@@ -153,3 +153,8 @@ test:
 .PHONY: test-dev
 test-dev:
 	./databox-test "$(defaultDevDataboxOptions)"
+
+PHONY: clean-docker
+clean-docker:
+	docker rm  $$(docker ps -a -q)
+	docker rmi $$(docker images -q) -f
