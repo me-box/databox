@@ -1,4 +1,4 @@
-FROM amd64/alpine
+FROM amd64/alpine:3.8
 RUN apk update && apk add build-base go git libzmq zeromq-dev alpine-sdk libsodium-dev
 
 ENV GOPATH /

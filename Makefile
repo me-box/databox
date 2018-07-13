@@ -42,10 +42,10 @@ build-linux-amd64:
 
 PHONY: build-linux-arm64
 build-linux-arm64:
-	docker build -t local/databox-arm64 -f ./Dockerfile-arm64 .
-	docker create --name databox-arm64 -it local/databox-arm64
-	docker cp databox-arm64:/bin/databox ./bin/databox.arm64
-	docker rm databox-arm64
+	docker build -t local/databox-arm64v8 -f ./Dockerfile-arm64v8 .
+	docker create --name databox-arm64v8 -it local/databox-arm64v8
+	docker cp databox-arm64v8:/bin/databox ./bin/databox.arm64v8
+	docker rm databox-arm64v8
 
 .PHONY: start
 start:
@@ -109,7 +109,7 @@ build-core-containers:
 
 .PHONY: build-core-containers-arm64v8
 build-core-containers-arm64v8:
-	$(call build-core,latest,-arm64)
+	$(call build-core,latest,-arm64v8)
 
 define publish-core
 	docker tag dev/container-manager$(2):$(1) $(3)/container-manager$(2):$(1)
