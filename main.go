@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -51,6 +52,7 @@ func main() {
 	storeImage := startCmd.String("store", "databoxsystems/core-store", "Override core-store image")
 	clearSLAdb := startCmd.Bool("flushSLAs", false, "Removes any saved apps or drivers from the SLA database so they will not restart")
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
+	arch := startCmd.String("arch", "", "Used to overide the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
@@ -86,6 +88,12 @@ func main() {
 		hostname, _ := os.Hostname()
 		ips, _ := net.LookupHost(hostname)
 		ipv4s := removeIPv6addresses(ips)
+		cpuArch := ""
+		if *arch != "" {
+			cpuArch = *arch
+		} else if runtime.GOARCH == "arm64" {
+			cpuArch = "arm64v8"
+		}
 
 		opts := &libDatabox.ContainerManagerOptions{
 			Version:               *startCmdRelease,
@@ -107,6 +115,7 @@ func main() {
 			ExternalIP:            getExternalIP(),
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
+			Arch:                  cpuArch,
 		}
 
 		if *ReGenerateDataboxCertificates == true {
