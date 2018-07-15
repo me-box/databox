@@ -14,8 +14,6 @@
 certs/
 pkg/
 
-bin/
-
 databox-jar
 
 \.DS_Store

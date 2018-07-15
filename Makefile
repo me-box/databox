@@ -31,7 +31,7 @@ deps:
 .PHONY: build
 build:
 	rm -rf ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
-	go build -o bin/databox *.go
+	go build -ldflags="-s -w" -o bin/databox *.go
 
 .PHONY: build-linux-amd64
 build-linux-amd64:
@@ -75,7 +75,7 @@ define build-core
 	#get the code
 	#TODO fix repo paths once PR are merged (toshbrown --> me-box)
 	$(call gitPullorClone, https://github.com/toshbrown/core-container-manager.git,core-container-manager)
-	$(call gitPullorClone, https://github.com/me-box/core-network.git,core-network)
+	$(call gitPullorClone, https://github.com/toshbrown/core-network.git,core-network)
 	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store)
 	$(call gitPullorClone, https://github.com/toshbrown/core-arbiter.git,core-arbiter)
 	$(call gitPullorClone, https://github.com/toshbrown/app-os-monitor.git,app-os-monitor)
@@ -89,8 +89,8 @@ define build-core
 	cd ./build/core-container-manager && docker build -t dev/container-manager$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/core-network && docker build -t dev/core-network$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/core-network && docker build -t dev/core-network-relay$(2):$(1) -f Dockerfile-relay$(2) .
-	cd ./build/core-store && docker build -t dev/core-store$(2):$(1) -f Dockerfile$(2) .
-	cd ./build/core-arbiter && docker build -t dev/core-arbiter$(2):$(1) -f Dockerfile$(2) .
+	#cd ./build/core-store && docker build -t dev/core-store$(2):$(1) -f Dockerfile$(2) .
+	#cd ./build/core-arbiter && docker build -t dev/core-arbiter$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/platform-app-server && docker build -t dev/app-server$(2):latest -f Dockerfile$(2) .
 
 	cd ./build/app-os-monitor && docker build -t local/app-os-monitor$(2):$(1) -f Dockerfile$(2) .
@@ -140,7 +140,7 @@ publish-core-containers:
 
 .PHONY: publish-core-containers-arm64v8
 publish-core-containers-arm64v8:
-	$(call publish-core,latest,-arm64,toshdatabox)
+	$(call publish-core,latest,-arm64v8,toshdatabox)
 
 .PHONY: logs
 logs:
