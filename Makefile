@@ -1,6 +1,9 @@
 .PHONY: all
 all: build build-linux-amd64 build-linux-arm64
 
+#Change where images a pulled from and pused to when using this script.
+defaultReg=toshdatabox
+
 defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
 											-arbiter dev/core-arbiter \
 											-cm dev/container-manager \
@@ -9,14 +12,16 @@ defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
 											-core-network dev/core-network \
 											-core-network-relay dev/core-network-relay
 
-defaultDataboxOptions=--release latest -v -app-server toshdatabox/app-server \
-											-arbiter toshdatabox/core-arbiter \
-											-cm toshdatabox/container-manager \
-											-store toshdatabox/core-store \
-											-export-service toshdatabox/core-store \
-											-core-network toshdatabox/core-network \
-											-core-network-relay toshdatabox/core-network-relay \
-											-registry toshdatabox
+defaultDataboxOptions=--release latest -v -app-server $(defaultReg)/app-server \
+											-arbiter $(defaultReg)/core-arbiter \
+											-cm $(defaultReg)/container-manager \
+											-store $(defaultReg)/core-store \
+											-export-service $(defaultReg)/core-store \
+											-core-network $(defaultReg)/core-network \
+											-core-network-relay $(defaultReg)/core-network-relay \
+											-registry $(defaultReg)
+
+
 
 ifeq ($(shell uname -m),x86_64)
 	HOST_ARCH = .amd64
@@ -160,11 +165,11 @@ endef
 
 .PHONY: publish-core-containers
 publish-core-containers:
-	$(call publish-core,latest,,toshdatabox)
+	$(call publish-core,latest,,$(defaultReg))
 
 .PHONY: publish-core-containers-arm64v8
 publish-core-containers-arm64v8:
-	$(call publish-core,latest,-arm64v8,toshdatabox)
+	$(call publish-core,latest,-arm64v8,$(defaultReg))
 
 .PHONY: logs
 logs:
@@ -172,11 +177,11 @@ logs:
 
 .PHONY: test
 test:
-	./databox-test "$(defaultDataboxOptions)" $(HOST_ARCH)
+	./databox-test "$(defaultDataboxOptions)" $(HOST_ARCH) $(defaultReg)
 
 .PHONY: test-dev
 test-dev:
-	./databox-test "$(defaultDevDataboxOptions)" $(HOST_ARCH)
+	./databox-test "$(defaultDevDataboxOptions)" $(HOST_ARCH) $(defaultReg)
 
 PHONY: clean-docker
 clean-docker:

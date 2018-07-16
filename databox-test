@@ -8,7 +8,7 @@ HOST_ARCH=${2}
 DATABOX_COMMAND="./bin/databox${HOST_ARCH} start --password ${UI_AUTH_TOKEN} ${1}"
 DATABOX_STOP_COMMAND "./bin/databox${HOST_ARCH} stop"
 
-DATABOX_SLA_REG="databoxsystems"
+DATABOX_SLA_REG=${3}
 
 echo $DATABOX_COMMAND
 
