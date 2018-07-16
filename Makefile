@@ -17,6 +17,30 @@ defaultDataboxOptions=--release latest -v -app-server toshdatabox/app-server \
 											-core-network toshdatabox/core-network \
 											-core-network-relay toshdatabox/core-network-relay \
 											-registry toshdatabox
+
+ifeq ($(shell uname -m),x86_64)
+	HOST_ARCH = .amd64
+endif
+ifeq ($(shell uname -m),aarch64)
+	HOST_ARCH = .arm64v8
+endif
+
+ifeq ($(shell uname -s),Linux)
+	HOST_PATFORM = Linux
+endif
+ifeq ($(shell uname -s),Darwin)
+	HOST_PATFORM = Darwin
+	HOST_ARCH = ""
+endif
+
+ifndef HOST_ARCH
+	$(error Host architecture not suported)
+endif
+
+ifndef HOST_PATFORM
+	$(error Host platform not supported)
+endif
+
 .PHONY: deps
 deps:
 	go get -u github.com/pebbe/zmq4
@@ -50,24 +74,24 @@ build-linux-arm64:
 .PHONY: start
 start:
 	#TODO runing latest for now so that we can use core-store with zest 0.0.7
-	bin/databox start --release latest -v $(defaultDataboxOptions) --flushSLAs true
+	bin/databox start$(HOST_ARCH) --release latest -v $(defaultDataboxOptions) --flushSLAs true
 
 .PHONY: startdev
 startdev:
 	#runing latest for local dev
-	bin/databox start $(defaultDevDataboxOptions) --flushSLAs true
+	bin/databox$(HOST_ARCH) start $(defaultDevDataboxOptions) --flushSLAs true
 
 .PHONY: startlatest
 startlatest:
-	bin/databox start $(defaultDataboxOptions)
+	bin/databox$(HOST_ARCH) start $(defaultDataboxOptions)
 
 .PHONY: startflushslas
 startflushslas:
-	bin/databox start $(defaultDataboxOptions) --flushSLAs true
+	bin/databox$(HOST_ARCH) start $(defaultDataboxOptions) --flushSLAs true
 
 .PHONY: stop
 stop:
-	bin/databox stop
+	bin/databox$(HOST_ARCH) stop
 
 #$1==version $2==Architecture(blank for x86)
 define build-core
@@ -148,11 +172,11 @@ logs:
 
 .PHONY: test
 test:
-	./databox-test "$(defaultDataboxOptions)"
+	./databox-test "$(defaultDataboxOptions)" $(HOST_ARCH)
 
 .PHONY: test-dev
 test-dev:
-	./databox-test "$(defaultDevDataboxOptions)"
+	./databox-test "$(defaultDevDataboxOptions)" $(HOST_ARCH)
 
 PHONY: clean-docker
 clean-docker:
