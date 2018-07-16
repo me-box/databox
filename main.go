@@ -86,8 +86,7 @@ func main() {
 
 		//get some info in the network configuration
 		hostname, _ := os.Hostname()
-		ips, _ := net.LookupHost(hostname)
-		ipv4s := removeIPv6addresses(ips)
+		ipv4s := removeIPv6addresses(getLocalInterfaceIps())
 		cpuArch := ""
 		if *arch != "" {
 			cpuArch = *arch
@@ -360,6 +359,23 @@ func removeContainer(name string) {
 		rerr := dockerCli.ContainerRemove(context.Background(), containers[0].ID, types.ContainerRemoveOptions{Force: true})
 		libDatabox.ChkErr(rerr)
 	}
+}
+
+func getLocalInterfaceIps() []string {
+	IPs := []string{}
+	ifaces, _ := net.Interfaces()
+	for _, i := range ifaces {
+		addrs, _ := i.Addrs()
+		for _, addr := range addrs {
+			switch v := addr.(type) {
+			case *net.IPNet:
+				IPs = append(IPs, v.IP.String())
+			case *net.IPAddr:
+				IPs = append(IPs, v.IP.String())
+			}
+		}
+	}
+	return IPs
 }
 
 func removeIPv6addresses(addresses []string) []string {
