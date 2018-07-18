@@ -25,7 +25,6 @@ Make sure Docker is installed and running before starting Databox.  Run the foll
 running.
 ```
 cd databox
-make deps && make build
 make start
 ```
 The above script pulls Databox pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and run  Databox on your local machine.

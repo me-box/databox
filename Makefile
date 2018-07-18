@@ -1,7 +1,10 @@
 .PHONY: all
 all: build build-linux-amd64 build-linux-arm64
 
-#Change where images a pulled from and pused to when using this script.
+#The version of databox used in publish-core-containers-version
+version=0.5.0
+
+#Change where images a pulled from and pushed to when using this script.
 defaultReg=toshdatabox
 
 defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
@@ -10,9 +13,10 @@ defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
 											-store dev/core-store \
 											-export-service dev/core-store \
 											-core-network dev/core-network \
-											-core-network-relay dev/core-network-relay
+											-core-network-relay dev/core-network-relay \
+											-registry $(defaultReg)
 
-defaultDataboxOptions=--release latest -v -app-server $(defaultReg)/app-server \
+defaultDataboxOptions= -v -app-server $(defaultReg)/app-server \
 											-arbiter $(defaultReg)/core-arbiter \
 											-cm $(defaultReg)/container-manager \
 											-store $(defaultReg)/core-store \
@@ -85,16 +89,16 @@ build-linux-arm64:
 .PHONY: start
 start:
 	#TODO runing latest for now so that we can use core-store with zest 0.0.7
-	bin/databox start$(HOST_ARCH) --release latest -v $(defaultDataboxOptions) --flushSLAs true
+	bin/databox start$(HOST_ARCH) --release $(version) $(defaultDataboxOptions) -v
 
 .PHONY: startdev
 startdev:
 	#runing latest for local dev
-	bin/databox$(HOST_ARCH) start $(defaultDevDataboxOptions) --flushSLAs true
+	bin/databox$(HOST_ARCH) start $(defaultDevDataboxOptions)
 
 .PHONY: startlatest
 startlatest:
-	bin/databox$(HOST_ARCH) start $(defaultDataboxOptions)
+	bin/databox$(HOST_ARCH) start --release latest $(defaultDataboxOptions) -v --flushSLAs true
 
 .PHONY: startflushslas
 startflushslas:
@@ -109,14 +113,16 @@ define build-core
 	mkdir -p build
 	#get the code
 	#TODO fix repo paths once PR are merged (toshbrown --> me-box)
-	$(call gitPullorClone, https://github.com/toshbrown/core-container-manager.git,core-container-manager)
-	$(call gitPullorClone, https://github.com/toshbrown/core-network.git,core-network)
-	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store)
-	$(call gitPullorClone, https://github.com/toshbrown/core-arbiter.git,core-arbiter)
-	$(call gitPullorClone, https://github.com/toshbrown/app-os-monitor.git,app-os-monitor)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor)
-	$(call gitPullorClone, https://github.com/me-box/platform-app-server.git,platform-app-server)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit)
+	$(call gitPullorClone, https://github.com/toshbrown/core-container-manager.git,core-container-manager,master)
+	$(call gitPullorClone, https://github.com/toshbrown/core-network.git,core-network,master)
+	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store,master)
+	$(call gitPullorClone, https://github.com/toshbrown/core-arbiter.git,core-arbiter,master)
+	$(call gitPullorClone, https://github.com/me-box/core-export-service.git,core-export-service,speak-zest)
+
+	$(call gitPullorClone, https://github.com/toshbrown/app-os-monitor.git,app-os-monitor,master)
+	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
+	$(call gitPullorClone, https://github.com/me-box/platform-app-server.git,platform-app-server,master)
+	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
 	#$(call gitPullorClone, https://github.com/me-box/zestdb.git,zestdb)
 
 	#Build and tag the images
@@ -124,8 +130,10 @@ define build-core
 	cd ./build/core-container-manager && docker build -t dev/container-manager$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/core-network && docker build -t dev/core-network$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/core-network && docker build -t dev/core-network-relay$(2):$(1) -f Dockerfile-relay$(2) .
-	#cd ./build/core-store && docker build -t dev/core-store$(2):$(1) -f Dockerfile$(2) .
-	#cd ./build/core-arbiter && docker build -t dev/core-arbiter$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/core-store && docker build -t dev/core-store$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/core-arbiter && docker build -t dev/core-arbiter$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/core-export-service && docker build -t dev/export-service$(2):$(1) -f Dockerfile$(2) .
+
 	cd ./build/platform-app-server && docker build -t dev/app-server$(2):latest -f Dockerfile$(2) .
 
 	cd ./build/app-os-monitor && docker build -t local/app-os-monitor$(2):$(1) -f Dockerfile$(2) .
@@ -133,9 +141,9 @@ define build-core
 	cd ./build/driver-sensingkit && docker build -t local/driver-sensingkit$(2):$(1) -f Dockerfile$(2) .
 endef
 
-#$1==giturl $2==name
+#$1==giturl $2==name $3=branch
 define gitPullorClone
-	git -C ./build/$(2) pull || git clone $(1) ./build/$(2)
+	git -C ./build/$(2) pull || git clone -b $(3) $(1) ./build/$(2)
 endef
 
 .PHONY: build-core-containers
@@ -147,35 +155,45 @@ build-core-containers-arm64v8:
 	$(call build-core,latest,-arm64v8)
 
 define publish-core
-	docker tag dev/container-manager$(2):$(1) $(3)/container-manager$(2):$(1)
+	docker tag dev/container-manager$(2):latest $(3)/container-manager$(2):$(1)
 	docker push $(3)/container-manager$(2):$(1)
-	docker tag dev/core-network$(2):$(1) $(3)/core-network$(2):$(1)
+	docker tag dev/core-network$(2):latest $(3)/core-network$(2):$(1)
 	docker push $(3)/core-network$(2):$(1)
-	docker tag dev/core-network-relay$(2):$(1) $(3)/core-network-relay$(2):$(1)
+	docker tag dev/core-network-relay$(2):latest $(3)/core-network-relay$(2):$(1)
 	docker push $(3)/core-network-relay$(2):$(1)
-	docker tag dev/core-store$(2):$(1) $(3)/core-store$(2):$(1)
+	docker tag dev/core-store$(2):latest $(3)/core-store$(2):$(1)
 	docker push $(3)/core-store$(2):$(1)
-	docker tag dev/core-arbiter$(2):$(1) $(3)/core-arbiter$(2):$(1)
+	docker tag dev/core-arbiter$(2):latest $(3)/core-arbiter$(2):$(1)
 	docker push $(3)/core-arbiter$(2):$(1)
-	docker tag dev/app-server$(2):$(1) $(3)/app-server$(2):$(1)
+	docker tag dev/app-server$(2):latest $(3)/app-server$(2):$(1)
 	docker push $(3)/app-server$(2):$(1)
+	docker tag dev/export-service$(2):latest $(3)/export-service$(2):$(1)
+	docker push $(3)/export-service$(2):$(1)
 
-	docker tag local/app-os-monitor$(2):$(1) $(3)/app-os-monitor$(2):$(1)
+	docker tag local/app-os-monitor$(2):latest $(3)/app-os-monitor$(2):$(1)
 	docker push $(3)/app-os-monitor$(2):$(1)
-	docker tag local/driver-os-monitor$(2):$(1) $(3)/driver-os-monitor$(2):$(1)
+	docker tag local/driver-os-monitor$(2):latest $(3)/driver-os-monitor$(2):$(1)
 	docker push $(3)/driver-os-monitor$(2):$(1)
-	docker tag local/driver-sensingkit$(2):$(1) $(3)/driver-sensingkit$(2):$(1)
+	docker tag local/driver-sensingkit$(2):latest $(3)/driver-sensingkit$(2):$(1)
 	docker push $(3)/driver-sensingkit$(2):$(1)
 
 endef
 
-.PHONY: publish-core-containers
-publish-core-containers:
+.PHONY: publish-core-containers-latest
+publish-core-containers-latest:
 	$(call publish-core,latest,,$(defaultReg))
 
-.PHONY: publish-core-containers-arm64v8
-publish-core-containers-arm64v8:
+.PHONY: publish-core-containers-arm64v8-latest
+publish-core-containers-arm64v8-latest:
 	$(call publish-core,latest,-arm64v8,$(defaultReg))
+
+.PHONY: publish-core-containers-version
+publish-core-containers-version:
+	$(call publish-core,$(version),,$(defaultReg))
+
+.PHONY: publish-core-containers-arm64v8-version
+publish-core-containers-arm64v8-version:
+	$(call publish-core,$(version),-arm64v8,$(defaultReg))
 
 .PHONY: logs
 logs:
