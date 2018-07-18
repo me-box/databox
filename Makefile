@@ -68,9 +68,6 @@ build:
 
 .PHONY: build-linux-amd64
 build-linux-amd64:
-	ifneq (HOST_PATFORM,Darwin)
-		$(error Sorry this only works on Docker for Mac. If your on another platform you can just use make build.)
-	endif
 	docker build -t local/databox-amd64 -f ./Dockerfile-amd64 .
 	docker create --name databox-amd64 -it local/databox-amd64
 	docker cp databox-amd64:/bin/databox ./bin/databox.amd64
@@ -78,9 +75,6 @@ build-linux-amd64:
 
 PHONY: build-linux-arm64
 build-linux-arm64:
-	ifneq (HOST_PATFORM,Darwin)
-		$(error Sorry this only works on Docker for Mac. If your on another platform you can just use make build.)
-	endif
 	docker build -t local/databox-arm64v8 -f ./Dockerfile-arm64v8 .
 	docker create --name databox-arm64v8 -it local/databox-arm64v8
 	docker cp databox-arm64v8:/bin/databox ./bin/databox.arm64v8
