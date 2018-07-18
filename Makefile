@@ -11,7 +11,7 @@ defaultDevDataboxOptions=--release latest -v -app-server dev/app-server \
 											-arbiter dev/core-arbiter \
 											-cm dev/container-manager \
 											-store dev/core-store \
-											-export-service dev/core-store \
+											-export-service dev/export-service \
 											-core-network dev/core-network \
 											-core-network-relay dev/core-network-relay \
 											-registry $(defaultReg)
@@ -20,7 +20,7 @@ defaultDataboxOptions= -v -app-server $(defaultReg)/app-server \
 											-arbiter $(defaultReg)/core-arbiter \
 											-cm $(defaultReg)/container-manager \
 											-store $(defaultReg)/core-store \
-											-export-service $(defaultReg)/core-store \
+											-export-service $(defaultReg)/export-service \
 											-core-network $(defaultReg)/core-network \
 											-core-network-relay $(defaultReg)/core-network-relay \
 											-registry $(defaultReg)
