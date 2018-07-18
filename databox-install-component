@@ -31,7 +31,7 @@ seedManifest() {
   STATUS=$(curl --insecure --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" https://127.0.0.1:8181/ -o /dev/null)
   test_assert ${STATUS} 200 "Seeding manifest"
 
-  PAYLOAD=$(<${1}/databox-manifest.json)
+  PAYLOAD=$(<./build/${1}/databox-manifest.json)
   PAYLOAD="manifest=${PAYLOAD}"
 
   EXPECTED='{"success":true}'
@@ -43,19 +43,19 @@ seedManifest() {
 
 
 buildImage() {
-  cd ${1}
-  log "Starting build local/${1} ..."
-  OUTPUT=$(docker build -t local/$1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
-  test_assert $? 0 "Build local/${1}" "$OUTPUT"
-  cd ..
+  cd ./build/${1}
+  log "Starting build ${1} ..."
+  OUTPUT=$(docker build -t $1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
+  test_assert $? 0 "Build ${1}" "$OUTPUT"
+  cd ../..
 }
 
 pullChanges() {
-  cd ${1}
+  cd ./build/${1}
   log "Pulling Changes ${1} ..."
   OUTPUT=$(git pull)
   test_assert $? 0 "Git pull ${1}" "$OUTPUT"
-  cd ..
+  cd ../..
 }
 
 
@@ -76,9 +76,11 @@ IFS="$oIFS"
 USER=${arr[0]}
 COMPONENT_NAME=${arr[1]}
 
-if [ ! -d "./$COMPONENT_NAME" ]; then
+mkdir -p ./build
+
+if [ ! -d "./build/$COMPONENT_NAME" ]; then
   log "Getting the code..... "
-  OUTPUT=$(git clone "https://github.com/${COMPONENT}.git")
+  OUTPUT=$(cd build && git clone "https://github.com/${COMPONENT}.git")
   test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
   buildImage ${COMPONENT_NAME}
   seedManifest ${COMPONENT_NAME}
