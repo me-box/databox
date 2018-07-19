@@ -92,7 +92,7 @@ startdev:
 
 .PHONY: startlatest
 startlatest:
-	bin/databox$(HOST_ARCH) start --release latest $(defaultDataboxOptions) -v --flushSLAs true
+	bin/databox$(HOST_ARCH) start --release latest $(defaultDataboxOptions) -v
 
 .PHONY: startflushslas
 startflushslas:
@@ -115,8 +115,14 @@ define build-core
 
 	$(call gitPullorClone, https://github.com/toshbrown/app-os-monitor.git,app-os-monitor,master)
 	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,update-to-new-arbiter)
+	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,updat-to-new-arbiter)
 	$(call gitPullorClone, https://github.com/me-box/platform-app-server.git,platform-app-server,master)
 	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
+
+	$(call gitPullorClone, https://github.com/toshbrown/app-light-graph.git,app-light-graph,master)
+	$(call gitPullorClone, https://github.com/toshbrown/app-twitter-sentiment.git,app-twitter-sentiment,master)
+
 	#$(call gitPullorClone, https://github.com/me-box/zestdb.git,zestdb)
 
 	#Build and tag the images
@@ -132,7 +138,13 @@ define build-core
 
 	cd ./build/app-os-monitor && docker build -t local/app-os-monitor$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/driver-os-monitor && docker build -t local/driver-os-monitor$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/driver-phillips-hue && docker build -t local/driver-phillips-hue$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/driver-tplink-smart-plug && docker build -t local/driver-tplink-smart-plug$(2):$(1) -f Dockerfile$(2) .
 	cd ./build/driver-sensingkit && docker build -t local/driver-sensingkit$(2):$(1) -f Dockerfile$(2) .
+
+	cd ./build/app-twitter-sentiment && docker build -t local/app-twitter-sentiment$(2):$(1) -f Dockerfile$(2) .
+	cd ./build/app-light-graph && docker build -t local/app-light-graph$(2):$(1) -f Dockerfile$(2) .
+
 endef
 
 #$1==giturl $2==name $3=branch
@@ -151,25 +163,45 @@ build-core-containers-arm64v8:
 define publish-core
 	docker tag dev/container-manager$(2):latest $(3)/container-manager$(2):$(1)
 	docker push $(3)/container-manager$(2):$(1)
+
 	docker tag dev/core-network$(2):latest $(3)/core-network$(2):$(1)
 	docker push $(3)/core-network$(2):$(1)
+
 	docker tag dev/core-network-relay$(2):latest $(3)/core-network-relay$(2):$(1)
 	docker push $(3)/core-network-relay$(2):$(1)
+
 	docker tag dev/core-store$(2):latest $(3)/core-store$(2):$(1)
 	docker push $(3)/core-store$(2):$(1)
+
 	docker tag dev/core-arbiter$(2):latest $(3)/core-arbiter$(2):$(1)
 	docker push $(3)/core-arbiter$(2):$(1)
+
 	docker tag dev/app-server$(2):latest $(3)/app-server$(2):$(1)
 	docker push $(3)/app-server$(2):$(1)
+
 	docker tag dev/export-service$(2):latest $(3)/export-service$(2):$(1)
 	docker push $(3)/export-service$(2):$(1)
 
 	docker tag local/app-os-monitor$(2):latest $(3)/app-os-monitor$(2):$(1)
 	docker push $(3)/app-os-monitor$(2):$(1)
+
 	docker tag local/driver-os-monitor$(2):latest $(3)/driver-os-monitor$(2):$(1)
 	docker push $(3)/driver-os-monitor$(2):$(1)
+
+	docker tag local/driver-phillips-hue$(2):latest $(3)/driver-phillips-hue$(2):$(1)
+	docker push $(3)/driver-phillips-hue$(2):$(1)
+
+	docker tag local/driver-tplink-smart-plug$(2):latest $(3)/driver-tplink-smart-plug$(2):$(1)
+	docker push $(3)/driver-tplink-smart-plug$(2):$(1)
+
 	docker tag local/driver-sensingkit$(2):latest $(3)/driver-sensingkit$(2):$(1)
 	docker push $(3)/driver-sensingkit$(2):$(1)
+
+	docker tag local/app-twitter-sentiment$(2):latest $(3)/app-twitter-sentiment$(2):$(1)
+	docker push $(3)/app-twitter-sentiment$(2):$(1)
+
+	docker tag local/app-light-graph$(2):latest $(3)/app-light-graph$(2):$(1)
+	docker push $(3)/app-light-graph$(2):$(1)
 
 endef
 
