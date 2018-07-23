@@ -119,7 +119,7 @@ test_assert $STATUS 200 "Is core-container-manager available?"
 install_osmon_app_and_driver
 
 #first test of the app
-sleep 30 # long sleep to wait for images to be pulled if needed!
+sleep 60 # long sleep to wait for images to be pulled if needed!
 test_app_os_monitor "first"
 
 #Can we restart driver-os-monitor
@@ -135,7 +135,7 @@ EXPECTED='{"status":200,"msg":"Success"}'
 test_assert "$RES" "$EXPECTED" "Can we restart app-os-monitor?"
 
 #second test of the app
-sleep 15
+sleep 30
 test_app_os_monitor "second"
 
 
@@ -151,7 +151,7 @@ RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: app
 EXPECTED='{"status":200,"msg":"Success"}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
 
-sleep 15
+sleep 30
 
 #can we reinstall os-monitor the app and driver
 install_osmon_app_and_driver
