@@ -232,13 +232,13 @@ logs:
 .PHONY: test
 test:
 ifndef ARCH
-	./databox-test "$(defaultDataboxOptions)" $(HOST_ARCH)
+	./databox-test "$(databoxCMD)" "$(defaultDataboxOptions)" $(HOST_ARCH)
 endif
 ifeq ($(ARCH),amd64)
-	./databox-test "$(defaultDataboxOptionsAmd64)" $(HOST_ARCH)
+	./databox-test "$(databoxCMD)" "$(defaultDataboxOptionsAmd64)" $(HOST_ARCH)
 endif
 ifeq ($(ARCH),arm64v8)
-	./databox-test "$(defaultDataboxOptionsArm64v8)" $(HOST_ARCH)
+	./databox-test "$(databoxCMD)" "$(defaultDataboxOptionsArm64v8)" $(HOST_ARCH)
 endif
 
 .PHONY: clean-docker
