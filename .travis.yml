@@ -10,8 +10,6 @@ before_install:
 - wget https://github.com/zeromq/libzmq/releases/download/v4.2.3/zeromq-4.2.3.tar.gz
 - tar xvzf zeromq-4.2.3.tar.gz
 - cd zeromq-4.2.3; ./configure; sudo make install; sudo ldconfig; cd ..; sudo rm -rf zeromq-4.2.3
-- make deps
-- make build
 
 script:
 - make test
