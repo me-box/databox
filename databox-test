@@ -5,8 +5,8 @@ UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
 
 #Default test command from first argument HOST_ARCH form second
 HOST_ARCH=${2}
-DATABOX_COMMAND="./bin/databox${HOST_ARCH} start --password ${UI_AUTH_TOKEN} ${1}"
-DATABOX_STOP_COMMAND="./bin/databox${HOST_ARCH} stop"
+DATABOX_COMMAND="./bin/databox.${HOST_ARCH} start --password ${UI_AUTH_TOKEN} ${1}"
+DATABOX_STOP_COMMAND="./bin/databox.${HOST_ARCH} stop"
 
 DATABOX_SLA_REG=${3}
 

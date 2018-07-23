@@ -112,10 +112,19 @@ For writing a new driver or app for Databox, one needs [Databox APIs](./document
 #### API and System specifications
 Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
 
+## Setting up a full development clone of databox
+
+>> Multi arch builds only work on Docker for Mac experimental
+>> enable docker cli experimental features "experimental": "enabled" ~/.docker/config.json
+
+```
+    make all DEFAULT_REG=[your docker hub reg tag]
+```
+
 ## Running the tests
 
 ```
-./databox-test
+make test
 
 ```
 For more details, have a look [here](./TESTING.md).

@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -32,8 +31,6 @@ const certsBasePath = "./certs"
 
 func main() {
 
-	path, _ = filepath.Abs("./")
-
 	DOCKER_API_VERSION := flag.String("API", "1.37", "Docker API version ")
 
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
@@ -42,6 +39,7 @@ func main() {
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", "databoxsystems", "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
+	startCmdHostPath := startCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
 	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
 	arbiterImage := startCmd.String("arbiter", "databoxsystems/arbiter", "Override arbiter image")
@@ -52,7 +50,6 @@ func main() {
 	storeImage := startCmd.String("store", "databoxsystems/core-store", "Override core-store image")
 	clearSLAdb := startCmd.Bool("flushSLAs", false, "Removes any saved apps or drivers from the SLA database so they will not restart")
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
-	arch := startCmd.String("arch", "", "Used to overide the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
@@ -65,6 +62,8 @@ func main() {
 
 	os.Setenv("DOCKER_API_VERSION", *DOCKER_API_VERSION)
 	dockerCli, _ = client.NewEnvClient()
+
+	path, _ = filepath.Abs("./")
 
 	if _, err := os.Stat("./certs"); err != nil {
 		os.Mkdir("./certs", 0770)
@@ -87,11 +86,9 @@ func main() {
 		//get some info in the network configuration
 		hostname, _ := os.Hostname()
 		ipv4s := removeIPv6addresses(getLocalInterfaceIps())
-		cpuArch := ""
-		if *arch != "" {
-			cpuArch = *arch
-		} else if runtime.GOARCH == "arm64" {
-			cpuArch = "arm64v8"
+
+		if *startCmdHostPath != "" {
+			path = *startCmdHostPath
 		}
 
 		opts := &libDatabox.ContainerManagerOptions{
@@ -114,7 +111,6 @@ func main() {
 			ExternalIP:            getExternalIP(),
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
-			Arch:                  cpuArch,
 		}
 
 		if *ReGenerateDataboxCertificates == true {
@@ -239,7 +235,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 	}
 
 	certsPath, _ := filepath.Abs("./certs")
-	slaStorePath, _ := filepath.Abs("./slaStore")
+	slaStorePath, _ := filepath.Abs("./sdk")
 
 	//create options secret
 	optionsJSON, err := json.Marshal(options)
@@ -281,13 +277,13 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 					},
 					mount.Mount{
 						Type:   mount.TypeBind,
-						Source: certsPath,
+						Source: options.HostPath + certsPath,
 						Target: "/certs",
 					},
 					mount.Mount{
 						Type:   mount.TypeBind,
-						Source: slaStorePath,
-						Target: "/slaStore",
+						Source: options.HostPath + slaStorePath,
+						Target: "/sdk",
 					},
 				},
 				Secrets: []*swarm.SecretReference{&cmOptionsSecret},
