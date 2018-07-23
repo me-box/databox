@@ -1,16 +1,20 @@
-FROM arm64v8/alpine:3.8
-RUN apk update && apk add build-base go git libzmq zeromq-dev
+FROM arm64v8/alpine:3.8 as build
+RUN apk update && apk add build-base go git libzmq zeromq-dev alpine-sdk libsodium-dev
 
 ENV GOPATH /
 
-RUN go get -u github.com/pkg/errors
-RUN go get -u github.com/pebbe/zmq4
-RUN go get -u golang.org/x/net/proxy
-RUN go get -u github.com/docker/go-connections/nat
-RUN go get -u github.com/pkg/errors
-RUN go get -u github.com/docker/docker/api/types
-RUN go get -u github.com/docker/docker/client
-RUN go get -u github.com/toshbrown/lib-go-databox
-COPY . .
+COPY *.go /
+COPY Makefile Makefile
+
+RUN go get -d ./...
+RUN rm -r /src/github.com/docker/docker/vendor/github.com/docker/go-connections
+RUN go get -d github.com/pkg/errors
+RUN go get -d golang.org/x/net/proxy
 
 RUN make build
+
+FROM amd64/alpine:3.8
+RUN apk update && apk add libzmq
+COPY --from=build /bin/databox /databox
+RUN mkdir -p /certs && mkdir -p /sdk
+CMD ["/databox"]
