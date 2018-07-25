@@ -30,12 +30,15 @@ ifndef HOST_PATFORM
 	$(error Host platform not supported)
 endif
 
-databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/certs:/certs -v $(shell pwd)/sdk:/sdk -v -t $(DEFAULT_REG)/databox:$(DATABOX_VERSION) /databox
+ifdef ARCH
+ARCH_TMP=-$(ARCH)
+endif
+databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/certs:/certs -v $(shell pwd)/sdk:/sdk -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
 
 
-defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/app-server \
+defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/driver-app-store \
 											-arbiter $(DEFAULT_REG)/core-arbiter \
 											-cm $(DEFAULT_REG)/container-manager \
 											-store $(DEFAULT_REG)/core-store \
@@ -45,7 +48,7 @@ defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/app-server \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
 
-defaultDataboxOptionsAmd64= -v -app-server $(DEFAULT_REG)/app-server-amd64 \
+defaultDataboxOptionsAmd64= -v -app-server $(DEFAULT_REG)/driver-app-store-amd64 \
 											-arbiter $(DEFAULT_REG)/core-arbiter-amd64 \
 											-cm $(DEFAULT_REG)/container-manager-amd64 \
 											-store $(DEFAULT_REG)/core-store-amd64 \
@@ -55,7 +58,7 @@ defaultDataboxOptionsAmd64= -v -app-server $(DEFAULT_REG)/app-server-amd64 \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
 
-defaultDataboxOptionsArm64v8= -v -app-server $(DEFAULT_REG)/app-server-arm64v8 \
+defaultDataboxOptionsArm64v8= -v -app-server $(DEFAULT_REG)/driver-app-store-arm64v8 \
 											-arbiter $(DEFAULT_REG)/core-arbiter-arm64v8 \
 											-cm $(DEFAULT_REG)/container-manager-arm64v8 \
 											-store $(DEFAULT_REG)/core-store-arm64v8 \
@@ -120,7 +123,7 @@ define build-core
 	cd ./build/core-arbiter && docker build -t $(DEFAULT_REG)/core-arbiter-$(2):$(1) -f Dockerfile$(3) .
 	cd ./build/core-export-service && docker build -t $(DEFAULT_REG)/export-service-$(2):$(1) -f Dockerfile$(3) .
 
-	cd ./build/platform-app-server && docker build -t $(DEFAULT_REG)/app-server-$(2):latest -f Dockerfile$(3) .
+	cd ./build/driver-app-store && docker build -t $(DEFAULT_REG)/driver-app-store-$(2):$(1) -f Dockerfile$(3) .
 
 	cd ./build/app-os-monitor && docker build -t $(DEFAULT_REG)/app-os-monitor-$(2):$(1) -f Dockerfile$(3) .
 	cd ./build/driver-os-monitor && docker build -t $(DEFAULT_REG)/driver-os-monitor-$(2):$(1) -f Dockerfile$(3) .
@@ -152,7 +155,7 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,update-to-new-arbiter)
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,updat-to-new-arbiter)
-	$(call gitPullorClone, https://github.com/me-box/platform-app-server.git,platform-app-server,master)
+	$(call gitPullorClone, https://github.com/toshbrown/driver-app-storer.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/toshbrown/app-light-graph.git,app-light-graph,master)
@@ -162,24 +165,24 @@ get-core-containers-src:
 .PHONY: build-core-containers
 build-core-containers:
 ifndef ARCH
-	$(call build-core,latest,amd64,)
-	$(call build-core,latest,arm64v8,-arm64v8)
+	$(call build-core,$(DATABOX_VERSION),amd64,)
+	$(call build-core,$(DATABOX_VERSION),arm64v8,-arm64v8)
 endif
 ifeq ($(ARCH),amd64)
-	$(call build-core,latest,amd64,)
+	$(call build-core,$(DATABOX_VERSION),amd64,)
 endif
 ifeq ($(ARCH),arm64v8)
-	$(call build-core,latest,arm64v8,-arm64v8)
+	$(call build-core,$(DATABOX_VERSION),arm64v8,-arm64v8)
 endif
 
 define publish-core
 	docker push $(3)/databox-$(2):$(1)
 	docker push $(3)/container-manager-$(2):$(1)
+	docker push $(3)/driver-app-store-$(2):$(1)
 	docker push $(3)/core-network-$(2):$(1)
 	docker push $(3)/core-network-relay-$(2):$(1)
 	docker push $(3)/core-store-$(2):$(1)
 	docker push $(3)/core-arbiter-$(2):$(1)
-	docker push $(3)/app-server-$(2):$(1)
 	docker push $(3)/export-service-$(2):$(1)
 	docker push $(3)/app-os-monitor-$(2):$(1)
 	docker push $(3)/driver-os-monitor-$(2):$(1)
@@ -211,7 +214,7 @@ publish-core-multiarch:
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-network-relay)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-store)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-arbiter)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-server)
+	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-app-store)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/export-service)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-os-monitor)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-os-monitor)
@@ -224,6 +227,19 @@ publish-core-multiarch:
 .PHONY: build-and-publish-manifest
 build-and-publish-manifest:
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/$(NAME))
+
+.PHONY: update-manifest-store
+update-manifest-store:
+	$(call gitPullorClone, https://github.com/toshbrown/databox-manifest-store.git,databox-manifest-store,master)
+	cp ./build/app-os-monitor/databox-manifest.json ./build/databox-manifest-store/app-os-monitor-manifest.json
+	cp ./build/driver-os-monitor/databox-manifest.json ./build/databox-manifest-store/driver-os-monitor-manifest.json
+	cp ./build/driver-phillips-hue/databox-manifest.json ./build/databox-manifest-store/driver-phillips-hue-manifest.json
+	cp ./build/driver-tplink-smart-plug/databox-manifest.json ./build/databox-manifest-store/driver-tplink-smart-plug-manifest.json
+	cp ./build/driver-sensingkit/databox-manifest.json ./build/databox-manifest-store/driver-sensingkit-manifest.json
+	cp ./build/app-twitter-sentiment/databox-manifest.json ./build/databox-manifest-store/app-twitter-sentiment-manifest.json
+	cp ./build/app-light-graph/databox-manifest.json ./build/databox-manifest-store/app-light-graph-manifest.json
+	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
+	git -C ./build/databox-manifest-store push origin master
 
 .PHONY: logs
 logs:
