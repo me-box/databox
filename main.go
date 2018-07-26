@@ -42,6 +42,7 @@ func main() {
 	startCmdHostPath := startCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
 	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
+	uiImage := startCmd.String("core-ui", "databoxsystems/core-ui", "Override core ui image")
 	arbiterImage := startCmd.String("arbiter", "databoxsystems/arbiter", "Override arbiter image")
 	coreNetworkImage := startCmd.String("core-network", "databoxsystems/core-network", "Override container-manager image")
 	coreNetworkRelay := startCmd.String("core-network-relay", "databoxsystems/core-network-relay", "Override core-network-relay image")
@@ -95,6 +96,7 @@ func main() {
 			Version:               *startCmdRelease,
 			SwarmAdvertiseAddress: *startCmdIP,
 			ContainerManagerImage: *cmImage,
+			CoreUIImage:           *uiImage,
 			ArbiterImage:          *arbiterImage,
 			CoreNetworkImage:      *coreNetworkImage,
 			CoreNetworkRelayImage: *coreNetworkRelay,

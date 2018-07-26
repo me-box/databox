@@ -44,6 +44,7 @@ defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/driver-app-store \
 											-store $(DEFAULT_REG)/core-store \
 											-export-service $(DEFAULT_REG)/export-service \
 											-core-network $(DEFAULT_REG)/core-network \
+											-core-ui $(DEFAULT_REG)/core-ui \
 											-core-network-relay $(DEFAULT_REG)/core-network-relay \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
@@ -54,6 +55,7 @@ defaultDataboxOptionsAmd64= -v -app-server $(DEFAULT_REG)/driver-app-store-amd64
 											-store $(DEFAULT_REG)/core-store-amd64 \
 											-export-service $(DEFAULT_REG)/export-service-amd64 \
 											-core-network $(DEFAULT_REG)/core-network-amd64 \
+											-core-ui $(DEFAULT_REG)/core-ui-amd64 \
 											-core-network-relay $(DEFAULT_REG)/core-network-relay-amd64 \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
@@ -64,6 +66,7 @@ defaultDataboxOptionsArm64v8= -v -app-server $(DEFAULT_REG)/driver-app-store-arm
 											-store $(DEFAULT_REG)/core-store-arm64v8 \
 											-export-service $(DEFAULT_REG)/export-service-arm64v8 \
 											-core-network $(DEFAULT_REG)/core-network-arm64v8 \
+											-core-ui $(DEFAULT_REG)/core-ui-arm64v8 \
 											-core-network-relay $(DEFAULT_REG)/core-network-relay-arm64v8 \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
@@ -116,23 +119,24 @@ stop:
 define build-core
 	#Build and tag the images
 	#cd ./build/zestdb && docker build -t databoxsystems/zestdb$(2):v0.0.8 -f Dockerfile$(2) .
-	cd ./build/core-container-manager && docker build -t $(DEFAULT_REG)/container-manager-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-relay-$(2):$(1) -f Dockerfile-relay$(3) .
-	cd ./build/core-store && docker build -t $(DEFAULT_REG)/core-store-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/core-arbiter && docker build -t $(DEFAULT_REG)/core-arbiter-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/core-export-service && docker build -t $(DEFAULT_REG)/export-service-$(2):$(1) -f Dockerfile$(3) .
+	cd ./build/core-container-manager && docker build -t $(DEFAULT_REG)/container-manager-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-relay-$(2):$(1) -f Dockerfile-relay$(3) . $(OPTS)
+	cd ./build/core-store && docker build -t $(DEFAULT_REG)/core-store-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/core-arbiter && docker build -t $(DEFAULT_REG)/core-arbiter-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/core-export-service && docker build -t $(DEFAULT_REG)/export-service-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 
-	cd ./build/driver-app-store && docker build -t $(DEFAULT_REG)/driver-app-store-$(2):$(1) -f Dockerfile$(3) .
+	cd ./build/driver-app-store && docker build -t $(DEFAULT_REG)/driver-app-store-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/core-ui && docker build -t $(DEFAULT_REG)/core-ui-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 
-	cd ./build/app-os-monitor && docker build -t $(DEFAULT_REG)/app-os-monitor-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/driver-os-monitor && docker build -t $(DEFAULT_REG)/driver-os-monitor-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/driver-phillips-hue && docker build -t $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/driver-tplink-smart-plug && docker build -t $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/driver-sensingkit && docker build -t $(DEFAULT_REG)/driver-sensingkit-$(2):$(1) -f Dockerfile$(3) .
+	cd ./build/app-os-monitor && docker build -t $(DEFAULT_REG)/app-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/driver-os-monitor && docker build -t $(DEFAULT_REG)/driver-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/driver-phillips-hue && docker build -t $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/driver-tplink-smart-plug && docker build -t $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/driver-sensingkit && docker build -t $(DEFAULT_REG)/driver-sensingkit-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 
-	cd ./build/app-twitter-sentiment && docker build -t $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1) -f Dockerfile$(3) .
-	cd ./build/app-light-graph && docker build -t $(DEFAULT_REG)/app-light-graph-$(2):$(1) -f Dockerfile$(3) .
+	cd ./build/app-twitter-sentiment && docker build -t $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	cd ./build/app-light-graph && docker build -t $(DEFAULT_REG)/app-light-graph-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 endef
 
 #$1==giturl $2==name $3=branch
@@ -155,7 +159,8 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,update-to-new-arbiter)
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,updat-to-new-arbiter)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-app-storer.git,driver-app-store,master)
+	$(call gitPullorClone, https://github.com/toshbrown/driver-app-store.git,driver-app-store,master)
+	$(call gitPullorClone, https://github.com/toshbrown/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/toshbrown/app-light-graph.git,app-light-graph,master)
@@ -179,6 +184,7 @@ define publish-core
 	docker push $(3)/databox-$(2):$(1)
 	docker push $(3)/container-manager-$(2):$(1)
 	docker push $(3)/driver-app-store-$(2):$(1)
+	docker push $(3)/core-ui-$(2):$(1)
 	docker push $(3)/core-network-$(2):$(1)
 	docker push $(3)/core-network-relay-$(2):$(1)
 	docker push $(3)/core-store-$(2):$(1)
@@ -215,6 +221,7 @@ publish-core-multiarch:
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-store)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-arbiter)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-app-store)
+	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-ui)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/export-service)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-os-monitor)
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-os-monitor)
