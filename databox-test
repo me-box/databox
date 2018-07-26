@@ -105,7 +105,7 @@ $DATABOX_COMMAND --flushSLAs
 rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
-sleep 100
+sleep 120
 docker ps
 
 #setup the auth cookie
@@ -135,7 +135,7 @@ EXPECTED='{"status":200,"msg":"Success"}'
 test_assert "$RES" "$EXPECTED" "Can we restart app-os-monitor?"
 
 #second test of the app
-sleep 30
+sleep 60
 test_app_os_monitor "second"
 
 
@@ -151,13 +151,13 @@ RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: app
 EXPECTED='{"status":200,"msg":"Success"}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
 
-sleep 30
+sleep 60
 
 #can we reinstall os-monitor the app and driver
 install_osmon_app_and_driver
 
 #second test of the app
-sleep 30
+sleep 60
 test_app_os_monitor "third"
 
 #
@@ -168,7 +168,7 @@ $DATABOX_STOP_COMMAND
 
 echo "Restarting databox"
 $DATABOX_COMMAND
-sleep 100
+sleep 120
 
 #restarting databox clears session token get a new one
 setup_auth_cookie
