@@ -29,8 +29,8 @@ including a list of external connections they need to make, which is also
 enforced at runtime by the Databox platform. As privileged code, drivers needs
 to undergo extensive testing and verification. Hence, for inclusion in Databox
 software releases, drivers must be submitted to the Databox Project team for
-consideration. Dynamic loading of drivers is a development feature and will not
-be supported in customer releases. <Is this true or should it be?>
+validation, and for now will only be available for installation from the Databox
+Project App Store.
 
 # What constraints does Databox impose on apps?
 
