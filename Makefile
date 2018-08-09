@@ -49,30 +49,10 @@ defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/driver-app-store \
 											-registry $(DEFAULT_REG) \
 											-release $(DATABOX_VERSION)
 
-defaultDataboxOptionsAmd64= -v -app-server $(DEFAULT_REG)/driver-app-store-amd64 \
-											-arbiter $(DEFAULT_REG)/core-arbiter-amd64 \
-											-cm $(DEFAULT_REG)/container-manager-amd64 \
-											-store $(DEFAULT_REG)/core-store-amd64 \
-											-export-service $(DEFAULT_REG)/export-service-amd64 \
-											-core-network $(DEFAULT_REG)/core-network-amd64 \
-											-core-ui $(DEFAULT_REG)/core-ui-amd64 \
-											-core-network-relay $(DEFAULT_REG)/core-network-relay-amd64 \
-											-registry $(DEFAULT_REG) \
-											-release $(DATABOX_VERSION)
-
-defaultDataboxOptionsArm64v8= -v -app-server $(DEFAULT_REG)/driver-app-store-arm64v8 \
-											-arbiter $(DEFAULT_REG)/core-arbiter-arm64v8 \
-											-cm $(DEFAULT_REG)/container-manager-arm64v8 \
-											-store $(DEFAULT_REG)/core-store-arm64v8 \
-											-export-service $(DEFAULT_REG)/export-service-arm64v8 \
-											-core-network $(DEFAULT_REG)/core-network-arm64v8 \
-											-core-ui $(DEFAULT_REG)/core-ui-arm64v8 \
-											-core-network-relay $(DEFAULT_REG)/core-network-relay-arm64v8 \
-											-registry $(DEFAULT_REG) \
-											-release $(DATABOX_VERSION)
 
 .PHONY: all
-all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-multiarch
+#all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch
+all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
 
 .PHONY: deps
 deps:
@@ -101,15 +81,7 @@ build-linux-arm64:
 
 .PHONY: start
 start:
-ifndef ARCH
 	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) -v $(OPTS)
-endif
-ifeq ($(ARCH),amd64)
-	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptionsAmd64) -v $(OPTS)
-endif
-ifeq ($(ARCH),arm64v8)
-	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptionsArm64v8) -v $(OPTS)
-endif
 
 .PHONY: stop
 stop:
@@ -127,8 +99,7 @@ define build-core
 	cd ./build/core-export-service && docker build -t $(DEFAULT_REG)/export-service-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 
 	cd ./build/driver-app-store && docker build -t $(DEFAULT_REG)/driver-app-store-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-ui && docker build -t $(DEFAULT_REG)/core-ui-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-
+	cd ./build/core-ui && make build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	cd ./build/app-os-monitor && docker build -t $(DEFAULT_REG)/app-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 	cd ./build/driver-os-monitor && docker build -t $(DEFAULT_REG)/driver-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 	cd ./build/driver-phillips-hue && docker build -t $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
@@ -180,56 +151,58 @@ ifeq ($(ARCH),arm64v8)
 	$(call build-core,$(DATABOX_VERSION),arm64v8,-arm64v8)
 endif
 
-define publish-core
-	docker push $(3)/databox-$(2):$(1)
-	docker push $(3)/container-manager-$(2):$(1)
-	docker push $(3)/driver-app-store-$(2):$(1)
-	docker push $(3)/core-ui-$(2):$(1)
-	docker push $(3)/core-network-$(2):$(1)
-	docker push $(3)/core-network-relay-$(2):$(1)
-	docker push $(3)/core-store-$(2):$(1)
-	docker push $(3)/core-arbiter-$(2):$(1)
-	docker push $(3)/export-service-$(2):$(1)
-	docker push $(3)/app-os-monitor-$(2):$(1)
-	docker push $(3)/driver-os-monitor-$(2):$(1)
-	docker push $(3)/driver-phillips-hue-$(2):$(1)
-	docker push $(3)/driver-tplink-smart-plug-$(2):$(1)
-	docker push $(3)/driver-sensingkit-$(2):$(1)
-	docker push $(3)/app-twitter-sentiment-$(2):$(1)
-	docker push $(3)/app-light-graph-$(2):$(1)
-endef
-
-
 #$1=manifestName
 define build-and-publish-manifest
+	docker push $(1)-amd64:$(DATABOX_VERSION)
 	docker manifest create --amend $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION)
 	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) --os linux --arch amd64
 	#TODO re-enable this when core-store, export-servive and core network build for arm64v8
 	#docker manifest annotate $(1) $(3) --os linux --arch arm64 --variant v8
-	docker manifest push -p $(1)
+	docker manifest push --purge $(1):$(DATABOX_VERSION)
 endef
+
+define publish-core
+	#Build and tag the images
+	#cd ./build/zestdb && docker build -t databoxsystems/zestdb$(2):v0.0.8 -f Dockerfile$(2) .
+	docker push $(DEFAULT_REG)/container-manager-$(2):$(1)
+	docker push $(DEFAULT_REG)/core-network-$(2):$(1)
+	docker push $(DEFAULT_REG)/core-network-relay-$(2):$(1)
+	docker push $(DEFAULT_REG)/core-store-$(2):$(1)
+	docker push $(DEFAULT_REG)/core-arbiter-$(2):$(1)
+	docker push $(DEFAULT_REG)/export-service-$(2):$(1)
+
+	docker push $(DEFAULT_REG)/driver-app-store-$(2):$(1)
+	docker push $(DEFAULT_REG)/core-ui-$(2):$(1)
+	docker push $(DEFAULT_REG)/app-os-monitor-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-os-monitor-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-sensingkit-$(2):$(1)
+
+	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
+	docker push $(DEFAULT_REG)/app-light-graph-$(2):$(1)
+endef
+.PHONY: publish-core
+publish-core:
+ifndef ARCH
+	$(call publish-core,$(DATABOX_VERSION),amd64)
+	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+endif
+ifeq ($(ARCH),amd64)
+	$(call publish-core,$(DATABOX_VERSION),amd64)
+endif
+ifeq ($(ARCH),arm64v8)
+	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+endif
 
 .PHONY: publish-core-multiarch
 publish-core-multiarch:
-	$(call publish-core,$(DATABOX_VERSION),amd64,$(DEFAULT_REG))
+ifndef IMG
 	$(call build-and-publish-manifest, $(DEFAULT_REG)/databox)
-	#TODO re-enable this when core-store, export-servive and core network build for arm64v8
-	#(call publish-core,latest,arm64v8,$(DEFAULT_REG))
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/container-manager)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-network)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-network-relay)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-store)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-arbiter)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-app-store)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/core-ui)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/export-service)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-os-monitor)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-os-monitor)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-phillips-hue)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-tplink-smart-plug)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/driver-sensingkit)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-twitter-sentiment)
-	$(call build-and-publish-manifest, $(DEFAULT_REG)/app-light-graph)
+endif
+ifdef IMG
+	$(call build-and-publish-manifest, $(DEFAULT_REG)/$(IMG))
+endif
 
 .PHONY: build-and-publish-manifest
 build-and-publish-manifest:
@@ -254,15 +227,9 @@ logs:
 
 .PHONY: test
 test:
-ifndef ARCH
 	./databox-test "$(databoxCMD)" "$(defaultDataboxOptions)" $(HOST_ARCH)  $(DEFAULT_REG)
-endif
-ifeq ($(ARCH),amd64)
-	./databox-test "$(databoxCMD)" "$(defaultDataboxOptionsAmd64)" $(HOST_ARCH) $(DEFAULT_REG)
-endif
-ifeq ($(ARCH),arm64v8)
-	./databox-test "$(databoxCMD)" "$(defaultDataboxOptionsArm64v8)" $(HOST_ARCH) $(DEFAULT_REG)
-endif
+
+
 
 .PHONY: clean-docker
 clean-docker:

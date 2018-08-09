@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -51,6 +52,7 @@ func main() {
 	storeImage := startCmd.String("store", "databoxsystems/core-store", "Override core-store image")
 	clearSLAdb := startCmd.Bool("flushSLAs", false, "Removes any saved apps or drivers from the SLA database so they will not restart")
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
+	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
@@ -64,7 +66,7 @@ func main() {
 	os.Setenv("DOCKER_API_VERSION", *DOCKER_API_VERSION)
 	dockerCli, _ = client.NewEnvClient()
 
-	path, _ = filepath.Abs("./")
+	path = "" //this should not be set outside of a container use --host-path if needed
 
 	if _, err := os.Stat("./certs"); err != nil {
 		os.Mkdir("./certs", 0770)
@@ -87,6 +89,17 @@ func main() {
 		//get some info in the network configuration
 		hostname, _ := os.Hostname()
 		ipv4s := removeIPv6addresses(getLocalInterfaceIps())
+
+		cpuArch := ""
+		if *arch != "" {
+			cpuArch = *arch
+		} else if runtime.GOARCH == "amd64" {
+			cpuArch = "amd64"
+		} else if runtime.GOARCH == "arm64" {
+			cpuArch = "arm64v8"
+		} else {
+			panic("Unsupported CPU architecture ")
+		}
 
 		if *startCmdHostPath != "" {
 			path = *startCmdHostPath
@@ -113,6 +126,7 @@ func main() {
 			ExternalIP:            getExternalIP(),
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
+			Arch:                  cpuArch,
 		}
 
 		if *ReGenerateDataboxCertificates == true {
@@ -264,7 +278,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 	service := swarm.ServiceSpec{
 		TaskTemplate: swarm.TaskSpec{
 			ContainerSpec: &swarm.ContainerSpec{
-				Image:    options.ContainerManagerImage + ":" + options.Version,
+				Image:    options.ContainerManagerImage + "-" + options.Arch + ":" + options.Version,
 				Hostname: "container-manager",
 				Labels:   map[string]string{"databox.type": "container-manager"},
 				Env: []string{
@@ -305,7 +319,6 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 	serviceOptions := types.ServiceCreateOptions{}
 
 	pullImage(service.TaskTemplate.ContainerSpec.Image, options)
-
 	_, err = dockerCli.ServiceCreate(context.Background(), service, serviceOptions)
 	libDatabox.ChkErr(err)
 
@@ -333,15 +346,16 @@ func pullImage(image string, options *libDatabox.ContainerManagerOptions) {
 		needToPull = true
 	}
 
+	fmt.Println("Need to pull = ", needToPull)
+
 	if needToPull == true {
 		libDatabox.Info("Pulling Image " + image)
-		reader, err := dockerCli.ImagePull(context.Background(), options.DefaultRegistryHost+"/"+image, types.ImagePullOptions{})
+		reader, err := dockerCli.ImagePull(context.Background(), image, types.ImagePullOptions{})
 		libDatabox.ChkErr(err)
 		io.Copy(ioutil.Discard, reader)
 		libDatabox.Info("Done pulling Image " + image)
 		reader.Close()
 	}
-
 }
 
 func removeContainer(name string) {

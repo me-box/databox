@@ -3,6 +3,7 @@ RUN apk update && apk add build-base go git libzmq zeromq-dev alpine-sdk libsodi
 
 ENV GOPATH /
 
+RUN mkdir -p /src/github.com/docker && git -C /src/github.com/docker clone --depth 1 https://github.com/docker/docker
 COPY *.go /
 COPY Makefile Makefile
 

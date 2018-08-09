@@ -3,10 +3,11 @@ RUN apk update && apk add build-base go git libzmq zeromq-dev alpine-sdk libsodi
 
 ENV GOPATH /
 
+RUN mkdir -p /src/github.com/docker && git -C /src/github.com/docker clone --depth 1 https://github.com/docker/docker
 COPY *.go /
 COPY Makefile Makefile
 
-RUN go get -d ./...
+RUN go get -d -v ./...
 RUN rm -r /src/github.com/docker/docker/vendor/github.com/docker/go-connections
 RUN go get -d github.com/pkg/errors
 RUN go get -d golang.org/x/net/proxy
