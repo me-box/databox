@@ -4,22 +4,35 @@
 source ./scripts/utils.sh
 
 ## check we have the tools
-if ! [ -x "$(command -v git)" ]; then
+if ! [ -x "$(command -v git)" ]
+then
   die 1 "git is not installed;"`
        `"see https://git-scm.com/"
 fi
 
-if ! [ -x "$(command -v curl)" ]; then
+if ! [ -x "$(command -v curl)" ]
+then
   die 1 "curl is not installed;"`
        `"https://curl.haxx.se"
 fi
 
-DATABOX_VERSION=$(<./Version)
+CPU_ARCH=$(uname -m)
+if [[ "${CPU_ARCH}" = "x86_64" ]]
+then
+	DATABOX_ARCH="amd64"
+  DATABOX_DOCKER_FILE="Dockerfile"
+fi
+
+if [[ "${CPU_ARCH}" = "aarch64" ]]
+then
+	DATABOX_ARCH="arm64v8"
+  DATABOX_DOCKER_FILE="Dockerfile-arm64v8"
+fi
 
 usage() {
   echo ""
   echo "Please invoke this script with the component you would like to install."
-  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME]"
+  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME] [DATABOX_REPO_TAG] [DATABOX_VERSION]"
   echo "Flags:"
   echo "-h     This help message"
   echo ""
@@ -35,9 +48,11 @@ seedManifest() {
 
 buildImage() {
   cd ./build/${1}
+  CONT_NAME=${1}
+  CONT_NAME=${CONT_NAME//_/-}
   log "Starting build ${1} ..."
-  OUTPUT=$(docker build -t $1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
-  test_assert $? 0 "Build ${1}" "$OUTPUT"
+  OUTPUT=$(docker build -t ${2}/${CONT_NAME}-${DATABOX_ARCH}:${3} -f ${DATABOX_DOCKER_FILE} .)
+  test_assert $? 0 "Build ${CONT_NAME}" "$OUTPUT"
   cd ../..
 }
 
@@ -50,12 +65,14 @@ pullChanges() {
 }
 
 
-if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+if [[ $# < 3 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
 then
   usage
 fi
 
 COMPONENT=$1
+DATABOX_REPO_TAG=$2
+DATABOX_VERSION=$3
 
 if [[ ${COMPONENT} != *"/"* ]]; then
   COMPONENT="me-box/${COMPONENT}"
@@ -78,6 +95,6 @@ if [ ! -d "./build/$COMPONENT_NAME" ]; then
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
   pullChanges ${COMPONENT_NAME}
-  buildImage ${COMPONENT_NAME}
+  buildImage ${COMPONENT_NAME} ${DATABOX_REPO_TAG} ${DATABOX_VERSION}
   seedManifest ${COMPONENT_NAME}
 fi
