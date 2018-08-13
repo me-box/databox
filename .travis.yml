@@ -7,9 +7,6 @@ before_install:
 - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 - sudo apt-get update
 - sudo apt-get -y install docker-ce libtool pkg-config build-essential autoconf automake uuid-dev wget
-- wget https://github.com/zeromq/libzmq/releases/download/v4.2.3/zeromq-4.2.3.tar.gz
-- tar xvzf zeromq-4.2.3.tar.gz
-- cd zeromq-4.2.3; ./configure; sudo make install; sudo ldconfig; cd ..; sudo rm -rf zeromq-4.2.3
 
 script:
 - make test
