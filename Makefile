@@ -47,8 +47,8 @@ defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/driver-app-store \
 											-core-ui $(DEFAULT_REG)/core-ui \
 											-core-network-relay $(DEFAULT_REG)/core-network-relay \
 											-registry $(DEFAULT_REG) \
-											-release $(DATABOX_VERSION)
-
+											-release $(DATABOX_VERSION) \
+											-sslHostName $(shell hostname)
 
 .PHONY: all
 #all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch

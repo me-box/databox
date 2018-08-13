@@ -53,6 +53,7 @@ func main() {
 	clearSLAdb := startCmd.Bool("flushSLAs", false, "Removes any saved apps or drivers from the SLA database so they will not restart")
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
 	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
+	sslHostName := startCmd.String("sslHostName", "", "Used to override the detected HostName for use in ssl cert.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
@@ -88,6 +89,9 @@ func main() {
 
 		//get some info in the network configuration
 		hostname, _ := os.Hostname()
+		if *sslHostName != "" {
+			hostname = *sslHostName
+		}
 		ipv4s := removeIPv6addresses(getLocalInterfaceIps())
 
 		cpuArch := ""
