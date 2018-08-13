@@ -33,3 +33,5 @@ lib-node-databox/
 nodeZestClient/
 
 ocaml_opam_arm64v8/
+
+bin/
