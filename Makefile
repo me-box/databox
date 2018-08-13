@@ -226,7 +226,7 @@ logs:
 
 .PHONY: test
 test:
-	./databox-test "$(databoxCMD)" "$(defaultDataboxOptions)" $(HOST_ARCH)  $(DEFAULT_REG)
+	./databox-test "$(databoxCMD)" "$(defaultDataboxOptions)" $(HOST_ARCH)  $(DEFAULT_REG) $(DATABOX_VERSION)
 
 
 

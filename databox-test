@@ -9,8 +9,23 @@ DATABOX_COMMAND="${1} start ${2} --password ${UI_AUTH_TOKEN} --host-path $(pwd)"
 DATABOX_STOP_COMMAND="${1} stop"
 
 DATABOX_SLA_REG=${4}
+DATBOX_VERSION=${5}
 
 echo $DATABOX_COMMAND
+
+#Pull the needed images up front to help with network latency differences between test locations
+echo ${DATABOX_SLA_REG}/databox:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/databox:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/container-manager-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/core-ui-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/core-store-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/driver-os-monitor-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/driver-app-store-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/app-os-monitor-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/core-network-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/export-service-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/core-arbiter-${HOST_ARCH}:${DATBOX_VERSION}
+docker pull ${DATABOX_SLA_REG}/core-network-relay-${HOST_ARCH}:${DATBOX_VERSION}
 
 function red {
   echo "\033[0;31m${1}\033[0m"
