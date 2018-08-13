@@ -83,6 +83,7 @@ build-linux-arm64:
 start:
 	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) -v $(OPTS)
 
+
 .PHONY: stop
 stop:
 	$(databoxCMD) stop $(OPTS)
@@ -90,24 +91,22 @@ stop:
 #$1==version $2==Architecture
 define build-core
 	#Build and tag the images
-	#cd ./build/zestdb && docker build -t databoxsystems/zestdb$(2):v0.0.8 -f Dockerfile$(2) .
-	cd ./build/core-container-manager && docker build -t $(DEFAULT_REG)/container-manager-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-network && docker build -t $(DEFAULT_REG)/core-network-relay-$(2):$(1) -f Dockerfile-relay$(3) . $(OPTS)
-	cd ./build/core-store && docker build -t $(DEFAULT_REG)/core-store-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-arbiter && docker build -t $(DEFAULT_REG)/core-arbiter-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-export-service && docker build -t $(DEFAULT_REG)/export-service-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	make -C ./build/core-container-manager build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/core-network build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/core-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/core-arbiter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/core-export-service build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/core-ui build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/driver-app-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/driver-sensingkit build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/app-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/driver-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
-	cd ./build/driver-app-store && docker build -t $(DEFAULT_REG)/driver-app-store-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/core-ui && make build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
-	cd ./build/app-os-monitor && docker build -t $(DEFAULT_REG)/app-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/driver-os-monitor && docker build -t $(DEFAULT_REG)/driver-os-monitor-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/driver-phillips-hue && docker build -t $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/driver-tplink-smart-plug && docker build -t $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/driver-sensingkit && docker build -t $(DEFAULT_REG)/driver-sensingkit-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
+	make -C ./build/driver-phillips-hue build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/driver-tplink-smart-plug build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/app-twitter-sentiment build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
-	cd ./build/app-twitter-sentiment && docker build -t $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
-	cd ./build/app-light-graph && docker build -t $(DEFAULT_REG)/app-light-graph-$(2):$(1) -f Dockerfile$(3) . $(OPTS)
 endef
 
 #$1==giturl $2==name $3=branch
