@@ -129,6 +129,8 @@ docker ps
 setup_auth_cookie
 
 #can we see the CM UI
+curl -sL -v --cookie ./databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null
+docker images
 STATUS=$(curl -sL --cookie ./databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
 test_assert $STATUS 200 "Is core-container-manager available?"
 
