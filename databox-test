@@ -9,23 +9,11 @@ DATABOX_COMMAND="${1} start ${2} --password ${UI_AUTH_TOKEN} --host-path $(pwd)"
 DATABOX_STOP_COMMAND="${1} stop"
 
 DATABOX_SLA_REG=${4}
-DATBOX_VERSION=${5}
+DATABOX_VERSION=${5}
 
 echo $DATABOX_COMMAND
 
-#Pull the needed images up front to help with network latency differences between test locations
-echo ${DATABOX_SLA_REG}/databox:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/databox:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/container-manager-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/core-ui-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/core-store-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/driver-os-monitor-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/driver-app-store-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/app-os-monitor-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/core-network-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/export-service-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/core-arbiter-${HOST_ARCH}:${DATBOX_VERSION}
-docker pull ${DATABOX_SLA_REG}/core-network-relay-${HOST_ARCH}:${DATBOX_VERSION}
+function d_curl () { docker run --network host --rm -v $(pwd):/data databoxsystems/curl-7.61.0-r0:latest "$@" ;}
 
 function red {
   echo "\033[0;31m${1}\033[0m"
@@ -82,7 +70,7 @@ function install_osmon_app_and_driver {
   #PAYLOAD="{\"storeUrl\":\"\",\"registry\":\"${DATABOX_SLA_REG}\""
   #REST=', "manifest-version": 1,"name": "driver-os-monitor","version": "0.3.0","description": "A Databox driver to monitor the local os","author": "Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()","license": "MIT","databox-type":"driver","tags": ["monitor","os"],"homepage": "https://github.com/me-box/driver-os-monitor","repository": {"type": "git","url": "git+https://github.com/me-box/driver-os-monitor.git"},"resource-requirements": {    "store":"core-store"}}'
   #PAYLOAD="${PAYLOAD}${REST}"
-  RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H "Content-Type: application/json"  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H "Content-Type: application/json"  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
   EXPECTED='{"status": 200}'
   test_assert "$RES" "$EXPECTED" "Can we install the driver-os-monitor?"
 
@@ -91,7 +79,7 @@ function install_osmon_app_and_driver {
   #PAYLOAD="{\"storeUrl\":\"\",\"registry\":\"${DATABOX_SLA_REG}\""
   #REST=',"manifest-version":1,"name":"app-os-monitor","databox-type":"app","version":"0.3.0","description":"An app in golang to plot the output of the os monitor driver.","author":"Tosh Brown <Anthony.Brown@nottingham.ac.uk>","license":"MIT","tags":["template","app","nodejs"],"homepage":"https://github.com/me-box/app-os-monitor","repository":{"type":"git","url":"git https://github.com/me-box/app-os-monitor"},"packages":[{"name":"OS monitor Plotter","purpose":"To visualize your databox load and free memory","install":"required","risks":"None.","benefits":"You can see the data!","datastores":["loadavg1","loadavg5","loadavg15","freemem","loadavg1Structured","freememStructured"],"enabled":true}],"allowed-combinations":[],"datasources":[{"type":"loadavg1","required":true,"name":"loadavg1","clientid":"loadavg1","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average 1 minute"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg1"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg1"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg1"}},{"type":"loadavg5","required":true,"name":"loadavg5","clientid":"loadavg5","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average over 5 minutes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg5"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg5"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg5"}},{"type":"loadavg15","required":true,"name":"loadavg15","clientid":"loadavg15","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average over 15 minutes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg15"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg15"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg15"}},{"type":"freemem","required":true,"name":"freemem","clientid":"freemem","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox free memory in bytes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"freemem"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"freemem"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"bytes"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/freemem"}},{"type":"loadavg1Structured","required":true,"name":"loadavg1Structured","clientid":"loadavg1Structured","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average 1 minute structured"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg1Structured"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg1Structured"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/loadavg1Structured"}},{"type":"freememStructured","required":true,"name":"freememStructured","clientid":"freememStructured","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox free memory in bytes structured"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"freememStructured"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"freememStructured"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"bytes"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/freememStructured"}}],"export-whitelist":[{"url":"https://export.amar.io/","description":"Exports the data to amar.io"}],"resource-requirements":{},"displayName":"os monitor"}'
   #PAYLOAD="${PAYLOAD}${REST}"
-  RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
   EXPECTED='{"status": 200}'
   test_assert "$RES" "$EXPECTED" "Can we install the app-os-monitor?"
 }
@@ -100,18 +88,18 @@ function test_app_os_monitor {
   #Function test if app-os-monitor is running and can get data from the store
 
   #is the OS monitor app up
-  curl -s --insecure --http1.1 --cookie ./databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui" -o /dev/null > /dev/null
-  STATUS=$(curl -s --insecure --http1.1 --cookie ./databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui/mem.png" -o /dev/null)
+  d_curl -s --insecure --http1.1 --cookie /data/databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui" -o /dev/null > /dev/null
+  STATUS=$(d_curl -s --insecure --http1.1 --cookie /data/databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui/mem.png" -o /dev/null)
   test_assert "$STATUS" 200 "Is the app-os-monitor/ui available? ${1} test."
 
   #is the OS monitor app able to get data
-  RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json' -L 'https://127.0.0.1/app-os-monitor/ui/stats')
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -L 'https://127.0.0.1/app-os-monitor/ui/stats')
   EXPECTED='"mem":{"min":'
   test_assert_contains "$RES" "$EXPECTED" "Can we get data from app-os-monitor? ${1} test."
 }
 
 function setup_auth_cookie {
-  STATUS=$(curl -sL --cookie-jar ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/api/connect" -o /dev/null)
+  STATUS=$(d_curl -sL --cookie-jar /data/databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/api/connect" -o /dev/null)
   test_assert $STATUS 200 "Is /api/connect available?"
 }
 
@@ -122,16 +110,14 @@ $DATABOX_COMMAND --flushSLAs
 rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
-sleep 180
+sleep 120
 docker ps
 
 #setup the auth cookie
 setup_auth_cookie
 
 #can we see the CM UI
-curl -sL -v --cookie ./databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null
-docker images
-STATUS=$(curl -sL --cookie ./databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
+STATUS=$(d_curl -sL --cookie /data/databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
 test_assert $STATUS 200 "Is core-container-manager available?"
 
 #first install of the app and driver
@@ -143,13 +129,13 @@ test_app_os_monitor "first"
 
 #Can we restart driver-os-monitor
 PAYLOAD='{"id":"driver-os-monitor"}'
-RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart driver-os-monitor?"
 
 #Can we restart app-os-monitor
 PAYLOAD='{"id":"app-os-monitor"}'
-RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart app-os-monitor?"
 
@@ -160,13 +146,13 @@ test_app_os_monitor "second"
 
 #Can we uninstall  driver-os-monitor
 PAYLOAD='{"id":"driver-os-monitor"}'
-RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json'  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json'  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall driver-os-monitor?"
 
 #Can we uninstall app-os-monitor
 PAYLOAD='{"id":"app-os-monitor"}'
-RES=$(curl -s  --insecure --http1.1 --cookie ./databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
 

@@ -5,10 +5,8 @@ go:
 before_install:
 - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-- sudo add-apt-repository -y ppa:mnordhoff/curl-backport -y
 - sudo apt-get update
-- sudo apt-get -y install docker-ce curl libtool pkg-config build-essential autoconf automake uuid-dev wget
-
+- sudo apt-get -y install docker-ce  libtool pkg-config build-essential autoconf automake uuid-dev wget
 script:
 - make test
 services:
