@@ -36,6 +36,10 @@ function fail {
     docker service ls
     echo "service logs databox_container-manager "
     docker service logs container-manager
+    echo "service logs core-ui "
+    docker service logs core-ui
+    echo "logs databox-network "
+    docker logs databox-network
     exit 1
 }
 
