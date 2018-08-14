@@ -35,6 +35,12 @@ function fail {
     echo "docker service ls "
     docker service ls
     echo "service logs databox_container-manager "
+    docker exec -it $(d ps | grep container-manager-amd64 | cut -d \t -f 1) dig arbiter
+    docker exec -it $(d ps | grep container-manager-amd64 | cut -d \t -f 1) cat /etc/resolv.conf
+    docker exec -it $(d ps | grep container-manager-amd64 | cut -d \t -f 1) cat /etc/hostname
+    docker exec -it $(d ps | grep container-manager-amd64 | cut -d \t -f 1) cat /etc/hosts
+    docker inspect  $(d ps | grep container-manager-amd64 | cut -d \t -f 1)
+    docker service inspect container-manager
     docker service logs container-manager
     echo "service logs core-ui "
     docker service logs core-ui
