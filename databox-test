@@ -88,7 +88,6 @@ function test_app_os_monitor {
   #Function test if app-os-monitor is running and can get data from the store
 
   #is the OS monitor app up
-  d_curl -s --insecure --http1.1 --cookie /data/databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui" -o /dev/null > /dev/null
   STATUS=$(d_curl -s --insecure --http1.1 --cookie /data/databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui/mem.png" -o /dev/null)
   test_assert "$STATUS" 200 "Is the app-os-monitor/ui available? ${1} test."
 
@@ -110,15 +109,16 @@ $DATABOX_COMMAND --flushSLAs
 rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
-sleep 120
+sleep 180
 docker ps
 
 #setup the auth cookie
 setup_auth_cookie
 
 #can we see the CM UI
+d_curl -v -sL --cookie /data/databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null
 STATUS=$(d_curl -sL --cookie /data/databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
-test_assert $STATUS 200 "Is core-container-manager available?"
+test_assert $STATUS 200 "Is core-ui available?"
 
 #first install of the app and driver
 install_osmon_app_and_driver
