@@ -22,7 +22,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
-	libDatabox "github.com/toshbrown/lib-go-databox"
+	libDatabox "github.com/me-box/lib-go-databox"
 )
 
 var path string
