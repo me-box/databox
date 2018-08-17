@@ -1,0 +1,25 @@
+#include helper functions
+source ../utils.sh
+
+declare -r ME="$(basename $0)"
+
+## check we have the tools
+if ! [ -x "$(command -v docker)" ]; then
+  die 1 "docker is not installed;"`
+       `"see https://docs.docker.com/engine/installation/"
+fi
+
+##Check for a config file
+if [ ! -f config.json ]
+then
+  die 1 "ERROR:: Copy config-example.json to config.json and add your access token."
+fi
+
+function release {
+  docker pull databoxsystems/githubreleasetool:latest
+  docker run \
+         --net=host -ti --rm -v "$(pwd -P)":/databox -w / \
+         $DARGS databoxsystems/githubreleasetool:latest "$@"
+}
+
+release $@

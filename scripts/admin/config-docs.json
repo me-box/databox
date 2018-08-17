@@ -1,0 +1,46 @@
+
+{
+    "Username":"ToshBrown",
+	"AccessToken": "",
+	"MainRepo": ["me-box","databox"],
+	"CoreRepos":[
+		["me-box","core-container-manager"],
+		["me-box","core-arbiter"],
+		["me-box","core-export-service"],
+		["me-box","core-network"],
+		["me-box","core-store"],
+		["me-box","core-ui"],
+		["me-box","lib-node-databox"],
+		["me-box","lib-go-databox"],
+		["me-box","lib-python-databox"]
+	],
+	"OtherRepos": [
+		["me-box","app-os-monitor"],
+		["me-box","app-light-graph"],
+		["me-box","app-twitter-sentiment"],
+		["me-box","driver-os-monitor"],
+		["me-box","driver-sensingkit"],
+		["me-box","driver-tplink-smart-plug"],
+		["me-box","driver-twitter"],
+		["me-box","driver-phillips-hue"]
+	],
+	"Docs": {
+		"Overview": [
+			["me-box","databox","/README.md","Getting started"]
+		],
+		"Core": [
+			["me-box","core-container-manager", "/README.md", "Core container-manager"],
+			["me-box","core-arbiter", "/README.md", "Core arbiter"],
+			["me-box","core-network", "/README.md", "Core network"],
+			["me-box","core-store", "/README.md", "Core store"],
+			["me-box","core-export-service", "/README.md", "Core export-service"]
+		],
+		"Libs": [
+			["me-box","lib-go-databox", "/README.md", "lib-go-databox"],
+			["me-box","lib-node-databox", "/README.md", "lib-node-databox"],
+			["me-box","lib-python-databox", "/README.md", "lib-python-databox"]
+		],
+		"Other": [
+		]
+	}
+}
