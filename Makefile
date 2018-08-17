@@ -2,8 +2,7 @@
 DATABOX_VERSION=latest
 
 #Change where images a pulled from and pushed to when using this script.
-#TODO fix DEFAULT_REG once PR are merged (toshbrown --> databoxsystems)
-DEFAULT_REG=toshbrown
+DEFAULT_REG=databoxsystems
 
 # Pass options to the build comands overide OPTS=--no-cache or --flushslas to build without caching or flush the SLA on cmgr startup
 #OPTS=
