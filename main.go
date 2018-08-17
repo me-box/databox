@@ -36,7 +36,7 @@ func main() {
 
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
 	startCmdIP := startCmd.String("swarm-ip", "127.0.0.1", "The IP on the host to advertise the swarm.")
-	startCmdRelease := startCmd.String("release", "0.4.0", "Databox version to start, can uses tagged versions or latest")
+	startCmdRelease := startCmd.String("release", "0.5.0", "Databox version to start, can uses tagged versions or latest")
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", "databoxsystems", "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
