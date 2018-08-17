@@ -38,17 +38,17 @@ databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(she
 
 
 
-defaultDataboxOptions= -v -app-server $(DEFAULT_REG)/driver-app-store \
-											-arbiter $(DEFAULT_REG)/core-arbiter \
-											-cm $(DEFAULT_REG)/container-manager \
-											-store $(DEFAULT_REG)/core-store \
-											-export-service $(DEFAULT_REG)/export-service \
-											-core-network $(DEFAULT_REG)/core-network \
-											-core-ui $(DEFAULT_REG)/core-ui \
-											-core-network-relay $(DEFAULT_REG)/core-network-relay \
-											-registry $(DEFAULT_REG) \
-											-release $(DATABOX_VERSION) \
-											-sslHostName $(shell hostname)
+defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
+									-arbiter $(DEFAULT_REG)/core-arbiter \
+									-cm $(DEFAULT_REG)/container-manager \
+									-store $(DEFAULT_REG)/core-store \
+									-export-service $(DEFAULT_REG)/export-service \
+									-core-network $(DEFAULT_REG)/core-network \
+									-core-ui $(DEFAULT_REG)/core-ui \
+									-core-network-relay $(DEFAULT_REG)/core-network-relay \
+									-registry $(DEFAULT_REG) \
+									-release $(DATABOX_VERSION) \
+									-sslHostName $(shell hostname)
 
 .PHONY: all
 #all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch
@@ -81,7 +81,7 @@ build-linux-arm64:
 
 .PHONY: start
 start:
-	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) -v $(OPTS)
+	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) $(OPTS)
 
 
 .PHONY: stop
