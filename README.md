@@ -17,7 +17,7 @@ running.
 ```
 mkdir databox
 cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -sslHostName $(hostname)
 ```
 The above start Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
 
@@ -27,7 +27,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox stop
 ```
 
 # Development
@@ -36,13 +36,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
