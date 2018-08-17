@@ -106,6 +106,7 @@ define build-core
 	make -C ./build/driver-tplink-smart-plug build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	make -C ./build/app-twitter-sentiment build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	make -C ./build/driver-twitter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
 
@@ -180,6 +181,7 @@ define publish-core
 
 	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
 	docker push $(DEFAULT_REG)/app-light-graph-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-twitter-$(2):$(1)
 endef
 .PHONY: publish-core
 publish-core:
@@ -217,6 +219,7 @@ update-manifest-store:
 	cp ./build/driver-sensingkit/databox-manifest.json ./build/databox-manifest-store/driver-sensingkit-manifest.json
 	cp ./build/app-twitter-sentiment/databox-manifest.json ./build/databox-manifest-store/app-twitter-sentiment-manifest.json
 	cp ./build/app-light-graph/databox-manifest.json ./build/databox-manifest-store/app-light-graph-manifest.json
+	cp ./build/driver-twitter/databox-manifest.json ./build/databox-manifest-store/driver-twitter-manifest.json
 	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
 	git -C ./build/databox-manifest-store push origin master
 
