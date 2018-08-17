@@ -37,3 +37,5 @@ ocaml_opam_arm64v8/
 bin/
 
 scripts/admin/config\.json
+
+scripts/admin/config-docs\.json
