@@ -2,4 +2,4 @@
 .git
 .cache
 */node_modules
-build
+build/*
