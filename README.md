@@ -17,7 +17,7 @@ running.
 ```
 mkdir databox
 cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -release latest -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -sslHostName $(hostname)
 ```
 The above start Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
 
