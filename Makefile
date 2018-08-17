@@ -224,6 +224,14 @@ update-manifest-store:
 	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
 	git -C ./build/databox-manifest-store push origin master
 
+
+.PHONY: src-status
+src-status:
+	#brew install coreutils
+	#npm i git-summary -g
+	git-summary ./
+	git-summary ./build
+
 .PHONY: logs
 logs:
 	bin/databox logs
