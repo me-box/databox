@@ -4,22 +4,35 @@
 source ./scripts/utils.sh
 
 ## check we have the tools
-if ! [ -x "$(command -v git)" ]; then
+if ! [ -x "$(command -v git)" ]
+then
   die 1 "git is not installed;"`
        `"see https://git-scm.com/"
 fi
 
-if ! [ -x "$(command -v curl)" ]; then
+if ! [ -x "$(command -v curl)" ]
+then
   die 1 "curl is not installed;"`
        `"https://curl.haxx.se"
 fi
 
-DATABOX_VERSION=$(<./Version)
+CPU_ARCH=$(uname -m)
+if [[ "${CPU_ARCH}" = "x86_64" ]]
+then
+	DATABOX_ARCH="amd64"
+  DATABOX_DOCKER_FILE="Dockerfile"
+fi
+
+if [[ "${CPU_ARCH}" = "aarch64" ]]
+then
+	DATABOX_ARCH="arm64v8"
+  DATABOX_DOCKER_FILE="Dockerfile-arm64v8"
+fi
 
 usage() {
   echo ""
   echo "Please invoke this script with the component you would like to install."
-  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME]"
+  echo "Usage: databox-install-component [OPTION...] [GITHUB-USER/COMPONENT-NAME] [DATABOX_REPO_TAG] [DATABOX_VERSION]"
   echo "Flags:"
   echo "-h     This help message"
   echo ""
@@ -27,49 +40,39 @@ usage() {
 }
 
 seedManifest() {
-  log "Uploading Manifest for ${1} ..."
-  STATUS=$(curl --insecure --cookie-jar ./databox-jar -sL -w "%{http_code}\\n" https://127.0.0.1:8181/ -o /dev/null)
-  test_assert ${STATUS} 200 "Seeding manifest"
-
-  PAYLOAD=$(<${1}/databox-manifest.json)
-  PAYLOAD="manifest=${PAYLOAD}"
-
-  EXPECTED='{"success":true}'
-  RES=$(curl --insecure --cookie ./databox-jar -s -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1:8181/app/post')
-  test_assert ${RES} ${EXPECTED} "Uploading manifest"
-
-  rm ./databox-jar
+  echo ""
+  echo "Don't forget to upload the manifest ;-)"
+  echo ""
 }
 
-installStores() {
-  log "Installing Stores"
-  OUTPUT=$(docker pull databoxsystems/core-store:${DATABOX_VERSION}; docker tag databoxsystems/core-store:${DATABOX_VERSION} core-store:${DATABOX_VERSION})
-  test_assert $? 0 "Pull core-store " "$OUTPUT"
-}
 
 buildImage() {
-  cd ${1}
+  cd ./build/${1}
+  CONT_NAME=${1}
+  CONT_NAME=${CONT_NAME//_/-}
   log "Starting build ${1} ..."
-  OUTPUT=$(docker build -t $1 -t $1:${DATABOX_VERSION} -f Dockerfile${DATABOX_ARCH} .)
-  test_assert $? 0 "Build ${1}" "$OUTPUT"
-  cd ..
+  OUTPUT=$(docker build -t ${2}/${CONT_NAME}-${DATABOX_ARCH}:${3} -f ${DATABOX_DOCKER_FILE} .)
+  test_assert $? 0 "Build ${CONT_NAME}" "$OUTPUT"
+  cd ../..
 }
 
 pullChanges() {
-  cd ${1}
+  cd ./build/${1}
   log "Pulling Changes ${1} ..."
   OUTPUT=$(git pull)
   test_assert $? 0 "Git pull ${1}" "$OUTPUT"
-  cd ..
+  cd ../..
 }
 
 
-if [[ $# < 1 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
+if [[ $# < 3 ]] || [[ "$1" == "-h" ]]  # Must have more than 1 args.
 then
   usage
 fi
 
 COMPONENT=$1
+DATABOX_REPO_TAG=$2
+DATABOX_VERSION=$3
 
 if [[ ${COMPONENT} != *"/"* ]]; then
   COMPONENT="me-box/${COMPONENT}"
@@ -81,17 +84,17 @@ IFS="$oIFS"
 USER=${arr[0]}
 COMPONENT_NAME=${arr[1]}
 
-if [ ! -d "./$COMPONENT_NAME" ]; then
+mkdir -p ./build
+
+if [ ! -d "./build/$COMPONENT_NAME" ]; then
   log "Getting the code..... "
-  OUTPUT=$(git clone "https://github.com/${COMPONENT}.git")
+  OUTPUT=$(cd build && git clone "https://github.com/${COMPONENT}.git")
   test_assert $? 0 "Pulling the code from https://github.com/${COMPONENT}.git \n\n ${OUTPUT}"
   buildImage ${COMPONENT_NAME}
   seedManifest ${COMPONENT_NAME}
-  installStores
 else
   log "${COMPONENT_NAME} already installed, rebuilding and reseeding"
   pullChanges ${COMPONENT_NAME}
-  buildImage ${COMPONENT_NAME}
+  buildImage ${COMPONENT_NAME} ${DATABOX_REPO_TAG} ${DATABOX_VERSION}
   seedManifest ${COMPONENT_NAME}
-  installStores
 fi

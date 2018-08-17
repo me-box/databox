@@ -4,7 +4,7 @@
 ### Version: X.X.X 
 
 
-### generated:Tue May  8 22:35:41 2018 
+### generated:Fri Aug 17 12:19:48 2018 
 
 
 ---
@@ -210,30 +210,6 @@ EP/M02315X/1, From Human Data to Personal Experience
 Databox container manager and dashboard are the part of the databox platform.
 see [the main repository](https://github.com/me-box/databox) for more information.
 
-For developing Databox core components - Container Manager (CM) exposes following functions:
-1. `setHttpsHelper(helper)`: this function provides a https-agent with Databox root certificate, so that arbitor accepts   requests by the https-agent.
-2. `install(sla)`: start a app/driver service as a docker container.
-3. `uninstall(service)`: remove the running `service` docker container.
-4. `restart(container)`: restart the `container`.
-5. `connect()`: this function checks if CM can connect to docker.
-5. `listContainers()`: this list all Databox componentn containers.
-6. `generateArbiterToken(name)`:  this function generates token to be passed to arbitor for the service.
-7. `updateArbiter(data)`:  this function updates arbitor endpoint:/cm/: upsert-container-info using post 'data'
-8. `restoreContainers(slas)`:  this function restores containers by relaunching them by their sla's.
-9. `getActiveSLAs()`: this function gives all SLA's registered in the SLA - database.
-
-### CM SLA database functions
-10. `getSLA(name)`: find sla with `name` in `./slaStore/sladatastore.db`
-11. `getAllSLAs`: list all slas in `./slaStore/sladatastore.db`
-12. `putSLA(name, sla)`: put sla with `name` in `./slaStore/sladatastore.db`
-13. `deleteSLA(name)`: delete sla with `name` from `./slaStore/sladatastore.db`
-
-### CM network functions using docker network
-14. `createNetwork(networkName, external)`: this function creates a docker network with name `networkName` and boolean type         `external` variable. If `external` is true, it means external excess to the network is allowed.
-15. `connectToNetwork(container, networkName)`: this function connects a container to the docker network -`networkName`
-16. `disconnectFromNetwork(container, networkName)`: this function disconnects a container from the docker network -          `networkName`
-
-
 ## Development of databox was supported by the following funding
 
 ```
@@ -255,259 +231,11 @@ EP/M02315X/1, From Human Data to Personal Experience
 <a name="#corearbiter"></a>
 # Databox Arbiter
 
-The Databox Docker container that manages the flow of data by minting tokens and controlling store discovery. This code is not meant to be run on its own except for debug purposes. 
+The Databox Docker container that manages the flow of data by minting tokens and controlling store discovery. This code is not meant to be run on its own except for debug purposes.
 
 If you are a Databox app or driver developer, skip to [the relevant API documentation](#container-facing).
 
 Further background info for Databox platform [here](https://github.com/me-box/databox).
-
-
-For debug purposes:
-
-## Installation
-	git clone https://github.com/me-box/core-arbiter.git
-	cd core-arbiter
-	npm install
-
-## Usage
-
-This code should not be run as a standalone app, but rather in a Databox context. Unit tests to make sure it will work in that context can be run with:
-
-	npm test
-
-Default port is 8080 (HTTPS only), but in case of lack of privileges, can be overridden using the PORT environment variable, i.e.:
-
-	PORT=8081 npm start
-
-## API Endpoints
-
-All request bodies should be `application/json`.
-
-### CM-facing
-_(for Databox core-component developers)_
-
-#### /status
-
-##### Description
-
-Method: GET
-
-An endpoint required by the CM to signify if a container needs configuration. Can respond with (active|standby).
-
-##### Response
-
-  - 200: active
-
-#### /cm/upsert-container-info
-
-##### Description
-
-Method: POST
-
-Upserts the record of containers and the extent of their corresponding permissions (default none) maintained by the arbiter.
-
-NB: CM arbiter key MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). The arbiter will not accept requests that don't include a key that matches that passed to it in the `CM_KEY` environment variable on launch.
-
-##### Parameters
-
-  - name: Container name (required every time)
-  - type: Container type (driver|store|app)
-  - key: Container arbiter key
-
-##### Response
-
-###### Success
-
-  - 200: [JSON-formatted updated container record]
-
-###### Error
-
-  - 401:
-    - Missing API key (see description above)
-    - Unauthorized: Arbiter key invalid
-
-#### /cm/delete-container-info
-
-##### Description
-
-Method: POST
-
-Deletes a containers record by name.
-
-NB: CM arbiter key MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). The arbiter will not accept requests that don't include a key that matches that passed to it in the `CM_KEY` environment variable on launch.
-
-##### Parameters
-
-  - name: Container name
-
-##### Response
-
-###### Success
-
-  - 200
-
-###### Error
-
-  - 401:
-    - Missing API key (see description above)
-    - Unauthorized: Arbiter key invalid
-  - 400: Missing parameters
-
-#### /cm/grant-container-permissions
-
-##### Description
-
-Method: POST
-
-Adds permissions to the record of containers maintained by the arbiter for a particular route.
-
-Routes are encoded into tokens (as macaroon caveats). Routes are made up of a target container, an API path, and an HTTP method. The arbiter is indifferent to methods, but for the majority of APIs, `GET` requests map to read operations, and `POST` requests map to write operations.
-
-Paths are JSON-formatted whitelists of accessible endpoints formatted as defined [here](https://github.com/pillarjs/path-to-regexp#parameters) and are testable [here](http://forbeslindesay.github.io/express-route-tester/). More information [here](https://github.com/me-box/admin/blob/master/specs/token-auth.md#path--datasourceapi). The arbiter will mint tokens to paths (exact or RegExp) that match granted path permissions following those RegExp rules.
-
-NB: CM arbiter key MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). The arbiter will not accept requests that don't include a key that matches that passed to it in the `CM_KEY` environment variable on launch.
-
-##### Parameters
-
-  - name: Container name
-  - route:
-    - target: Target container hostname
-    - path:   API path
-    - method: HTTP method
-  - caveats: String array of route-specific caveats (all optional, see [here](https://github.com/me-box/admin/blob/master/specs/token-auth.md) for explanations).
-
-##### Response
-
-###### Success
-
-  - 200: [JSON array of route caveats after modification]
-
-###### Error
-
-  - 401:
-    - Missing API key (see description above)
-    - Unauthorized: Arbiter key invalid
-  - 400: Missing parameters
-
-#### /cm/revoke-container-permissions
-
-##### Description
-
-Method: POST
-
-Does the opposite of `/cm/grant-container-permissions`. If the specified path is a RegExp path, then _all_ matches will be revoked, so use wildcards carefully.
-
-NB: CM arbiter key MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). The arbiter will not accept requests that don't include a key that matches that passed to it in the `CM_KEY` environment variable on launch.
-
-##### Parameters
-
-  - name: Container name
-  - route:
-    - target: Target container hostname
-    - path:   API path
-    - method: HTTP method
-  - caveats: String array of route-specific caveats to delete. If none specified, all permissions for this route are completely revoked.
-
-##### Response
-
-###### Success
-
-  - 200:
-    - [JSON array of route caveats after modification]
-    - null (if all permissions are revoked)
-
-###### Error
-
-  - 401:
-    - Missing API key (see description above)
-    - Unauthorized: Arbiter key invalid
-  - 400: Missing parameters
-
-### Store-facing
-_(for Databox developers)_
-
-#### /store/secret
-
-##### Description
-
-Method: GET
-
-Registers a store allowing the arbiter to mint macaroons for the store, and for the store to verify these macaroons independently.
-
-NB: Container arbiter key (see developer guide) MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). Containers without proper authorization will not be able to discover certain items, or will be able to discover them but not access them. In the latter case, they are informed as per section 7.3.1.2 of the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf).
-
-##### Parameters
-
-##### Response
-
-###### Success
-
-  - 200: [Alphanumeric secret for verifying container macaroons]
-
-###### Error
-
-  - 401: Missing API key (see description above)
-  - 401: Invalid API key (see description above)
-  - 500: Container type unknown by arbiter
-  - 403: Container type [type] cannot use arbiter token minting capabilities as it is not a store type
-
-
-### Container-facing
-_(For Databox app and/or driver developers)_
-
-#### /cat
-
-##### Description
-
-Method: GET
-
-Serves a top-level [Hypercat](http://www.hypercat.io/) catalogue.
-
-NB: Container arbiter key (see developer guide) MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). Containers without proper authorization will not be able to discover certain items, or will be able to discover them but not access them. In the latter case, they are informed as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf).
-
-##### Response
-
-###### Success
-
-  - 200: [JSON-encoded Hypercat catalogue]
-
-###### Error
-
-  - 401: Missing API key (see description above)
-
-#### /token
-
-##### Description
-
-Method: POST
-
-Provides store tokens for containers.
-
-NB: Container arbiter key (see developer guide) MUST be provided as per the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf). Containers without proper authorization will not be able to discover certain items, or will be able to discover them but not access them. In the latter case, they are informed as per section 7.3.1.2 of the [Hypercat 3.0 specs](http://shop.bsigroup.com/upload/276605/PAS212-corr.pdf).
-
-##### Parameters
-
-  - target: The unique hostname of the target container that will verify the provided macaroon
-  - path:   API path for which the token should be minted for
-  - method: HTTP method for which the token should be minted for
-
-##### Response
-
-###### Success
-
-  - 200: [Serialzed macaroon]
-
-###### Error
-
-  - 401:
-    - Missing API key (see description above)
-    - Invalid API key
-    - Insufficient route permissions
-  - 400:
-    - Missing parameters
-    - Target [target] has not been approved for arbitering
-    - Target [target] has not registered itself for arbitering
-
 ---
 
 
@@ -565,6 +293,18 @@ POST /disconnect
 intput: {"name":<string>, "ip":<string>}
 ```
 `name` is the service about to be removed, and `ip` is its IP address. core-container uses these to delete related states.
+
+
+```
+POST /restart
+intput: {"name":<string>, "old_ip":<string>, "new_ip":<string>}
+```
+`name` is the restarted service, and `old_ip` is its IP address before restart, `new_ip` is the new IP address after retart. core-network updates the policies accroding to this change.
+
+```
+GET /status
+```
+This returns a string `'active'`.
 
 ---
 
@@ -643,42 +383,107 @@ The client could query the state of its request by including the service provide
 * [Subdirectories](#pkg-subdirectories)
 
 ## <a name="pkg-overview">Overview</a>
-A golang library for interfacing with Databox APIs.
-
-Install using go get github.com/me-box/lib-go-databox
-
-Examples can be found in the samples directory
-
 
 
 
 ## <a name="pkg-index">Index</a>
 * [Constants](#pkg-constants)
-* [func ExportLongpoll(destination string, payload string) (string, error)](#ExportLongpoll)
+* [func ChkErr(err error)](#ChkErr)
+* [func ChkErrFatal(err error)](#ChkErrFatal)
+* [func Debug(msg string)](#Debug)
+* [func Err(msg string)](#Err)
 * [func GetHttpsCredentials() string](#GetHttpsCredentials)
+* [func GetStoreURLFromDsHref(href string) (string, error)](#GetStoreURLFromDsHref)
+* [func Info(msg string)](#Info)
+* [func NewDataboxHTTPsAPI() *http.Client](#NewDataboxHTTPsAPI)
+* [func NewDataboxHTTPsAPIWithPaths(cmRootCaPath string) *http.Client](#NewDataboxHTTPsAPIWithPaths)
+* [func Warn(msg string)](#Warn)
 * [type AggregationType](#AggregationType)
-* [type BinaryKeyValue_0_3_0](#BinaryKeyValue_0_3_0)
-  * [func NewBinaryKeyValueClient(reqEndpoint string, enableLogging bool) (BinaryKeyValue_0_3_0, error)](#NewBinaryKeyValueClient)
-* [type BinaryObserveResponse](#BinaryObserveResponse)
+* [type ArbiterClient](#ArbiterClient)
+  * [func NewArbiterClient(arbiterTokenPath string, zmqPublicKeyPath string, arbiterZMQURI string) (*ArbiterClient, error)](#NewArbiterClient)
+  * [func (arb *ArbiterClient) GetRootDataSourceCatalogue() (HypercatRoot, error)](#ArbiterClient.GetRootDataSourceCatalogue)
+  * [func (arb *ArbiterClient) GrantComponentPermission()](#ArbiterClient.GrantComponentPermission)
+  * [func (arb *ArbiterClient) GrantContainerPermissions(permissions ContainerPermissions) error](#ArbiterClient.GrantContainerPermissions)
+  * [func (arb *ArbiterClient) InvalidateCache(href string, method string)](#ArbiterClient.InvalidateCache)
+  * [func (arb *ArbiterClient) RegesterDataboxComponent(name string, tokenString string, databoxType DataboxType) error](#ArbiterClient.RegesterDataboxComponent)
+  * [func (arb *ArbiterClient) RemoveDataboxComponent()](#ArbiterClient.RemoveDataboxComponent)
+  * [func (arb *ArbiterClient) RequestToken(href string, method string) ([]byte, error)](#ArbiterClient.RequestToken)
+  * [func (arb *ArbiterClient) RevokeComponentPermission()](#ArbiterClient.RevokeComponentPermission)
+* [type ContainerManagerOptions](#ContainerManagerOptions)
+* [type ContainerPermissions](#ContainerPermissions)
+* [type CoreStoreClient](#CoreStoreClient)
+  * [func NewCoreStoreClient(arbiterClient *ArbiterClient, zmqPublicKeyPath string, storeEndPoint string, enableLogging bool) *CoreStoreClient](#NewCoreStoreClient)
+  * [func NewDefaultCoreStoreClient(storeEndPoint string) *CoreStoreClient](#NewDefaultCoreStoreClient)
+  * [func (csc *CoreStoreClient) GetStoreDataSourceCatalogue(href string) (HypercatRoot, error)](#CoreStoreClient.GetStoreDataSourceCatalogue)
+  * [func (csc *CoreStoreClient) RegisterDatasource(metadata DataSourceMetadata) error](#CoreStoreClient.RegisterDatasource)
+* [type DataSource](#DataSource)
 * [type DataSourceMetadata](#DataSourceMetadata)
   * [func HypercatToDataSourceMetadata(hypercatDataSourceDescription string) (DataSourceMetadata, string, error)](#HypercatToDataSourceMetadata)
+* [type DataboxType](#DataboxType)
+* [type ExportWhitelist](#ExportWhitelist)
+* [type ExternalWhitelist](#ExternalWhitelist)
 * [type Filter](#Filter)
 * [type FilterType](#FilterType)
-* [type JSONKeyValue_0_3_0](#JSONKeyValue_0_3_0)
-  * [func NewJSONKeyValueClient(reqEndpoint string, enableLogging bool) (JSONKeyValue_0_3_0, error)](#NewJSONKeyValueClient)
-* [type JSONTimeSeriesBlob_0_3_0](#JSONTimeSeriesBlob_0_3_0)
-  * [func NewJSONTimeSeriesBlobClient(reqEndpoint string, enableLogging bool) (JSONTimeSeriesBlob_0_3_0, error)](#NewJSONTimeSeriesBlobClient)
-* [type JSONTimeSeriesQueryOptions](#JSONTimeSeriesQueryOptions)
-* [type JSONTimeSeries_0_3_0](#JSONTimeSeries_0_3_0)
-  * [func NewJSONTimeSeriesClient(reqEndpoint string, enableLogging bool) (JSONTimeSeries_0_3_0, error)](#NewJSONTimeSeriesClient)
-* [type JsonObserveResponse](#JsonObserveResponse)
-* [type TextKeyValue_0_3_0](#TextKeyValue_0_3_0)
-  * [func NewTextKeyValueClient(reqEndpoint string, enableLogging bool) (TextKeyValue_0_3_0, error)](#NewTextKeyValueClient)
-* [type TextObserveResponse](#TextObserveResponse)
+* [type HypercatItem](#HypercatItem)
+* [type HypercatRoot](#HypercatRoot)
+* [type KVStore](#KVStore)
+  * [func (kvj *KVStore) Delete(dataSourceID string, key string) error](#KVStore.Delete)
+  * [func (kvj *KVStore) DeleteAll(dataSourceID string) error](#KVStore.DeleteAll)
+  * [func (kvj *KVStore) ListKeys(dataSourceID string) ([]string, error)](#KVStore.ListKeys)
+  * [func (kvj *KVStore) Observe(dataSourceID string) (&lt;-chan ObserveResponse, error)](#KVStore.Observe)
+  * [func (kvj *KVStore) ObserveKey(dataSourceID string, key string) (&lt;-chan ObserveResponse, error)](#KVStore.ObserveKey)
+  * [func (kvj *KVStore) Read(dataSourceID string, key string) ([]byte, error)](#KVStore.Read)
+  * [func (kvj *KVStore) Write(dataSourceID string, key string, payload []byte) error](#KVStore.Write)
+* [type LogEntries](#LogEntries)
+* [type Logger](#Logger)
+  * [func New(store *CoreStoreClient, outputDebugLogs bool) (*Logger, error)](#New)
+  * [func (l Logger) ChkErr(err error)](#Logger.ChkErr)
+  * [func (l Logger) Debug(msg string)](#Logger.Debug)
+  * [func (l Logger) Err(msg string)](#Logger.Err)
+  * [func (l Logger) GetLastNLogEntries(n int) Logs](#Logger.GetLastNLogEntries)
+  * [func (l Logger) GetLastNLogEntriesRaw(n int) []byte](#Logger.GetLastNLogEntriesRaw)
+  * [func (l Logger) Info(msg string)](#Logger.Info)
+  * [func (l Logger) Warn(msg string)](#Logger.Warn)
+* [type Logs](#Logs)
+* [type Macaroon](#Macaroon)
+* [type Manifest](#Manifest)
+* [type ObserveResponse](#ObserveResponse)
+* [type Package](#Package)
+* [type RelValPair](#RelValPair)
+* [type RelValPairBool](#RelValPairBool)
+* [type Repository](#Repository)
+* [type ResourceRequirements](#ResourceRequirements)
+* [type Route](#Route)
+* [type SLA](#SLA)
+* [type StoreContentType](#StoreContentType)
+* [type StoreType](#StoreType)
+* [type TSBlobStore](#TSBlobStore)
+  * [func (tbs *TSBlobStore) Earliest(dataSourceID string) ([]byte, error)](#TSBlobStore.Earliest)
+  * [func (tbs *TSBlobStore) FirstN(dataSourceID string, n int) ([]byte, error)](#TSBlobStore.FirstN)
+  * [func (tbs *TSBlobStore) LastN(dataSourceID string, n int) ([]byte, error)](#TSBlobStore.LastN)
+  * [func (tbs *TSBlobStore) Latest(dataSourceID string) ([]byte, error)](#TSBlobStore.Latest)
+  * [func (tbs *TSBlobStore) Length(dataSourceID string) (int, error)](#TSBlobStore.Length)
+  * [func (tbs *TSBlobStore) Observe(dataSourceID string) (&lt;-chan ObserveResponse, error)](#TSBlobStore.Observe)
+  * [func (tbs *TSBlobStore) Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64) ([]byte, error)](#TSBlobStore.Range)
+  * [func (tbs *TSBlobStore) Since(dataSourceID string, sinceTimeStamp int64) ([]byte, error)](#TSBlobStore.Since)
+  * [func (tbs *TSBlobStore) Write(dataSourceID string, payload []byte) error](#TSBlobStore.Write)
+  * [func (tbs *TSBlobStore) WriteAt(dataSourceID string, timstamp int64, payload []byte) error](#TSBlobStore.WriteAt)
+* [type TSStore](#TSStore)
+  * [func (tsc TSStore) Earliest(dataSourceID string) ([]byte, error)](#TSStore.Earliest)
+  * [func (tsc TSStore) FirstN(dataSourceID string, n int, opt TimeSeriesQueryOptions) ([]byte, error)](#TSStore.FirstN)
+  * [func (tsc TSStore) LastN(dataSourceID string, n int, opt TimeSeriesQueryOptions) ([]byte, error)](#TSStore.LastN)
+  * [func (tsc TSStore) Latest(dataSourceID string) ([]byte, error)](#TSStore.Latest)
+  * [func (tsc TSStore) Length(dataSourceID string) (int, error)](#TSStore.Length)
+  * [func (tsc TSStore) Observe(dataSourceID string) (&lt;-chan ObserveResponse, error)](#TSStore.Observe)
+  * [func (tsc TSStore) Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64, opt TimeSeriesQueryOptions) ([]byte, error)](#TSStore.Range)
+  * [func (tsc TSStore) Since(dataSourceID string, sinceTimeStamp int64, opt TimeSeriesQueryOptions) ([]byte, error)](#TSStore.Since)
+  * [func (tsc TSStore) Write(dataSourceID string, payload []byte) error](#TSStore.Write)
+  * [func (tsc TSStore) WriteAt(dataSourceID string, timstamp int64, payload []byte) error](#TSStore.WriteAt)
+* [type TimeSeriesQueryOptions](#TimeSeriesQueryOptions)
 
 
 #### <a name="pkg-files">Package files</a>
-[core-store-kv-bin.go](/src/target/core-store-kv-bin.go) [core-store-kv-json.go](/src/target/core-store-kv-json.go) [core-store-kv-text.go](/src/target/core-store-kv-text.go) [core-store-ts-json-blob.go](/src/target/core-store-ts-json-blob.go) [core-store-ts-json.go](/src/target/core-store-ts-json.go) [export.go](/src/target/export.go) [types.go](/src/target/types.go) [utils.go](/src/target/utils.go) 
+[arbiterClient.go](/src/target/arbiterClient.go) [coreStoreClient.go](/src/target/coreStoreClient.go) [coreStoreKV.go](/src/target/coreStoreKV.go) [coreStoreTS.go](/src/target/coreStoreTS.go) [coreStoreTSBlob.go](/src/target/coreStoreTSBlob.go) [databoxRequest.go](/src/target/databoxRequest.go) [databoxlog.go](/src/target/databoxlog.go) [export.go](/src/target/export.go) [helperFunction.go](/src/target/helperFunction.go) [types.go](/src/target/types.go) 
 
 
 ## <a name="pkg-constants">Constants</a>
@@ -697,19 +502,53 @@ const (
 ```
 Allowed values for FilterType and AggregationFunction
 
-
-
-
-## <a name="ExportLongpoll">func</a> [ExportLongpoll](/src/target/export.go?s=339:410#L5)
 ``` go
-func ExportLongpoll(destination string, payload string) (string, error)
+const DefaultArbiterKeyPath = "/run/secrets/ARBITER_TOKEN"
 ```
-ExportLongpoll exports data to external service (payload must be an escaped json string)
-permissions must be requested in the app manifest (drivers dont need to use the export service)
+``` go
+const DefaultArbiterURI = "tcp://arbiter:4444"
+```
+``` go
+const DefaultHTTPSCertPath = "/run/secrets/DATABOX.pem"
+```
+DefaultHTTPSCertPath is the defaut loaction where apps and drivers can find the https certivicats needed to offer a secure UI
+
+``` go
+const DefaultHTTPSRootCertPath = "/run/secrets/DATABOX_ROOT_CA"
+```
+DefaultHTTPSRootCertPath contins the Public key of this databoxes Root certificate needed to verify requests to other components (used in )
+
+``` go
+const DefaultStorePublicKeyPath = "/run/secrets/ZMQ_PUBLIC_KEY"
+```
 
 
 
-## <a name="GetHttpsCredentials">func</a> [GetHttpsCredentials](/src/target/utils.go?s=2426:2459#L93)
+## <a name="ChkErr">func</a> [ChkErr](/src/target/databoxlog.go?s=1841:1863#L85)
+``` go
+func ChkErr(err error)
+```
+
+
+## <a name="ChkErrFatal">func</a> [ChkErrFatal](/src/target/databoxlog.go?s=1916:1943#L92)
+``` go
+func ChkErrFatal(err error)
+```
+
+
+## <a name="Debug">func</a> [Debug](/src/target/databoxlog.go?s=2601:2623#L129)
+``` go
+func Debug(msg string)
+```
+
+
+## <a name="Err">func</a> [Err](/src/target/databoxlog.go?s=2373:2393#L117)
+``` go
+func Err(msg string)
+```
+
+
+## <a name="GetHttpsCredentials">func</a> [GetHttpsCredentials](/src/target/helperFunction.go?s=3161:3194#L95)
 ``` go
 func GetHttpsCredentials() string
 ```
@@ -718,8 +557,40 @@ These are read form /run/secrets/DATABOX.pem and are generated by the container-
 
 
 
+## <a name="GetStoreURLFromDsHref">func</a> [GetStoreURLFromDsHref](/src/target/helperFunction.go?s=2765:2820#L82)
+``` go
+func GetStoreURLFromDsHref(href string) (string, error)
+```
+GetStoreURLFromDsHref extracts the base store url from the href provied in the hypercat descriptions.
 
-## <a name="AggregationType">type</a> [AggregationType](/src/target/core-store-ts-json.go?s=124:151#L2)
+
+
+## <a name="Info">func</a> [Info](/src/target/databoxlog.go?s=2172:2193#L105)
+``` go
+func Info(msg string)
+```
+
+
+## <a name="NewDataboxHTTPsAPI">func</a> [NewDataboxHTTPsAPI](/src/target/databoxRequest.go?s=108:146#L3)
+``` go
+func NewDataboxHTTPsAPI() *http.Client
+```
+
+
+## <a name="NewDataboxHTTPsAPIWithPaths">func</a> [NewDataboxHTTPsAPIWithPaths](/src/target/databoxRequest.go?s=248:314#L8)
+``` go
+func NewDataboxHTTPsAPIWithPaths(cmRootCaPath string) *http.Client
+```
+
+
+## <a name="Warn">func</a> [Warn](/src/target/databoxlog.go?s=2271:2292#L111)
+``` go
+func Warn(msg string)
+```
+
+
+
+## <a name="AggregationType">type</a> [AggregationType](/src/target/coreStoreTS.go?s=70:97#L1)
 ``` go
 type AggregationType string
 ```
@@ -732,21 +603,13 @@ type AggregationType string
 
 
 
-## <a name="BinaryKeyValue_0_3_0">type</a> [BinaryKeyValue_0_3_0](/src/target/core-store-kv-bin.go?s=113:1007#L1)
+## <a name="ArbiterClient">type</a> [ArbiterClient](/src/target/arbiterClient.go?s=179:383#L8)
 ``` go
-type BinaryKeyValue_0_3_0 interface {
-    // Write text value to key
-    Write(dataSourceID string, key string, payload []byte) error
-    // Read text values from key.
-    Read(dataSourceID string, key string) ([]byte, error)
-    //ListKeys returns an array of key registed under the dataSourceID
-    ListKeys(dataSourceID string) ([]string, error)
-    // Get notifications of updated values for a key. Returns a channel that receives BinaryObserveResponse containing a JSON string when a new value is added.
-    ObserveKey(dataSourceID string, key string) (<-chan BinaryObserveResponse, error)
-    // Get notifications of updated values for any key. Returns a channel that receives BinaryObserveResponse containing a JSON string when a new value is added.
-    Observe(dataSourceID string) (<-chan BinaryObserveResponse, error)
-    // Get notifications of updated values
-    RegisterDatasource(metadata DataSourceMetadata) error
+type ArbiterClient struct {
+    ArbiterToken string
+
+    ZestC zest.ZestClient
+    // contains filtered or unexported fields
 }
 ```
 
@@ -755,24 +618,126 @@ type BinaryKeyValue_0_3_0 interface {
 
 
 
-### <a name="NewBinaryKeyValueClient">func</a> [NewBinaryKeyValueClient](/src/target/core-store-kv-bin.go?s=1374:1472#L24)
+### <a name="NewArbiterClient">func</a> [NewArbiterClient](/src/target/arbiterClient.go?s=495:612#L18)
 ``` go
-func NewBinaryKeyValueClient(reqEndpoint string, enableLogging bool) (BinaryKeyValue_0_3_0, error)
+func NewArbiterClient(arbiterTokenPath string, zmqPublicKeyPath string, arbiterZMQURI string) (*ArbiterClient, error)
 ```
-NewBinaryKeyValueClient returns a new NewBinaryKeyValueClient to enable reading and writing of binary data key value to the store
-reqEndpoint is provided in the DATABOX_ZMQ_ENDPOINT environment varable to databox apps and drivers.
+NewArbiterClient returns an arbiter client for use by components that require conunication with the arbiter
 
 
 
 
 
-## <a name="BinaryObserveResponse">type</a> [BinaryObserveResponse](/src/target/types.go?s=293:413#L13)
+### <a name="ArbiterClient.GetRootDataSourceCatalogue">func</a> (\*ArbiterClient) [GetRootDataSourceCatalogue](/src/target/arbiterClient.go?s=1596:1672#L51)
 ``` go
-type BinaryObserveResponse struct {
-    TimestampMS  int64
-    DataSourceID string
-    Key          string
-    Data         []byte
+func (arb *ArbiterClient) GetRootDataSourceCatalogue() (HypercatRoot, error)
+```
+GetRootDataSourceCatalogue is used by the container manager to access the Root hypercat catalogue
+
+
+
+
+### <a name="ArbiterClient.GrantComponentPermission">func</a> (\*ArbiterClient) [GrantComponentPermission](/src/target/arbiterClient.go?s=6122:6174#L224)
+``` go
+func (arb *ArbiterClient) GrantComponentPermission()
+```
+
+
+
+### <a name="ArbiterClient.GrantContainerPermissions">func</a> (\*ArbiterClient) [GrantContainerPermissions](/src/target/arbiterClient.go?s=3119:3210#L108)
+``` go
+func (arb *ArbiterClient) GrantContainerPermissions(permissions ContainerPermissions) error
+```
+GrantContainerPermissions allows the container manager to grant permissions to an app or driver on a registered store.
+
+
+
+
+### <a name="ArbiterClient.InvalidateCache">func</a> (\*ArbiterClient) [InvalidateCache](/src/target/arbiterClient.go?s=5319:5388#L190)
+``` go
+func (arb *ArbiterClient) InvalidateCache(href string, method string)
+```
+InvalidateCache can be used to remove a token from the arbiterClient cache.
+This is done automatically if the token is rejected.
+
+
+
+
+### <a name="ArbiterClient.RegesterDataboxComponent">func</a> (\*ArbiterClient) [RegesterDataboxComponent](/src/target/arbiterClient.go?s=2165:2279#L70)
+``` go
+func (arb *ArbiterClient) RegesterDataboxComponent(name string, tokenString string, databoxType DataboxType) error
+```
+RegesterDataboxComponent allows the container manager to register a new app, driver or store with the arbiter
+
+
+
+
+### <a name="ArbiterClient.RemoveDataboxComponent">func</a> (\*ArbiterClient) [RemoveDataboxComponent](/src/target/arbiterClient.go?s=6042:6092#L220)
+``` go
+func (arb *ArbiterClient) RemoveDataboxComponent()
+```
+
+
+
+### <a name="ArbiterClient.RequestToken">func</a> (\*ArbiterClient) [RequestToken](/src/target/arbiterClient.go?s=4346:4428#L155)
+``` go
+func (arb *ArbiterClient) RequestToken(href string, method string) ([]byte, error)
+```
+RequestToken is used internally to request a token from the arbiter
+
+
+
+
+### <a name="ArbiterClient.RevokeComponentPermission">func</a> (\*ArbiterClient) [RevokeComponentPermission](/src/target/arbiterClient.go?s=6204:6257#L228)
+``` go
+func (arb *ArbiterClient) RevokeComponentPermission()
+```
+
+
+
+## <a name="ContainerManagerOptions">type</a> [ContainerManagerOptions](/src/target/types.go?s=89:859#L1)
+``` go
+type ContainerManagerOptions struct {
+    Version               string
+    SwarmAdvertiseAddress string
+    DefaultRegistryHost   string
+    DefaultRegistry       string
+    DefaultAppStore       string
+    DefaultStoreImage     string
+    ContainerManagerImage string
+    CoreUIImage           string
+    ArbiterImage          string
+    CoreNetworkImage      string
+    CoreNetworkRelayImage string
+    AppServerImage        string
+    ExportServiceImage    string
+    EnableDebugLogging    bool
+    ClearSLAs             bool
+    OverridePasword       string
+    Hostname              string
+    InternalIPs           []string
+    ExternalIP            string
+    HostPath              string
+    Arch                  string //current architecture used to chose the correct docker images "" for x86 or "arm64v8" for arm64v8 ;-)
+}
+```
+ContainerManagerOptions is used to configure the Container Manager
+
+
+
+
+
+
+
+
+
+
+## <a name="ContainerPermissions">type</a> [ContainerPermissions](/src/target/arbiterClient.go?s=2859:2995#L101)
+``` go
+type ContainerPermissions struct {
+    Name    string   `json:"name"`
+    Route   Route    `json:"route"`
+    Caveats []string `json:"caveats"`
 }
 ```
 
@@ -784,7 +749,79 @@ type BinaryObserveResponse struct {
 
 
 
-## <a name="DataSourceMetadata">type</a> [DataSourceMetadata](/src/target/types.go?s=446:685#L26)
+## <a name="CoreStoreClient">type</a> [CoreStoreClient](/src/target/coreStoreClient.go?s=150:433#L5)
+``` go
+type CoreStoreClient struct {
+    ZestC      zest.ZestClient
+    Arbiter    *ArbiterClient
+    ZEndpoint  string
+    DEndpoint  string
+    KVJSON     *KVStore
+    KVText     *KVStore
+    KVBin      *KVStore
+    TSBlobJSON *TSBlobStore
+    TSBlobText *TSBlobStore
+    TSBlobBin  *TSBlobStore
+    TSJSON     *TSStore
+}
+```
+
+
+
+
+
+
+### <a name="NewCoreStoreClient">func</a> [NewCoreStoreClient](/src/target/coreStoreClient.go?s=723:860#L25)
+``` go
+func NewCoreStoreClient(arbiterClient *ArbiterClient, zmqPublicKeyPath string, storeEndPoint string, enableLogging bool) *CoreStoreClient
+```
+
+### <a name="NewDefaultCoreStoreClient">func</a> [NewDefaultCoreStoreClient](/src/target/coreStoreClient.go?s=435:504#L19)
+``` go
+func NewDefaultCoreStoreClient(storeEndPoint string) *CoreStoreClient
+```
+
+
+
+
+### <a name="CoreStoreClient.GetStoreDataSourceCatalogue">func</a> (\*CoreStoreClient) [GetStoreDataSourceCatalogue](/src/target/coreStoreClient.go?s=1808:1898#L54)
+``` go
+func (csc *CoreStoreClient) GetStoreDataSourceCatalogue(href string) (HypercatRoot, error)
+```
+
+
+
+### <a name="CoreStoreClient.RegisterDatasource">func</a> (\*CoreStoreClient) [RegisterDatasource](/src/target/coreStoreClient.go?s=2509:2590#L79)
+``` go
+func (csc *CoreStoreClient) RegisterDatasource(metadata DataSourceMetadata) error
+```
+RegisterDatasource is used by apps and drivers to register datasource in stores they
+own.
+
+
+
+
+## <a name="DataSource">type</a> [DataSource](/src/target/types.go?s=1601:1900#L52)
+``` go
+type DataSource struct {
+    Type          string       `json:"type"`
+    Required      bool         `json:"required"`
+    Name          string       `json:"name"`
+    Clientid      string       `json:"clientid"`
+    Granularities []string     `json:"granularities"`
+    Hypercat      HypercatItem `json:"hypercat"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="DataSourceMetadata">type</a> [DataSourceMetadata](/src/target/types.go?s=4839:5081#L108)
 ``` go
 type DataSourceMetadata struct {
     Description    string
@@ -792,7 +829,7 @@ type DataSourceMetadata struct {
     Vendor         string
     DataSourceType string
     DataSourceID   string
-    StoreType      string
+    StoreType      StoreType
     IsActuator     bool
     Unit           string
     Location       string
@@ -804,7 +841,7 @@ type DataSourceMetadata struct {
 
 
 
-### <a name="HypercatToDataSourceMetadata">func</a> [HypercatToDataSourceMetadata](/src/target/utils.go?s=6485:6592#L227)
+### <a name="HypercatToDataSourceMetadata">func</a> [HypercatToDataSourceMetadata](/src/target/helperFunction.go?s=815:922#L11)
 ``` go
 func HypercatToDataSourceMetadata(hypercatDataSourceDescription string) (DataSourceMetadata, string, error)
 ```
@@ -815,7 +852,60 @@ Also returns the store url for this data source.
 
 
 
-## <a name="Filter">type</a> [Filter](/src/target/core-store-ts-json.go?s=746:829#L20)
+## <a name="DataboxType">type</a> [DataboxType](/src/target/types.go?s=861:884#L18)
+``` go
+type DataboxType string
+```
+
+``` go
+const (
+    DataboxTypeApp    DataboxType = "app"
+    DataboxTypeDriver DataboxType = "driver"
+    DataboxTypeStore  DataboxType = "store"
+)
+```
+
+
+
+
+
+
+
+
+
+## <a name="ExportWhitelist">type</a> [ExportWhitelist](/src/target/types.go?s=1494:1599#L47)
+``` go
+type ExportWhitelist struct {
+    Url         string `json:"url"`
+    Description string `json:"description"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="ExternalWhitelist">type</a> [ExternalWhitelist](/src/target/types.go?s=1380:1492#L42)
+``` go
+type ExternalWhitelist struct {
+    Urls        []string `json:"urls"`
+    Description string   `json:"description"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="Filter">type</a> [Filter](/src/target/coreStoreTS.go?s=692:775#L17)
 ``` go
 type Filter struct {
     TagName    string
@@ -834,7 +924,7 @@ Filter types to hold the required data to apply the filtering functions of the s
 
 
 
-## <a name="FilterType">type</a> [FilterType](/src/target/core-store-ts-json.go?s=153:175#L4)
+## <a name="FilterType">type</a> [FilterType](/src/target/coreStoreTS.go?s=99:121#L1)
 ``` go
 type FilterType string
 ```
@@ -847,21 +937,11 @@ type FilterType string
 
 
 
-## <a name="JSONKeyValue_0_3_0">type</a> [JSONKeyValue_0_3_0](/src/target/core-store-kv-json.go?s=133:1162#L3)
+## <a name="HypercatItem">type</a> [HypercatItem](/src/target/types.go?s=5701:5822#L147)
 ``` go
-type JSONKeyValue_0_3_0 interface {
-    // Write JSON value
-    Write(dataSourceID string, key string, payload []byte) error
-    // Read JSON values. Returns a []bytes containing a JSON string.
-    Read(dataSourceID string, key string) ([]byte, error)
-    //ListKeys returns an array of key registed under the dataSourceID
-    ListKeys(dataSourceID string) ([]string, error)
-    // Get notifications of updated values for a key. Returns a channel that receives JsonObserveResponse containing a JSON string when a new value is added.
-    ObserveKey(dataSourceID string, key string) (<-chan JsonObserveResponse, error)
-    // Get notifications of updated values for any key. Returns a channel that receives JsonObserveResponse containing a JSON string when a new value is added.
-    Observe(dataSourceID string) (<-chan JsonObserveResponse, error)
-    // RegisterDatasource make a new data source for available to the rest of datbox. This can only be used on stores that you have requested in your manifest.
-    RegisterDatasource(metadata DataSourceMetadata) error
+type HypercatItem struct {
+    ItemMetadata []interface{} `json:"item-metadata"`
+    Href         string        `json:"href"`
 }
 ```
 
@@ -870,51 +950,14 @@ type JSONKeyValue_0_3_0 interface {
 
 
 
-### <a name="NewJSONKeyValueClient">func</a> [NewJSONKeyValueClient](/src/target/core-store-kv-json.go?s=1521:1615#L26)
+
+
+
+## <a name="HypercatRoot">type</a> [HypercatRoot](/src/target/types.go?s=5560:5699#L142)
 ``` go
-func NewJSONKeyValueClient(reqEndpoint string, enableLogging bool) (JSONKeyValue_0_3_0, error)
-```
-NewJSONKeyValueClient returns a new NewJSONKeyValueClient to enable reading and writing of JSON data key value to the store
-reqEndpoint is provided in the DATABOX_ZMQ_ENDPOINT environment varable to databox apps and drivers.
-
-
-
-
-
-## <a name="JSONTimeSeriesBlob_0_3_0">type</a> [JSONTimeSeriesBlob_0_3_0](/src/target/core-store-ts-json-blob.go?s=124:2391#L2)
-``` go
-type JSONTimeSeriesBlob_0_3_0 interface {
-    // Write  will be timestamped with write time in ms since the unix epoch by the store
-    Write(dataSourceID string, payload []byte) error
-    // WriteAt will be timestamped with timestamp provided in ms since the unix epoch
-    WriteAt(dataSourceID string, timestamp int64, payload []byte) error
-    // Read the latest value.
-    // return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Latest(dataSourceID string) ([]byte, error)
-    // Read the earliest value.
-    // return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Earliest(dataSourceID string) ([]byte, error)
-    // Read the last N values.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    LastN(dataSourceID string, n int) ([]byte, error)
-    // Read the first N values.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    FirstN(dataSourceID string, n int) ([]byte, error)
-    // Read values written after the provided timestamp in in ms since the unix epoch.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Since(dataSourceID string, sinceTimeStamp int64) ([]byte, error)
-    // Read values written between the start timestamp and end timestamp in in ms since the unix epoch.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64) ([]byte, error)
-    //Length retruns the number of records stored for that dataSourceID
-    Length(dataSourceID string) (int, error)
-    // Get notifications when a new value is written
-    // the returned chan receives JsonObserveResponse of the form {"TimestampMS":213123123,"Json":byte[]}
-    Observe(dataSourceID string) (<-chan JsonObserveResponse, error)
-    // registerDatasource is used by apps and drivers to register data sources in stores they own.
-    RegisterDatasource(metadata DataSourceMetadata) error
-    // GetDatasourceCatalogue is used by drivers to get a list of registered data sources in stores they own.
-    GetDatasourceCatalogue() ([]byte, error)
+type HypercatRoot struct {
+    CatalogueMetadata []RelValPair   `json:"catalogue-metadata"`
+    Items             []HypercatItem `json:"items"`
 }
 ```
 
@@ -923,152 +966,669 @@ type JSONTimeSeriesBlob_0_3_0 interface {
 
 
 
-### <a name="NewJSONTimeSeriesBlobClient">func</a> [NewJSONTimeSeriesBlobClient](/src/target/core-store-ts-json-blob.go?s=2752:2858#L44)
+
+
+
+## <a name="KVStore">type</a> [KVStore](/src/target/coreStoreKV.go?s=59:142#L1)
 ``` go
-func NewJSONTimeSeriesBlobClient(reqEndpoint string, enableLogging bool) (JSONTimeSeriesBlob_0_3_0, error)
+type KVStore struct {
+    // contains filtered or unexported fields
+}
 ```
-NewJSONTimeSeriesBlobClient returns a new jSONTimeSeriesBlobClient to enable interaction with a time series data store in unstructured JSON format
-reqEndpoint is provided in the DATABOX_ZMQ_ENDPOINT environment varable to databox apps and drivers.
 
 
 
 
 
-## <a name="JSONTimeSeriesQueryOptions">type</a> [JSONTimeSeriesQueryOptions](/src/target/core-store-ts-json.go?s=911:1019#L27)
+
+
+
+
+### <a name="KVStore.Delete">func</a> (\*KVStore) [Delete](/src/target/coreStoreKV.go?s=894:959#L30)
 ``` go
-type JSONTimeSeriesQueryOptions struct {
+func (kvj *KVStore) Delete(dataSourceID string, key string) error
+```
+Delete deletes data under the key.
+
+
+
+
+### <a name="KVStore.DeleteAll">func</a> (\*KVStore) [DeleteAll](/src/target/coreStoreKV.go?s=1117:1173#L39)
+``` go
+func (kvj *KVStore) DeleteAll(dataSourceID string) error
+```
+DeleteAll deletes all keys and data from the datasource.
+
+
+
+
+### <a name="KVStore.ListKeys">func</a> (\*KVStore) [ListKeys](/src/target/coreStoreKV.go?s=1327:1394#L48)
+``` go
+func (kvj *KVStore) ListKeys(dataSourceID string) ([]string, error)
+```
+ListKeys returns an array of key registed under the dataSourceID
+
+
+
+
+### <a name="KVStore.Observe">func</a> (\*KVStore) [Observe](/src/target/coreStoreKV.go?s=1731:1811#L67)
+``` go
+func (kvj *KVStore) Observe(dataSourceID string) (<-chan ObserveResponse, error)
+```
+
+
+
+### <a name="KVStore.ObserveKey">func</a> (\*KVStore) [ObserveKey](/src/target/coreStoreKV.go?s=1905:2000#L75)
+``` go
+func (kvj *KVStore) ObserveKey(dataSourceID string, key string) (<-chan ObserveResponse, error)
+```
+
+
+
+### <a name="KVStore.Read">func</a> (\*KVStore) [Read](/src/target/coreStoreKV.go?s=687:760#L21)
+``` go
+func (kvj *KVStore) Read(dataSourceID string, key string) ([]byte, error)
+```
+Read will read the vale store at under tha key
+return data is a  object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="KVStore.Write">func</a> (\*KVStore) [Write](/src/target/coreStoreKV.go?s=353:433#L11)
+``` go
+func (kvj *KVStore) Write(dataSourceID string, key string, payload []byte) error
+```
+Write Write will add data to the key value data store.
+
+
+
+
+## <a name="LogEntries">type</a> [LogEntries](/src/target/databoxlog.go?s=126:205#L4)
+``` go
+type LogEntries struct {
+    Msg  string `json:"msg"`
+    Type string `json:"type"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="Logger">type</a> [Logger](/src/target/databoxlog.go?s=78:124#L1)
+``` go
+type Logger struct {
+    Store *CoreStoreClient
+}
+```
+
+
+
+
+
+
+### <a name="New">func</a> [New](/src/target/databoxlog.go?s=250:321#L13)
+``` go
+func New(store *CoreStoreClient, outputDebugLogs bool) (*Logger, error)
+```
+
+
+
+
+### <a name="Logger.ChkErr">func</a> (Logger) [ChkErr](/src/target/databoxlog.go?s=1417:1450#L58)
+``` go
+func (l Logger) ChkErr(err error)
+```
+
+
+
+### <a name="Logger.Debug">func</a> (Logger) [Debug](/src/target/databoxlog.go?s=1247:1280#L52)
+``` go
+func (l Logger) Debug(msg string)
+```
+
+
+
+### <a name="Logger.Err">func</a> (Logger) [Err](/src/target/databoxlog.go?s=1082:1113#L47)
+``` go
+func (l Logger) Err(msg string)
+```
+
+
+
+### <a name="Logger.GetLastNLogEntries">func</a> (Logger) [GetLastNLogEntries](/src/target/databoxlog.go?s=1524:1570#L67)
+``` go
+func (l Logger) GetLastNLogEntries(n int) Logs
+```
+
+
+
+### <a name="Logger.GetLastNLogEntriesRaw">func</a> (Logger) [GetLastNLogEntriesRaw](/src/target/databoxlog.go?s=1702:1753#L77)
+``` go
+func (l Logger) GetLastNLogEntriesRaw(n int) []byte
+```
+
+
+
+### <a name="Logger.Info">func</a> (Logger) [Info](/src/target/databoxlog.go?s=750:782#L37)
+``` go
+func (l Logger) Info(msg string)
+```
+
+
+
+### <a name="Logger.Warn">func</a> (Logger) [Warn](/src/target/databoxlog.go?s=916:948#L42)
+``` go
+func (l Logger) Warn(msg string)
+```
+
+
+
+## <a name="Logs">type</a> [Logs](/src/target/databoxlog.go?s=207:229#L9)
+``` go
+type Logs []LogEntries
+```
+
+
+
+
+
+
+
+
+
+## <a name="Macaroon">type</a> [Macaroon](/src/target/types.go?s=1019:1039#L26)
+``` go
+type Macaroon string
+```
+
+
+
+
+
+
+
+
+
+## <a name="Manifest">type</a> [Manifest](/src/target/types.go?s=1902:3186#L61)
+``` go
+type Manifest struct {
+    ManifestVersion      int                  `json:"manifest-version"` //
+    Name                 string               `json:"name"`
+    DataboxType          DataboxType          `json:"databox-type"`
+    Version              string               `json:"version"`     //this is databox version e.g 0.3.1
+    Description          string               `json:"description"` // free text description
+    Author               string               `json:"author"`      //Tosh Brown <Anthony.Brown@nottingham.ac.uk>
+    License              string               `json:"license"`     //Software licence
+    Tags                 []string             `json:"tags"`        //search tags
+    Homepage             string               `json:"homepage"`    //homepage url
+    Repository           Repository           `json:"repository"`
+    Packages             []Package            `json:"packages"`
+    DataSources          []DataSource         `json:"datasources"`
+    ExportWhitelists     []ExportWhitelist    `json:"export-whitelist"`
+    ExternalWhitelist    []ExternalWhitelist  `json:"external-whitelist"`
+    ResourceRequirements ResourceRequirements `json:"resource-requirements"`
+    DisplayName          string               `json:"displayName"`
+    StoreURL             string               `json:"storeUrl"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="ObserveResponse">type</a> [ObserveResponse](/src/target/types.go?s=5856:5970#L157)
+``` go
+type ObserveResponse struct {
+    TimestampMS  int64
+    DataSourceID string
+    Key          string
+    Data         []byte
+}
+```
+OBSERVE RESPONSE
+
+
+
+
+
+
+
+
+
+
+## <a name="Package">type</a> [Package](/src/target/types.go?s=1122:1378#L33)
+``` go
+type Package struct {
+    Name        string   `json:"name"`
+    Purpose     string   `json:"purpose"`
+    Install     string   `json:"install"`
+    Risks       string   `json:"risks"`
+    Benefits    string   `json:"benefits"`
+    DataSources []string `json:"datastores"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="RelValPair">type</a> [RelValPair](/src/target/types.go?s=5400:5476#L132)
+``` go
+type RelValPair struct {
+    Rel string `json:"rel"`
+    Val string `json:"val"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="RelValPairBool">type</a> [RelValPairBool](/src/target/types.go?s=5478:5558#L137)
+``` go
+type RelValPairBool struct {
+    Rel string `json:"rel"`
+    Val bool   `json:"val"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="Repository">type</a> [Repository](/src/target/types.go?s=1041:1120#L28)
+``` go
+type Repository struct {
+    Type string `json:"Type"`
+    Url  string `json:"url"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="ResourceRequirements">type</a> [ResourceRequirements](/src/target/types.go?s=4772:4837#L104)
+``` go
+type ResourceRequirements struct {
+    Store string `json:"store"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="Route">type</a> [Route](/src/target/arbiterClient.go?s=2745:2857#L95)
+``` go
+type Route struct {
+    Target string `json:"target"`
+    Path   string `json:"path"`
+    Method string `json:"method"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="SLA">type</a> [SLA](/src/target/types.go?s=3188:4770#L81)
+``` go
+type SLA struct {
+    ManifestVersion      int                  `json:"manifest-version"` //
+    Name                 string               `json:"name"`             // container name  e.g core-store
+    Image                string               `json:"image"`            //docker image tag e.g datboxsystems/core-store-amd64
+    DataboxType          DataboxType          `json:"databox-type"`
+    Version              string               `json:"version"`     //this is databox version e.g 0.3.1
+    Description          string               `json:"description"` // free text description
+    Author               string               `json:"author"`      //Tosh Brown <Anthony.Brown@nottingham.ac.uk>
+    License              string               `json:"license"`     //Software licence
+    Tags                 []string             `json:"tags"`        //search tags
+    Homepage             string               `json:"homepage"`    //homepage url
+    Repository           Repository           `json:"repository"`
+    Packages             []Package            `json:"packages"`
+    AllowedCombinations  []string             `json:"allowed-combinations"`
+    Datasources          []DataSource         `json:"datasources"`
+    ExportWhitelists     []ExportWhitelist    `json:"export-whitelist"`
+    ExternalWhitelist    []ExternalWhitelist  `json:"external-whitelist"`
+    ResourceRequirements ResourceRequirements `json:"resource-requirements"`
+    DisplayName          string               `json:"displayName"`
+    StoreURL             string               `json:"storeUrl"`
+    Registry             string               `json:"registry"`
+}
+```
+
+
+
+
+
+
+
+
+
+## <a name="StoreContentType">type</a> [StoreContentType](/src/target/types.go?s=5221:5249#L126)
+``` go
+type StoreContentType string
+```
+
+``` go
+const ContentTypeBINARY StoreContentType = "BINARY"
+```
+
+``` go
+const ContentTypeJSON StoreContentType = "JSON"
+```
+
+``` go
+const ContentTypeTEXT StoreContentType = "TEXT"
+```
+
+
+
+
+
+
+
+
+
+## <a name="StoreType">type</a> [StoreType](/src/target/types.go?s=5083:5104#L120)
+``` go
+type StoreType string
+```
+
+``` go
+const StoreTypeKV StoreType = "kv"
+```
+
+``` go
+const StoreTypeTS StoreType = "ts"
+```
+
+``` go
+const StoreTypeTSBlob StoreType = "ts/blob"
+```
+
+
+
+
+
+
+
+
+
+## <a name="TSBlobStore">type</a> [TSBlobStore](/src/target/coreStoreTSBlob.go?s=70:157#L1)
+``` go
+type TSBlobStore struct {
+    // contains filtered or unexported fields
+}
+```
+
+
+
+
+
+
+
+
+
+### <a name="TSBlobStore.Earliest">func</a> (\*TSBlobStore) [Earliest](/src/target/coreStoreTSBlob.go?s=1878:1947#L57)
+``` go
+func (tbs *TSBlobStore) Earliest(dataSourceID string) ([]byte, error)
+```
+Earliest will retrieve the first entry stored at the requested datasource ID
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.FirstN">func</a> (\*TSBlobStore) [FirstN](/src/target/coreStoreTSBlob.go?s=2633:2707#L79)
+``` go
+func (tbs *TSBlobStore) FirstN(dataSourceID string, n int) ([]byte, error)
+```
+FirstN will retrieve the first N entries stored at the requested datasource ID
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.LastN">func</a> (\*TSBlobStore) [LastN](/src/target/coreStoreTSBlob.go?s=2245:2318#L68)
+``` go
+func (tbs *TSBlobStore) LastN(dataSourceID string, n int) ([]byte, error)
+```
+LastN will retrieve the last N entries stored at the requested datasource ID
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.Latest">func</a> (\*TSBlobStore) [Latest](/src/target/coreStoreTSBlob.go?s=1515:1582#L46)
+``` go
+func (tbs *TSBlobStore) Latest(dataSourceID string) ([]byte, error)
+```
+TSBlobLatest will retrieve the last entry stored at the requested datasource ID
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.Length">func</a> (\*TSBlobStore) [Length](/src/target/coreStoreTSBlob.go?s=3837:3901#L110)
+``` go
+func (tbs *TSBlobStore) Length(dataSourceID string) (int, error)
+```
+TSBlobLength returns then number of items stored in the timeseries
+
+
+
+
+### <a name="TSBlobStore.Observe">func</a> (\*TSBlobStore) [Observe](/src/target/coreStoreTSBlob.go?s=4457:4541#L134)
+``` go
+func (tbs *TSBlobStore) Observe(dataSourceID string) (<-chan ObserveResponse, error)
+```
+Observe allows you to get notifications when a new value is written by a driver
+the returned chan receives chan ObserveResponse the data value og which contins json of the
+form {"TimestampMS":213123123,"Json":byte[]}
+
+
+
+
+### <a name="TSBlobStore.Range">func</a> (\*TSBlobStore) [Range](/src/target/coreStoreTSBlob.go?s=3479:3585#L101)
+``` go
+func (tbs *TSBlobStore) Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64) ([]byte, error)
+```
+Range will retrieve all entries between  formTimeStamp and toTimeStamp timestamp in ms since unix epoch
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.Since">func</a> (\*TSBlobStore) [Since](/src/target/coreStoreTSBlob.go?s=3028:3116#L90)
+``` go
+func (tbs *TSBlobStore) Since(dataSourceID string, sinceTimeStamp int64) ([]byte, error)
+```
+Since will retrieve all entries since the requested timestamp (ms since unix epoch)
+return data is a byte array contingin  of the format
+{"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSBlobStore.Write">func</a> (\*TSBlobStore) [Write](/src/target/coreStoreTSBlob.go?s=439:511#L12)
+``` go
+func (tbs *TSBlobStore) Write(dataSourceID string, payload []byte) error
+```
+Write will add data to the times series data store. Data will be time stamped at insertion (format ms since 1970)
+
+
+
+
+### <a name="TSBlobStore.WriteAt">func</a> (\*TSBlobStore) [WriteAt](/src/target/coreStoreTSBlob.go?s=772:862#L22)
+``` go
+func (tbs *TSBlobStore) WriteAt(dataSourceID string, timstamp int64, payload []byte) error
+```
+WriteAt will add data to the times series data store. Data will be time stamped with the timstamp provided in the
+timstamp paramiter (format ms since 1970)
+
+
+
+
+## <a name="TSStore">type</a> [TSStore](/src/target/coreStoreTS.go?s=965:1048#L29)
+``` go
+type TSStore struct {
+    // contains filtered or unexported fields
+}
+```
+
+
+
+
+
+
+
+
+
+### <a name="TSStore.Earliest">func</a> (TSStore) [Earliest](/src/target/coreStoreTS.go?s=2662:2726#L82)
+``` go
+func (tsc TSStore) Earliest(dataSourceID string) ([]byte, error)
+```
+Earliest will retrieve the first entry stored at the requested datasource ID
+return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.FirstN">func</a> (TSStore) [FirstN](/src/target/coreStoreTS.go?s=3446:3543#L102)
+``` go
+func (tsc TSStore) FirstN(dataSourceID string, n int, opt TimeSeriesQueryOptions) ([]byte, error)
+```
+FirstN will retrieve the first N entries stored at the requested datasource ID
+return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.LastN">func</a> (TSStore) [LastN](/src/target/coreStoreTS.go?s=3017:3113#L92)
+``` go
+func (tsc TSStore) LastN(dataSourceID string, n int, opt TimeSeriesQueryOptions) ([]byte, error)
+```
+LastN will retrieve the last N entries stored at the requested datasource ID
+return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.Latest">func</a> (TSStore) [Latest](/src/target/coreStoreTS.go?s=2322:2384#L72)
+``` go
+func (tsc TSStore) Latest(dataSourceID string) ([]byte, error)
+```
+Latest will retrieve the last entry stored at the requested datasource ID
+return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.Length">func</a> (TSStore) [Length](/src/target/coreStoreTS.go?s=4751:4810#L131)
+``` go
+func (tsc TSStore) Length(dataSourceID string) (int, error)
+```
+Length retruns the number of records stored for that dataSourceID
+
+
+
+
+### <a name="TSStore.Observe">func</a> (TSStore) [Observe](/src/target/coreStoreTS.go?s=5136:5215#L153)
+``` go
+func (tsc TSStore) Observe(dataSourceID string) (<-chan ObserveResponse, error)
+```
+
+
+
+### <a name="TSStore.Range">func</a> (TSStore) [Range](/src/target/coreStoreTS.go?s=4351:4480#L122)
+``` go
+func (tsc TSStore) Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64, opt TimeSeriesQueryOptions) ([]byte, error)
+```
+Range will retrieve all entries between  formTimeStamp and toTimeStamp timestamp in ms since unix epoch
+return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.Since">func</a> (TSStore) [Since](/src/target/coreStoreTS.go?s=3870:3981#L112)
+``` go
+func (tsc TSStore) Since(dataSourceID string, sinceTimeStamp int64, opt TimeSeriesQueryOptions) ([]byte, error)
+```
+Since will retrieve all entries since the requested timestamp (ms since unix epoch)
+return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
+
+
+
+
+### <a name="TSStore.Write">func</a> (TSStore) [Write](/src/target/coreStoreTS.go?s=1318:1385#L42)
+``` go
+func (tsc TSStore) Write(dataSourceID string, payload []byte) error
+```
+Write will add data to the times series data store. Data will be time stamped at insertion (format ms since 1970)
+
+
+
+
+### <a name="TSStore.WriteAt">func</a> (TSStore) [WriteAt](/src/target/coreStoreTS.go?s=1641:1726#L52)
+``` go
+func (tsc TSStore) WriteAt(dataSourceID string, timstamp int64, payload []byte) error
+```
+WriteAt will add data to the times series data store. Data will be time stamped with the timstamp provided in the
+timstamp paramiter (format ms since 1970)
+
+
+
+
+## <a name="TimeSeriesQueryOptions">type</a> [TimeSeriesQueryOptions](/src/target/coreStoreTS.go?s=859:963#L24)
+``` go
+type TimeSeriesQueryOptions struct {
     AggregationFunction AggregationType
     Filter              *Filter
 }
 ```
-JSONTimeSeriesQueryOptions described the options for the structured json API
+TimeSeriesQueryOptions describes the query options for the structured json API
 
-
-
-
-
-
-
-
-
-
-## <a name="JSONTimeSeries_0_3_0">type</a> [JSONTimeSeries_0_3_0](/src/target/core-store-ts-json.go?s=1094:3485#L33)
-``` go
-type JSONTimeSeries_0_3_0 interface {
-    // Write  will be timestamped with write time in ms since the unix epoch by the store
-    Write(dataSourceID string, payload []byte) error
-    // WriteAt will be timestamped with timestamp provided in ms since the unix epoch
-    WriteAt(dataSourceID string, timestamp int64, payload []byte) error
-    // Read the latest value.
-    // return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Latest(dataSourceID string) ([]byte, error)
-    // Read the earliest value.
-    // return data is a JSON object of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Earliest(dataSourceID string) ([]byte, error)
-    // Read the last N values.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    LastN(dataSourceID string, n int, opt JSONTimeSeriesQueryOptions) ([]byte, error)
-    // Read the first N values.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    FirstN(dataSourceID string, n int, opt JSONTimeSeriesQueryOptions) ([]byte, error)
-    // Read values written after the provided timestamp in in ms since the unix epoch.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Since(dataSourceID string, sinceTimeStamp int64, opt JSONTimeSeriesQueryOptions) ([]byte, error)
-    // Read values written between the start timestamp and end timestamp in in ms since the unix epoch.
-    // return data is an array of JSON objects of the format {"timestamp":213123123,"data":[data-written-by-driver]}
-    Range(dataSourceID string, formTimeStamp int64, toTimeStamp int64, opt JSONTimeSeriesQueryOptions) ([]byte, error)
-    //Length retruns the number of records stored for that dataSourceID
-    Length(dataSourceID string) (int, error)
-    // Get notifications when a new value is written
-    // the returned chan receives JsonObserveResponse of the form {"TimestampMS":213123123,"Json":byte[]}
-    Observe(dataSourceID string) (<-chan JsonObserveResponse, error)
-    // registerDatasource is used by apps and drivers to register data sources in stores they own.
-    RegisterDatasource(metadata DataSourceMetadata) error
-    // GetDatasourceCatalogue is used by drivers to get a list of registered data sources in stores they own.
-    GetDatasourceCatalogue() ([]byte, error)
-}
-```
-JSONTimeSeries_0_3_0 described the the structured json timeseries API
-
-
-
-
-
-
-
-### <a name="NewJSONTimeSeriesClient">func</a> [NewJSONTimeSeriesClient](/src/target/core-store-ts-json.go?s=4041:4139#L76)
-``` go
-func NewJSONTimeSeriesClient(reqEndpoint string, enableLogging bool) (JSONTimeSeries_0_3_0, error)
-```
-NewJSONTimeSeriesClient returns a new jSONTimeSeriesClient to enable interaction with a structured timeseries data store in JSON format.
-The data written must contain at least {"value":[any numeric value]}. This is used in the aggregation functions. Other data can be store and used at KV pairs to filter the data but it can not be processed.
-reqEndpoint is provided in the DATABOX_ZMQ_ENDPOINT environment varable to databox apps and drivers.
-
-
-
-
-
-## <a name="JsonObserveResponse">type</a> [JsonObserveResponse](/src/target/types.go?s=53:171#L1)
-``` go
-type JsonObserveResponse struct {
-    TimestampMS  int64
-    DataSourceID string
-    Key          string
-    Json         []byte
-}
-```
-
-
-
-
-
-
-
-
-
-## <a name="TextKeyValue_0_3_0">type</a> [TextKeyValue_0_3_0](/src/target/core-store-kv-text.go?s=113:1155#L1)
-``` go
-type TextKeyValue_0_3_0 interface {
-    // Write text value
-    Write(dataSourceID string, key string, payload string) error
-    // Read text values. Returns a string containing the text written to the key.
-    Read(dataSourceID string, key string) (string, error)
-    //ListKeys returns an array of key registed under the dataSourceID
-    ListKeys(dataSourceID string) ([]string, error)
-    // Get notifications of updated values for a key. Returns a channel that receives TextObserveResponse containing a JSON string when a new value is added.
-    ObserveKey(dataSourceID string, key string) (<-chan TextObserveResponse, error)
-    // Get notifications of updated values for any key. Returns a channel that receives TextObserveResponse containing a JSON string when a new value is added.
-    Observe(dataSourceID string) (<-chan TextObserveResponse, error)
-    // RegisterDatasource make a new data source for available to the rest of datbox. This can only be used on stores that you have requested in your manifest.
-    RegisterDatasource(metadata DataSourceMetadata) error
-}
-```
-
-
-
-
-
-
-### <a name="NewTextKeyValueClient">func</a> [NewTextKeyValueClient](/src/target/core-store-kv-text.go?s=1513:1607#L24)
-``` go
-func NewTextKeyValueClient(reqEndpoint string, enableLogging bool) (TextKeyValue_0_3_0, error)
-```
-NewTextKeyValueClient returns a new TextKeyValue_0_3_0 to enable reading and writing of string data key value to the store
-reqEndpoint is provided in the DATABOX_ZMQ_ENDPOINT environment varable to databox apps and drivers.
-
-
-
-
-
-## <a name="TextObserveResponse">type</a> [TextObserveResponse](/src/target/types.go?s=173:291#L6)
-``` go
-type TextObserveResponse struct {
-    TimestampMS  int64
-    DataSourceID string
-    Key          string
-    Text         string
-}
-```
 
 
 
@@ -1635,26 +2195,70 @@ EP/M02315X/1, From Human Data to Personal Experience
 This repo includes python driver and app templates with databox-python library with basic APIs.  Copy lib folder in your application directory and import lib in your driver/app python file.
 ```
 import lib as databox
+from databox.core_store import NewKeyValueClient as nkvClient
+from databox.core_store import NewTimeSeriesClient as ntsClient
 ```
 Databox python library provides following funtions:
 
-```
-databox.waitForStoreStatus(href, status, maxRetries)
-databox.makeStoreRequest(method, jsonData, url)
-databox.makeArbiterRequest(method, path, data)
-databox.requestToken(hostname, endpoint, method)
-databox.getRootCatalog()
-databox.listAvailableStores()
-databox.registerDatasource(href, metadata)
-databox.export.longpoll(destination, payload)
-databox.key_value.read(href, key)
-databox.key_value.write(href, key, data)
-databox.time_series.latest(store_href, dataSourceID)
-databox.time_series.since(store_href, dataSourceID, startTimestamp)
-databox.time_series.range(store_href, dataSourceID, startTimestamp, endTimestamp)
-databox.time_series.write(store_href, dataSourceID, data)
+## Key/Value API
 
+### Write entry
+
+URL: /kv/<id>/<key>
+Method: POST
+Parameters: JSON body of data, replace <id> and <key> with a string
+Notes: store data using given key
 ```
+nkvClient.write(id, key, payload, contentFormat)
+```
+
+### Read entry
+
+URL: /kv/<id>/<key>
+Method: GET
+Parameters: replace <id> and <key> with a string
+Notes: return data for given id and key 
+```
+nkvClient.read(id, key, contentFormat)
+```
+
+## Time series API
+
+
+### Write entry (auto-generated time)
+URL: /ts/<id>
+Method: POST
+Parameters: JSON body of data, replace <id> with a string
+Notes: add data to time series with given identifier (a timestamp will be calculated at time of insertion)
+```
+ntsClient.write(id, payload, contentFormat)
+```
+
+### Write entry (user-specified time)
+
+### Read latest entry
+URL: /ts/<id>/latest
+Method: GET
+Parameters: replace <id> with an identifier
+Notes: return the latest entry
+```
+ntsClient.latest(id, contentFormat)
+```
+### Read last number of entries
+
+### Read earliest entry
+
+### Read first number of entries
+
+### Read all entries since a time (inclusive)
+
+### Read all entries in a time range (inclusive)
+
+### Delete all entries since a time (inclusive)
+
+### Delete all entries in a time range (inclusive)
+
+### Length of time series
 
 The usecases of these functions for the test purpose included in  the Sample [Driver](./samples/driver-hello-world/test.py) and the sample [App](./samples/app-hello-world/test.py).
 

@@ -12,12 +12,12 @@ A bare bones NodeJS app is available [here](https://github.com/me-box/databox-ap
 
 As an app developer your app only ever needs to know about three types of internal Databox components: the _arbiter_, _stores_, and the _export service_. Stores contain the data your app processes, the arbiter gives you access to these stores, and the export service is used for emitting results to your remote server.
 
-Another important thing to understand is that your App so not able to communicate directly over the local or wide area network. Apps are only permitted to export data from the databox through the _export service_. All data an app receives comes form a data store. 
+Another important thing to understand is that your App so not able to communicate directly over the local or wide area network. Apps are only permitted to export data from the databox through the _export service_. All data an app receives comes form a data store.
 
 
 ### The Arbiter ###
 
-The arbiter lives at the host defined by the environment variable `DATABOX_ARBITER_ENDPOINT` (usually `https://arbiter:8080`). When the app is running in the Databox environment, the `arbiter` hostname will resolve to the correct container.
+The arbiter lives at the host defined by the environment variable `DATABOX_ARBITER_ENDPOINT` (usually `tcp://arbiter:5555`). When the app is running in the Databox environment, the `arbiter` hostname will resolve to the correct container.
 
 When your driver is launched by the Databox system, it is provided with a unique token through the docker secret  `/run/secrets/ARBITER_TOKEN`. When making any request to the arbiter, it is important that this token is included as a header with the name `x-api-key` (or through Basic Auth).
 
@@ -75,7 +75,7 @@ The fields are documented [here](https://github.com/me-box/documents/blob/master
 
 This manifest must be additionally uploaded separately to a databox-app-server (http://127.0.0.1:8181 for devlopment).
 
-Your app will become available on your local databox for testing. 
+Your app will become available on your local databox for testing.
 
 ### The Databox Envronment ###
 
@@ -85,17 +85,17 @@ When your app container is installed on to a databox the databox-manifest is par
 
 /run/secrets/DATABOX_ROOT_CA: This is the container managers certificate authority public key. All databox applications communicate over HTTPS and the container manager is responsible for generating the certificates for all components. Your app must add this to its chain of trust before making any requests. Each databox generates its own root cert at startup which is regenerated on each reboot.
 
-/run/secrets/DATABOX_PEM: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API. 
+/run/secrets/DATABOX_PEM: This is your apps HTTPS private and public key signed by the container managers certificate authority. These should be used to secure your apps REST API.
 
 **DATABOX configuration**
 
-DATABOX_LOCAL_NAME: Your app's hostname on this databox. 
+DATABOX_LOCAL_NAME: Your app's hostname on this databox.
 
 DATABOX_ARBITER_ENDPOINT: The endpoint where the arbiter can be reached to request new tokens for access to other Databox components.
 
-DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores. 
+DATABOX_LOGSTORE_ENDPOINT: The endpoint for the Databox logging service. Read-only access can be requested by an app to enable log parsing but this is only ever written to by datastores.
 
-/run/secrets/ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication. 
+/run/secrets/ARBITER_TOKEN: Your arbiter token. This is used in all requests to the arbiter, for example when requesting tokens as a means of authentication.
 
 DATABOX_STORE_ENDPOINT: If your app requests a datastore to write data into then one or more environment variables will be set containing their endpoints.
 

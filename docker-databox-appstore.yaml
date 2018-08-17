@@ -1,9 +1,0 @@
-app-server:
-    image: ${DOCKER_REPO}app-server
-    environment:
-        - "LOCAL_MODE=1"
-        - "PORT=8181"
-    volumes:
-        - './certs/app-server.pem:/run/secrets/DATABOX.pem'
-    ports:
-        - '8181:8181'

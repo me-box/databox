@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ "$(pwd)" != */databox ]]
+then
+    echo "script must be run from the databox root directory!"
+    exit 1
+fi
+
+./scripts/admin/databox-release --docs --docsOutFile=/databox/documents/Documentation.md --release=false --config=/databox/scripts/admin/config-docs.json

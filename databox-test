@@ -1,124 +1,59 @@
 #!/bin/bash
 
-function install_osmon_app_and_driver {
-  #function to install app driver pair
+#Some bad default password for testing
+UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
 
-  #can we install the OS monitor driver
-  PAYLOAD="{\"storeUrl\":\"\",\"registry\":\"${DATABOX_SLA_REG}\""
-  REST=', "manifest-version": 1,"name": "driver-os-monitor","version": "0.3.0","description": "A Databox driver to monitor the local os","author": "Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()","license": "MIT","databox-type":"driver","tags": ["monitor","os"],"homepage": "https://github.com/me-box/driver-os-monitor","repository": {"type": "git","url": "git+https://github.com/me-box/driver-os-monitor.git"},"resource-requirements": {    "store":"core-store"}}'
-  PAYLOAD="${PAYLOAD}${REST}"
-  RES=$(curl -s  --insecure --cookie ./databox-jar -H "Content-Type: application/json" -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/install')
-  EXPECTED='{"status":200,"msg":"Success"}'
-  test_assert "$RES" "$EXPECTED" "Can we install the driver-os-monitor?"
+#Default test command from first argument HOST_ARCH form second
+HOST_ARCH=${3}
+DATABOX_COMMAND="${1} start ${2} --password ${UI_AUTH_TOKEN} --host-path $(pwd)"
+DATABOX_STOP_COMMAND="${1} stop"
 
-  #can we install the OS monitor app
-  PAYLOAD="{\"storeUrl\":\"\",\"registry\":\"${DATABOX_SLA_REG}\""
-  REST=',"manifest-version":1,"name":"app-os-monitor","databox-type":"app","version":"0.3.0","description":"An app in golang to plot the output of the os monitor driver.","author":"Tosh Brown <Anthony.Brown@nottingham.ac.uk>","license":"MIT","tags":["template","app","nodejs"],"homepage":"https://github.com/me-box/app-os-monitor","repository":{"type":"git","url":"git https://github.com/me-box/app-os-monitor"},"packages":[{"name":"OS monitor Plotter","purpose":"To visualize your databox load and free memory","install":"required","risks":"None.","benefits":"You can see the data!","datastores":["loadavg1","loadavg5","loadavg15","freemem","loadavg1Structured","freememStructured"],"enabled":true}],"allowed-combinations":[],"datasources":[{"type":"loadavg1","required":true,"name":"loadavg1","clientid":"loadavg1","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average 1 minute"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg1"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg1"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg1"}},{"type":"loadavg5","required":true,"name":"loadavg5","clientid":"loadavg5","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average over 5 minutes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg5"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg5"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg5"}},{"type":"loadavg15","required":true,"name":"loadavg15","clientid":"loadavg15","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average over 15 minutes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg15"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg15"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg15"}},{"type":"freemem","required":true,"name":"freemem","clientid":"freemem","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox free memory in bytes"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"freemem"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"freemem"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"bytes"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/blob/freemem"}},{"type":"loadavg1Structured","required":true,"name":"loadavg1Structured","clientid":"loadavg1Structured","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox load average 1 minute structured"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"loadavg1Structured"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"loadavg1Structured"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"%"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/loadavg1Structured"}},{"type":"freememStructured","required":true,"name":"freememStructured","clientid":"freememStructured","granularities":[],"hypercat":{"item-metadata":[{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox free memory in bytes structured"},{"rel":"urn:X-hypercat:rels:isContentType","val":"application/json"},{"rel":"urn:X-databox:rels:hasVendor","val":"Databox Inc."},{"rel":"urn:X-databox:rels:hasType","val":"freememStructured"},{"rel":"urn:X-databox:rels:hasDatasourceid","val":"freememStructured"},{"rel":"urn:X-databox:rels:hasStoreType","val":"ts"},{"rel":"urn:X-databox:rels:hasUnit","val":"bytes"}],"href":"tcp://driver-os-monitor-core-store:5555/ts/freememStructured"}}],"export-whitelist":[{"url":"https://export.amar.io/","description":"Exports the data to amar.io"}],"resource-requirements":{},"displayName":"os monitor"}'
-  PAYLOAD="${PAYLOAD}${REST}"
-  RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/install')
-  EXPECTED='{"status":200,"msg":"Success"}'
-  test_assert "$RES" "$EXPECTED" "Can we install the app-os-monitor?"
+DATABOX_SLA_REG=${4}
+DATABOX_VERSION=${5}
+
+echo $DATABOX_COMMAND
+
+function d_curl () { docker run --network host --rm -v $(pwd):/data databoxsystems/curl-7.61.0-r0:latest "$@" ;}
+
+function red {
+  echo "\033[0;31m${1}\033[0m"
 }
 
-function test_app_os_monitor {
-  #Function test if app-os-monitor is running and can get data from the store
-
-  #is the OS monitor app up
-  STATUS=$(curl -sL --cookie ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui" -o /dev/null)
-  test_assert "$STATUS" 200 "Is the app-os-monitor/ui available?"
-
-  #is the OS monitor app able to get data
-  RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -L 'https://127.0.0.1/app-os-monitor/ui/stats')
-  EXPECTED='"mem":{"min":{"result":'
-  test_assert_contains "$RES" "$EXPECTED" "Can we get data from app-os-monitor?"
+function green {
+  echo "\033[0;32m${1}\033[0m"
 }
 
-
-function jsonValue() {
-KEY=$1
-num=$2
-awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'$KEY'\042/){print $(i+1)}}}' | tr -d '"' | sed -n ${num}p
-}
-
-# make sure we don't load anything from here
-rm -f ./slaStore/sladatastore.db >/dev/null 2>&1
-
-#Start databox
-export DATABOX_TESTING=1
-
-
-case "$1" in
-  travis )
-    echo "travis build checking build type needed"
-    git remote rm origin
-    git remote add origin https://github.com/me-box/databox.git
-    git pull origin master
-    if [[ "$(git diff HEAD origin/master --name-only)" == *"databox-components"* ]]
-    then
-      echo "databox-components has been modified building from source"
-      source ./databox-start dev
-      DATABOX_CMD="./databox-start dev"
-      export DATABOX_SLA_REG="localhost"
-    else
-      echo "databox-components has not been modified using :latest images from databoxsystems on docker hub"
-      source ./databox-start latest
-      export DATABOX_SLA_REG="databoxsystems"
-      DATABOX_CMD="./databox-start latest"
-    fi
-  ;;
-  dev )
-    echo "Testing databox in dev mode building all components from source code"
-    source ./databox-start dev
-    export DATABOX_SLA_REG="localhost"
-    DATABOX_CMD="./databox-start dev"
-    ;;
-  latest )
-    echo "Testing databox in latest using :latest images from databoxsystems on docker hub"
-    source ./databox-start latest
-    export DATABOX_SLA_REG="databoxsystems"
-    DATABOX_CMD="./databox-start latest"
-    ;;
-   release )
-    echo "Testing databox release using images from databoxsystems on docker hub"
-    source ./databox-start
-    export DATABOX_SLA_REG="databoxsystems"
-    DATABOX_CMD="./databox-start"
-    ;;
-  *)
-    echo $'\nRun Databox integration tests:\n'
-    echo $'Usage: databox-test {dev|latest|release}\n'
-    echo $'dev - Tests databox in dev mode building all components from source code'
-    echo $'latest - Tests databox using :latest images from databoxsystems on docker hub (built from master branches on Github)'
-    echo $'release - Tests databox release using images from databoxsystems on docker hub (built from tagged branches on Github) \n\n'
-    exit 1
-esac
-
-#
-# override fail function to provide better debug output mist be after source ./databox-start
-#
 function fail {
     echo -e "[$( red FAILED )] ${1} \nERROR: ${2}"
     #output debug information
     echo "docker version:"
     docker version
-    echo "docker ps \n"
+    echo "docker ps "
     docker ps
-    #echo "docker image ls \n"
-    #docker image ls
-    echo "docker service ls \n"
+    echo "docker image ls "
+    docker image ls | grep databox
+    echo "docker service ls "
     docker service ls
-    echo "service logs --timestamps databox_container-manager \n"
-    docker service logs databox_container-manager
-    echo "\n"
-    echo "service logs --timestamps app-os-monitor \n"
-    docker service logs app-os-monitor
-    echo "\n"
-    echo "service logs --timestamps driver-os-monitor  \n"
-    docker service logs driver-os-monitor
-    echo "\n"
-    echo "logs databox-network  \n"
-    docker logs databox_databox-network_1
+    echo "service logs databox_container-manager "
+    docker service logs container-manager
+    echo "service logs core-ui "
+    docker service logs core-ui
+    echo "logs databox-network "
+    docker logs databox-network
     exit 1
+}
+
+function success {
+    echo -e "[$( green OK )] $1"
+}
+
+function test_assert {
+  if [ "$1" != "$2" ]
+  then
+    fail "$3" "$1"
+  else
+    success "$3"
+  fi
 }
 
 function test_assert_contains {
@@ -131,90 +66,117 @@ function test_assert_contains {
 }
 
 
-UI_AUTH_TOKEN=$(cat ./certs/container-mananager-auth.json | jsonValue "token" 1)
+function install_osmon_app_and_driver {
+  #function to install app driver pair
+
+  #can we install the OS monitor driver
+  PAYLOAD="{\"manifest\":{\"manifest-version\":1,\"name\":\"driver-os-monitor\",\"databox-type\":\"driver\",\"version\":\"0.3.0\",\"description\":\"A Databox driver to monitor the local os\",\"author\":\"Anthony Brown <Anthony.Brown@nottingham.ac.uk> ()\",\"license\":\"MIT\",\"tags\":[\"monitor\",\"os\"],\"homepage\":\"https://github.com/me-box/driver-os-monitor\",\"repository\":{\"Type\":\"git\",\"url\":\"git+https://github.com/me-box/driver-os-monitor.git\"},\"packages\":null,\"datasources\":null,\"export-whitelist\":null,\"external-whitelist\":null,\"resource-requirements\":{\"store\":\"core-store\"},\"displayName\":\"\",\"storeUrl\":\"\"}}"
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H "Content-Type: application/json"  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
+  EXPECTED='{"status": 200}'
+  test_assert "$RES" "$EXPECTED" "Can we install the driver-os-monitor?"
+
+  #can we install the OS monitor app
+  PAYLOAD="{\"manifest\":{\"manifest-version\":1,\"name\":\"app-os-monitor\",\"databox-type\":\"app\",\"version\":\"0.3.0\",\"description\":\"An app in golang to plot the output of the os monitor driver.\",\"author\":\"Tosh Brown <Anthony.Brown@nottingham.ac.uk>\",\"license\":\"MIT\",\"tags\":[\"template\",\"app\",\"nodejs\"],\"homepage\":\"https://github.com/me-box/app-os-monitor\",\"repository\":{\"Type\":\"git\",\"url\":\"git+https://github.com/me-box/app-os-monitor\"},\"packages\":[{\"name\":\"OS monitor Plotter\",\"purpose\":\"To visualize your databox load and free memory\",\"install\":\"required\",\"risks\":\"None.\",\"benefits\":\"You can see the data!\",\"datastores\":[\"loadavg1\",\"loadavg5\",\"loadavg15\",\"freemem\",\"loadavg1Structured\",\"freememStructured\"]}],\"datasources\":[{\"type\":\"loadavg1\",\"required\":true,\"name\":\"loadavg1\",\"clientid\":\"loadavg1\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox load average 1 minute\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"loadavg1\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"loadavg1\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"%\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg1\"}},{\"type\":\"loadavg5\",\"required\":true,\"name\":\"loadavg5\",\"clientid\":\"loadavg5\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox load average over 5 minutes\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"loadavg5\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"loadavg5\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"%\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg5\"}},{\"type\":\"loadavg15\",\"required\":true,\"name\":\"loadavg15\",\"clientid\":\"loadavg15\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox load average over 15 minutes\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"loadavg15\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"loadavg15\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"%\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/blob/loadavg15\"}},{\"type\":\"freemem\",\"required\":true,\"name\":\"freemem\",\"clientid\":\"freemem\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox free memory in bytes\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"freemem\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"freemem\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"bytes\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/blob/freemem\"}},{\"type\":\"loadavg1Structured\",\"required\":true,\"name\":\"loadavg1Structured\",\"clientid\":\"loadavg1Structured\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox load average 1 minute structured\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"loadavg1Structured\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"loadavg1Structured\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"%\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/loadavg1Structured\"}},{\"type\":\"freememStructured\",\"required\":true,\"name\":\"freememStructured\",\"clientid\":\"freememStructured\",\"granularities\":[],\"hypercat\":{\"item-metadata\":[{\"rel\":\"urn:X-hypercat:rels:hasDescription:en\",\"val\":\"Databox free memory in bytes structured\"},{\"rel\":\"urn:X-hypercat:rels:isContentType\",\"val\":\"application/json\"},{\"rel\":\"urn:X-databox:rels:hasVendor\",\"val\":\"Databox Inc.\"},{\"rel\":\"urn:X-databox:rels:hasType\",\"val\":\"freememStructured\"},{\"rel\":\"urn:X-databox:rels:hasDatasourceid\",\"val\":\"freememStructured\"},{\"rel\":\"urn:X-databox:rels:hasStoreType\",\"val\":\"ts\"},{\"rel\":\"urn:X-databox:rels:hasUnit\",\"val\":\"bytes\"}],\"href\":\"tcp://driver-os-monitor-core-store:5555/ts/freememStructured\"}}],\"export-whitelist\":[{\"url\":\"https://export.amar.io/\",\"description\":\"Exports the data to amar.io\"}],\"external-whitelist\":null,\"resource-requirements\":{\"store\":\"\"},\"displayName\":\"\",\"storeUrl\":\"\"}}"
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/install')
+  EXPECTED='{"status": 200}'
+  test_assert "$RES" "$EXPECTED" "Can we install the app-os-monitor?"
+}
+
+function test_app_os_monitor {
+  #Function test if app-os-monitor is running and can get data from the store
+
+  #is the OS monitor app up
+  STATUS=$(d_curl -s --insecure --http1.1 --cookie /data/databox-jar  -w "%{http_code}\\n" "https://127.0.0.1/app-os-monitor/ui/mem.png" -o /dev/null)
+  test_assert "$STATUS" 200 "Is the app-os-monitor/ui available? ${1} test."
+
+  #is the OS monitor app able to get data
+  RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -L 'https://127.0.0.1/app-os-monitor/ui/stats')
+  EXPECTED='"mem":{"min":'
+  test_assert_contains "$RES" "$EXPECTED" "Can we get data from app-os-monitor? ${1} test."
+}
+
+function setup_auth_cookie {
+  STATUS=$(d_curl -sL --cookie-jar /data/databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/api/connect" -o /dev/null)
+  test_assert $STATUS 200 "Is /api/connect available?"
+}
+
+#Start databox
+$DATABOX_STOP_COMMAND
+$DATABOX_COMMAND --flushSLAs
+
+rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
+sleep 180
 docker ps
-sleep 15
-
 
 #setup the auth cookie
-STATUS=$(curl -sL --cookie ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure -w "%{http_code}\\n" "https://127.0.0.1/api/connect" -o /dev/null)
-test_assert $STATUS 200 "Is /api/connect available?"
-
+setup_auth_cookie
 
 #can we see the CM UI
-STATUS=$(curl -sL --cookie ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
-test_assert $STATUS 200 "Is core-container-manager available?"
-
-#is the arbiter up
-RES=$(curl -sL --cookie ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure "https://127.0.0.1/arbiter/status")
-test_assert "$RES" "active" "Is the arbiter available?"
-
-#is the arbiter /cat endpoint ok
-EXPECTED='{"catalogue-metadata":[{"rel":"urn:X-hypercat:rels:isContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:X-hypercat:rels:hasDescription:en","val":"Databox Root Catalogue"},{"rel":"urn:X-hypercat:rels:hasHomepage","val":"http://www.databoxproject.uk/"},{"rel":"urn:X-hypercat:rels:containsContentType","val":"application/vnd.hypercat.catalogue+json"},{"rel":"urn:Xhypercat:rels:supportsSearch","val":"urn:X-hypercat:search:simple"}],"items":[]}'
-RES=$(curl -sL  --cookie ./databox-jar -H "authorization:Token ${UI_AUTH_TOKEN}" --insecure "https://127.0.0.1/arbiter/cat")
-test_assert "$RES" "$EXPECTED" "Is the arbiter cat endpoint is ok?"
-
+STATUS=$(d_curl -sL --cookie /data/databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
+test_assert $STATUS 200 "Is core-ui available?"
 
 #first install of the app and driver
 install_osmon_app_and_driver
 
 #first test of the app
-sleep 30 # long sleep to wait for images to be pulled if needed!
-test_app_os_monitor
+sleep 120 # long sleep to wait for images to be pulled if needed!
+test_app_os_monitor "first"
 
 #Can we restart driver-os-monitor
 PAYLOAD='{"id":"driver-os-monitor"}'
-RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/restart')
-EXPECTED='{"status":200,"msg":"Success"}'
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
+EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart driver-os-monitor?"
-
-sleep 10
 
 #Can we restart app-os-monitor
 PAYLOAD='{"id":"app-os-monitor"}'
-RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/restart')
-EXPECTED='{"status":200,"msg":"Success"}'
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
+EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart app-os-monitor?"
 
 #second test of the app
-sleep 10
-test_app_os_monitor
+sleep 120
+test_app_os_monitor "second"
 
 
 #Can we uninstall  driver-os-monitor
 PAYLOAD='{"id":"driver-os-monitor"}'
-RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/uninstall')
-EXPECTED='{"status":"success"}'
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json'  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
+EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall driver-os-monitor?"
-
-sleep 10
 
 #Can we uninstall app-os-monitor
 PAYLOAD='{"id":"app-os-monitor"}'
-RES=$(curl -s  --insecure --cookie ./databox-jar -H 'Content-Type: application/json' -H "authorization:Token ${UI_AUTH_TOKEN}" -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/api/uninstall')
-EXPECTED='{"status":"success"}'
+RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
+EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
 
-sleep 10
+sleep 120
 
 #can we reinstall os-monitor the app and driver
 install_osmon_app_and_driver
 
 #second test of the app
-sleep 30
-test_app_os_monitor
+sleep 120
+test_app_os_monitor "third"
 
-echo "Stopping data box"
-./databox-stop
+#
+# TEST app and driver persistence
+#
+echo "Stopping databox"
+$DATABOX_STOP_COMMAND
 
-echo "Restarting data box"
-source ${DATABOX_CMD}
+echo "Restarting databox"
+$DATABOX_COMMAND
+sleep 180
+
+#restarting databox clears session token get a new one
+setup_auth_cookie
 
 #third test of the app
-sleep 30
-test_app_os_monitor
+test_app_os_monitor "fourth"
 
 
 exit 0

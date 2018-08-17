@@ -9,6 +9,7 @@
 		["me-box","core-export-service"],
 		["me-box","core-network"],
 		["me-box","core-store"],
+		["me-box","core-ui"],
 		["me-box","lib-node-databox"],
 		["me-box","lib-go-databox"],
 		["me-box","lib-python-databox"]

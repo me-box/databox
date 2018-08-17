@@ -9,8 +9,10 @@
 		["me-box","core-export-service"],
 		["me-box","core-network"],
 		["me-box","core-store"],
+		["me-box","core-ui"],
 		["me-box","lib-node-databox"],
-		["me-box","lib-go-databox"]
+		["me-box","lib-go-databox"],
+		["me-box","driver-app-store"]
 	],
 	"OtherRepos": [
 		["me-box","app-os-monitor"],
@@ -18,7 +20,6 @@
 		["me-box","app-twitter-sentiment"],
 		["me-box","driver-os-monitor"],
 		["me-box","driver-sensingkit"],
-		["me-box","driver-google-takeout"],
 		["me-box","driver-tplink-smart-plug"],
 		["me-box","driver-twitter"],
 		["me-box","driver-phillips-hue"]
