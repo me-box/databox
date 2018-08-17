@@ -119,25 +119,23 @@ endef
 get-core-containers-src:
 	mkdir -p build
 	#get the code
-	#TODO fix repo paths once PR are merged (toshbrown --> me-box)
-	$(call gitPullorClone, https://github.com/toshbrown/core-container-manager.git,core-container-manager,master)
-	$(call gitPullorClone, https://github.com/toshbrown/core-network.git,core-network,master)
-	$(call gitPullorClone, https://github.com/toshbrown/core-store.git,core-store,master)
-	$(call gitPullorClone, https://github.com/toshbrown/core-arbiter.git,core-arbiter,master)
-	$(call gitPullorClone, https://github.com/me-box/core-export-service.git,core-export-service,speak-zest)
+	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,master)
+	$(call gitPullorClone, https://github.com/me-box/core-network.git,core-network,master)
+	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store,master)
+	$(call gitPullorClone, https://github.com/me-box/core-arbiter.git,core-arbiter,master)
+	$(call gitPullorClone, https://github.com/me-box/core-export-service.git,core-export-service,master)
 
-	$(call gitPullorClone, https://github.com/toshbrown/app-os-monitor.git,app-os-monitor,master)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
-	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,update-to-new-arbiter)
-	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,updat-to-new-arbiter)
+	$(call gitPullorClone, https://github.com/me-box/app-os-monitor.git,app-os-monitor,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-os-monitor.git,driver-os-monitor,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 
-	$(call gitPullorClone, https://github.com/toshbrown/app-light-graph.git,app-light-graph,master)
-	$(call gitPullorClone, https://github.com/toshbrown/app-twitter-sentiment.git,app-twitter-sentiment,master)
-	#TODO fix repo paths once PR are merged (ktg --> me-box oauth --> master)
-	$(call gitPullorClone, https://github.com/ktg/driver-twitter.git,driver-twitter,oauth)
+	$(call gitPullorClone, https://github.com/me-box/app-light-graph.git,app-light-graph,master)
+	$(call gitPullorClone, https://github.com/me-box/app-twitter-sentiment.git,app-twitter-sentiment,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-twitter.git,driver-twitter,master)
 
 
 .PHONY: build-core-containers
