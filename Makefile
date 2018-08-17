@@ -166,7 +166,7 @@ define publish-core
 	docker push $(DEFAULT_REG)/core-network-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-relay-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-store-$(2):$(1)
-	docker push $(DEFAULT_REG)/core-arbiter-$(2):$(1)
+	docker push $(DEFAULT_REG)/arbiter-$(2):$(1)
 	docker push $(DEFAULT_REG)/export-service-$(2):$(1)
 
 	docker push $(DEFAULT_REG)/driver-app-store-$(2):$(1)
