@@ -3,3 +3,7 @@
 .cache
 */node_modules
 build/*
+scripts/*
+bin/*
+certs/*
+documents/*
