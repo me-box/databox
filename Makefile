@@ -122,7 +122,7 @@ get-core-containers-src:
 	#TODO fix repo paths once PR are merged (toshbrown --> me-box)
 	$(call gitPullorClone, https://github.com/toshbrown/core-container-manager.git,core-container-manager,master)
 	$(call gitPullorClone, https://github.com/toshbrown/core-network.git,core-network,master)
-	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store,master)
+	$(call gitPullorClone, https://github.com/toshbrown/core-store.git,core-store,master)
 	$(call gitPullorClone, https://github.com/toshbrown/core-arbiter.git,core-arbiter,master)
 	$(call gitPullorClone, https://github.com/me-box/core-export-service.git,core-export-service,speak-zest)
 
@@ -130,12 +130,14 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/toshbrown/driver-os-monitor.git,driver-os-monitor,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,update-to-new-arbiter)
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,updat-to-new-arbiter)
-	$(call gitPullorClone, https://github.com/toshbrown/driver-app-store.git,driver-app-store,master)
-	$(call gitPullorClone, https://github.com/toshbrown/core-ui.git,core-ui,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
+	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/toshbrown/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/toshbrown/app-light-graph.git,app-light-graph,master)
 	$(call gitPullorClone, https://github.com/toshbrown/app-twitter-sentiment.git,app-twitter-sentiment,master)
+	#TODO fix repo paths once PR are merged (ktg --> me-box oauth --> master)
+	$(call gitPullorClone, https://github.com/ktg/driver-twitter.git,driver-twitter,oauth)
 
 
 .PHONY: build-core-containers
@@ -163,7 +165,6 @@ endef
 
 define publish-core
 	#Build and tag the images
-	#cd ./build/zestdb && docker build -t databoxsystems/zestdb$(2):v0.0.8 -f Dockerfile$(2) .
 	docker push $(DEFAULT_REG)/container-manager-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-relay-$(2):$(1)
@@ -211,7 +212,7 @@ build-and-publish-manifest:
 
 .PHONY: update-manifest-store
 update-manifest-store:
-	$(call gitPullorClone, https://github.com/toshbrown/databox-manifest-store.git,databox-manifest-store,master)
+	$(call gitPullorClone, https://github.com/me-box/databox-manifest-store.git,databox-manifest-store,master)
 	cp ./build/app-os-monitor/databox-manifest.json ./build/databox-manifest-store/app-os-monitor-manifest.json
 	cp ./build/driver-os-monitor/databox-manifest.json ./build/databox-manifest-store/driver-os-monitor-manifest.json
 	cp ./build/driver-phillips-hue/databox-manifest.json ./build/databox-manifest-store/driver-phillips-hue-manifest.json
