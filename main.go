@@ -144,6 +144,7 @@ func main() {
 		}
 
 		Start(opts)
+		ShowLogs()
 	case "stop":
 		libDatabox.Info("Stoping Databox ...")
 		stopCmd.Parse(os.Args[2:])
@@ -349,8 +350,6 @@ func pullImage(image string, options *libDatabox.ContainerManagerOptions) {
 		//its in the default registry and has the :latest tag lets pull it to make sure we are up-to-date
 		needToPull = true
 	}
-
-	fmt.Println("Need to pull = ", needToPull)
 
 	if needToPull == true {
 		libDatabox.Info("Pulling Image " + image)
