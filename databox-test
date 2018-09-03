@@ -102,7 +102,7 @@ function setup_auth_cookie {
 
 #Start databox
 $DATABOX_STOP_COMMAND
-$DATABOX_COMMAND --flushSLAs
+$DATABOX_COMMAND --flushSLAs &>/dev/null &
 
 rm -rf ./databox-jar > /dev/null
 
@@ -169,7 +169,7 @@ echo "Stopping databox"
 $DATABOX_STOP_COMMAND
 
 echo "Restarting databox"
-$DATABOX_COMMAND
+$DATABOX_COMMAND &>/dev/null &
 sleep 180
 
 #restarting databox clears session token get a new one
