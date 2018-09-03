@@ -125,13 +125,13 @@ sleep 120 # long sleep to wait for images to be pulled if needed!
 test_app_os_monitor "first"
 
 #Can we restart driver-os-monitor
-PAYLOAD='{"id":"driver-os-monitor"}'
+PAYLOAD='{"name":"driver-os-monitor"}'
 RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart driver-os-monitor?"
 
 #Can we restart app-os-monitor
-PAYLOAD='{"id":"app-os-monitor"}'
+PAYLOAD='{"name":"app-os-monitor"}'
 RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/restart')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we restart app-os-monitor?"
@@ -142,13 +142,13 @@ test_app_os_monitor "second"
 
 
 #Can we uninstall  driver-os-monitor
-PAYLOAD='{"id":"driver-os-monitor"}'
+PAYLOAD='{"name":"driver-os-monitor"}'
 RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json'  -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall driver-os-monitor?"
 
 #Can we uninstall app-os-monitor
-PAYLOAD='{"id":"app-os-monitor"}'
+PAYLOAD='{"name":"app-os-monitor"}'
 RES=$(d_curl -s  --insecure --http1.1 --cookie /data/databox-jar -H 'Content-Type: application/json' -X POST -d "${PAYLOAD}" -L 'https://127.0.0.1/core-ui/ui/api/uninstall')
 EXPECTED='{"status": 200}'
 test_assert "$RES" "$EXPECTED" "Can we uninstall app-os-monitor?"
