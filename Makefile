@@ -38,7 +38,7 @@ databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(she
 
 
 defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
-									-arbiter $(DEFAULT_REG)/core-arbiter \
+									-arbiter $(DEFAULT_REG)/arbiter \
 									-cm $(DEFAULT_REG)/container-manager \
 									-store $(DEFAULT_REG)/core-store \
 									-export-service $(DEFAULT_REG)/export-service \
