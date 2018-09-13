@@ -29,6 +29,8 @@ var path string
 var dockerCli *client.Client
 
 const certsBasePath = "./certs"
+const CURRENT_RELEASE = "0.5.0"
+const DEFAULT_REGISTRY = "databoxsystesm"
 
 func main() {
 
@@ -36,9 +38,9 @@ func main() {
 
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
 	startCmdIP := startCmd.String("swarm-ip", "127.0.0.1", "The IP on the host to advertise the swarm.")
-	startCmdRelease := startCmd.String("release", "0.5.0", "Databox version to start, can uses tagged versions or latest")
+	startCmdRelease := startCmd.String("release", CURRENT_RELEASE, "Databox version to start, can uses tagged versions or latest")
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
-	startCmdRegistry := startCmd.String("registry", "databoxsystems", "Override the default registry path, where images are pulled form")
+	startCmdRegistry := startCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
 	startCmdHostPath := startCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
 	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
@@ -60,6 +62,10 @@ func main() {
 
 	sdkCmd := flag.NewFlagSet("sdk", flag.ExitOnError)
 	startSDK := sdkCmd.Bool("start", false, "Use this to start the databox sdk")
+	sdkCmdRelease := sdkCmd.String("release", CURRENT_RELEASE, "Databox version to start, can uses tagged versions or latest")
+	sdkCmdHostPath := sdkCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
+	sdkCmdRegistry := sdkCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
+
 	stopSDK := sdkCmd.Bool("stop", false, "Use this to stop the databox sdk")
 
 	flag.Parse()
@@ -156,8 +162,12 @@ func main() {
 		sdkCmd.Parse(os.Args[2:])
 
 		if *startSDK == true {
+			sdkCmd.Parse(os.Args[2:])
+			if *sdkCmdHostPath != "" {
+				path = *sdkCmdHostPath
+			}
 			libDatabox.Info("Starting Databox SDK")
-			StartSDK()
+			StartSDK(path, *sdkCmdRegistry, *sdkCmdRelease)
 
 		} else if *stopSDK == true {
 			libDatabox.Info("Stoping Databox SDK")
@@ -282,7 +292,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 
 	service := swarm.ServiceSpec{
 		TaskTemplate: swarm.TaskSpec{
-			ContainerSpec: &swarm.ContainerSpec{
+			ContainerSpec: swarm.ContainerSpec{
 				Image:    options.ContainerManagerImage + "-" + options.Arch + ":" + options.Version,
 				Hostname: "container-manager",
 				Labels:   map[string]string{"databox.type": "container-manager"},

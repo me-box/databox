@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -12,12 +11,12 @@ import (
 	libDatabox "github.com/me-box/lib-go-databox"
 )
 
-func StartSDK() {
+func StartSDK(hostPath string, defaultRegistry string, databoxVersion string) {
 
 	redis()
 	mongo()
 	mockDatasource()
-	databoxsdk()
+	databoxsdk(hostPath, defaultRegistry, databoxVersion)
 	testserver()
 }
 
@@ -80,14 +79,18 @@ func mockDatasource() {
 
 }
 
-func databoxsdk() {
+func databoxsdk(hostPath string, defaultRegistry string, databoxVersion string) {
 
-	settingsPath, _ := filepath.Abs("./sdk")
-	certsPath, _ := filepath.Abs("./certs")
+	settingsPath := hostPath + "/sdk"
+	certsPath := hostPath + "/certs"
 
 	config := &container.Config{
 		Image:  "tlodge/databox-sdk",
 		Labels: map[string]string{"databox.sdk": "sdk"},
+		Env: []string{
+			"DATABOX_VERSION=" + databoxVersion,
+			"DATABOX_DEFAULT_REGISTRY=" + defaultRegistry,
+		},
 		ExposedPorts: nat.PortSet{
 			"8086/tcp": {},
 		},
