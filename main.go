@@ -68,6 +68,9 @@ func main() {
 
 	stopSDK := sdkCmd.Bool("stop", false, "Use this to stop the databox sdk")
 
+	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
+	testCmdNetwork := testCmd.Bool("network", false, "Perform a network test")
+
 	flag.Parse()
 
 	os.Setenv("DOCKER_API_VERSION", *DOCKER_API_VERSION)
@@ -133,10 +136,19 @@ func main() {
 			EnableDebugLogging:    *enableLogging,
 			OverridePasword:       *startCmdPassword,
 			HostPath:              path,
-			ExternalIP:            getExternalIP(),
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
 			Arch:                  cpuArch,
+		}
+
+		externalIP, err := getExternalIP()
+		if err != nil {
+			libDatabox.Warn("Could not get external IP address, do you have network connectivity? ")
+			libDatabox.Warn("Try here for help https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/")
+			libDatabox.Warn("Continuing as external connectivity is not always needed ;-)")
+			opts.ExternalIP = ipv4s[0]
+		} else {
+			opts.ExternalIP = externalIP
 		}
 
 		if *ReGenerateDataboxCertificates == true {
@@ -175,7 +187,32 @@ func main() {
 		} else {
 			sdkCmd.Usage()
 		}
+	case "test":
 
+		testCmd.Parse(os.Args[2:])
+
+		if *testCmdNetwork {
+
+			fmt.Println("Listing addresses")
+			fmt.Println(removeIPv6addresses(getLocalInterfaceIps()))
+			fmt.Println("Testing DNS")
+
+			adr, err := net.LookupHost("google.com")
+			if err != nil {
+				libDatabox.Err("Could not look up google.com is DNS broken? " + err.Error())
+			} else {
+				fmt.Println("google.com's ips are ", adr)
+			}
+			fmt.Println("Trying to get external IP ")
+			externalIP, err := getExternalIP()
+			if err != nil {
+				libDatabox.Err("Could not get external IP address, do you have network connectivity? " + err.Error())
+			} else {
+				fmt.Println("external IP is ", externalIP)
+			}
+		} else {
+			testCmd.Usage()
+		}
 	default:
 		displayUsage()
 		os.Exit(2)
@@ -414,15 +451,28 @@ func removeIPv6addresses(addresses []string) []string {
 	return filteredIPs
 }
 
-func getExternalIP() string {
+func getExternalIP() (string, error) {
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 5 * time.Second,
+	}
 	var netClient = &http.Client{
-		Timeout: time.Second * 3,
+		Timeout:   time.Second * 10,
+		Transport: netTransport,
 	}
 	response, err := netClient.Get("http://whatismyip.akamai.com/")
-	libDatabox.ChkErrFatal(err)
+	if err != nil {
+		libDatabox.Debug("[ERROR] " + err.Error())
+		return "", err
+	}
 	ip, err := ioutil.ReadAll(response.Body)
-	libDatabox.ChkErrFatal(err)
+	if err != nil {
+		libDatabox.Debug("[ERROR] " + err.Error())
+		return "", err
+	}
 	response.Body.Close()
 	libDatabox.Debug("External IP found " + string(ip))
-	return string(ip)
+	return string(ip), nil
 }
