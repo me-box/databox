@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"sync"
@@ -32,7 +33,7 @@ func ShowLogs() {
 				ShowStderr: true,
 				ShowStdout: true,
 				Tail:       "all",
-				Timestamps: true,
+				Timestamps: false,
 			},
 		)
 
@@ -42,17 +43,18 @@ func ShowLogs() {
 		}
 		wg.Add(1)
 		go func(name string) {
-			for {
-				message := make([]byte, 128)
-				n, err := ioLogReader.Read(message)
-				if err != nil {
+			scanner := bufio.NewScanner(ioLogReader)
+			for scanner.Scan() {
+				message := scanner.Text()
+				if err := scanner.Err(); err != nil {
 					wg.Done()
 					ioLogReader.Close()
 					break
 				}
-				if n > 0 {
-					logChan <- name + "\t: " + string(message)
+				if len(message) > 8 {
+					message = message[8:]
 				}
+				logChan <- fmt.Sprintf("%-25s: %s", name, message)
 			}
 		}(service.Spec.Name)
 	}
@@ -61,7 +63,7 @@ func ShowLogs() {
 		for {
 			select {
 			case msg := <-logChan:
-				fmt.Print(msg)
+				fmt.Println(msg)
 			}
 		}
 	}()
