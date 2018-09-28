@@ -180,6 +180,8 @@ define publish-core
 	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
 	docker push $(DEFAULT_REG)/app-light-graph-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-twitter-$(2):$(1)
+
+	docker push $(DEFAULT_REG)/zestdb-$(2):$(1)
 endef
 .PHONY: publish-core
 publish-core:
