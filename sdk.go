@@ -1,22 +1,29 @@
 package main
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
+	"io"
+	"io/ioutil"
+	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	libDatabox "github.com/me-box/lib-go-databox"
 )
 
-func StartSDK(hostPath string, defaultRegistry string, databoxVersion string) {
+func StartSDK(defaultRegistry string, databoxVersion string) {
 
 	redis()
 	mongo()
 	mockDatasource()
-	databoxsdk(hostPath, defaultRegistry, databoxVersion)
+	databoxsdk(defaultRegistry, databoxVersion)
 	testserver()
 }
 
@@ -79,10 +86,8 @@ func mockDatasource() {
 
 }
 
-func databoxsdk(hostPath string, defaultRegistry string, databoxVersion string) {
-
-	settingsPath := hostPath + "/sdk"
-	certsPath := hostPath + "/certs"
+func databoxsdk(defaultRegistry string, databoxVersion string) {
+	ctx := context.Background()
 
 	config := &container.Config{
 		Image:  "tlodge/databox-sdk",
@@ -103,20 +108,36 @@ func databoxsdk(hostPath string, defaultRegistry string, databoxVersion string) 
 			"mongo",
 		},
 		PortBindings: nat.PortMap{"8086/tcp": []nat.PortBinding{nat.PortBinding{HostIP: "0.0.0.0", HostPort: "8086/tcp"}}},
-		Binds: []string{
-			"/var/run/docker.sock:/var/run/docker.sock:rw",
-			settingsPath + ":/usr/src/app/conf",
-			certsPath + "containerManagerPub.crt:/run/secrets/DATABOX_ROOT_CA:rw",
+		Mounts: []mount.Mount{
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/run/docker.sock",
+				Target: "/var/run/docker.sock",
+			},
+			mount.Mount{
+				Source: "sdk-conf",
+				Target: "/usr/src/app/conf",
+				Type:   "volume",
+			},
+			mount.Mount{
+				Source: "container-manager-certs",
+				Target: "/usr/src/app/certs",
+				Type:   "volume",
+			},
 		},
 	}
 
 	removeContainer("databox-sdk")
 	pullImage(config.Image, &libDatabox.ContainerManagerOptions{DefaultRegistry: "tlodge", DefaultRegistryHost: "docker.io"})
 
-	containerCreateCreatedBody, ccErr := dockerCli.ContainerCreate(context.Background(), config, hostConfig, &network.NetworkingConfig{}, "databox-sdk")
+	containerCreateCreatedBody, ccErr := dockerCli.ContainerCreate(ctx, config, hostConfig, &network.NetworkingConfig{}, "databox-sdk")
 	libDatabox.ChkErrFatal(ccErr)
 
-	dockerCli.ContainerStart(context.Background(), containerCreateCreatedBody.ID, types.ContainerStartOptions{})
+	f, _ := os.Open("/certs/containerManagerPub.crt")
+	CopyFileToContainer("/run/secrets/DATABOX_ROOT_CA", f, containerCreateCreatedBody.ID)
+	f.Close()
+
+	dockerCli.ContainerStart(ctx, containerCreateCreatedBody.ID, types.ContainerStartOptions{})
 
 }
 
@@ -167,4 +188,35 @@ func StopSDK() {
 		}
 	}
 
+}
+
+// CopyFileToContainer copies a single file of any format to the target container
+func CopyFileToContainer(targetFullPath string, fileReader io.Reader, containerID string) error {
+
+	ctx := context.Background()
+	cli, _ := client.NewEnvClient()
+
+	fileBody, _ := ioutil.ReadAll(fileReader)
+
+	var tarBuf bytes.Buffer
+	tw := tar.NewWriter(&tarBuf)
+	hdr := &tar.Header{
+		Name: targetFullPath,
+		Mode: 0660,
+		Size: int64(len(fileBody)),
+	}
+	if err := tw.WriteHeader(hdr); err != nil {
+		return err
+	}
+	if _, err := tw.Write(fileBody); err != err {
+		return err
+	}
+
+	var r io.Reader
+	r = &tarBuf
+	err := cli.CopyToContainer(ctx, containerID, "/", r, types.CopyToContainerOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -42,7 +41,6 @@ func main() {
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
-	startCmdHostPath := startCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
 	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
 	uiImage := startCmd.String("core-ui", "databoxsystems/core-ui", "Override core ui image")
@@ -63,7 +61,6 @@ func main() {
 	sdkCmd := flag.NewFlagSet("sdk", flag.ExitOnError)
 	startSDK := sdkCmd.Bool("start", false, "Use this to start the databox sdk")
 	sdkCmdRelease := sdkCmd.String("release", CURRENT_RELEASE, "Databox version to start, can uses tagged versions or latest")
-	sdkCmdHostPath := sdkCmd.String("host-path", "", "Pass the hosts path to the databox cmd. This is needed if you are starting databox from inside a container.")
 	sdkCmdRegistry := sdkCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
 
 	stopSDK := sdkCmd.Bool("stop", false, "Use this to stop the databox sdk")
@@ -114,10 +111,6 @@ func main() {
 			panic("Unsupported CPU architecture ")
 		}
 
-		if *startCmdHostPath != "" {
-			path = *startCmdHostPath
-		}
-
 		opts := &libDatabox.ContainerManagerOptions{
 			Version:               *startCmdRelease,
 			SwarmAdvertiseAddress: *startCmdIP,
@@ -135,7 +128,6 @@ func main() {
 			DefaultAppStore:       *appStore,
 			EnableDebugLogging:    *enableLogging,
 			OverridePasword:       *startCmdPassword,
-			HostPath:              path,
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
 			Arch:                  cpuArch,
@@ -175,11 +167,8 @@ func main() {
 
 		if *startSDK == true {
 			sdkCmd.Parse(os.Args[2:])
-			if *sdkCmdHostPath != "" {
-				path = *sdkCmdHostPath
-			}
 			libDatabox.Info("Starting Databox SDK")
-			StartSDK(path, *sdkCmdRegistry, *sdkCmdRelease)
+			StartSDK(*sdkCmdRegistry, *sdkCmdRelease)
 
 		} else if *stopSDK == true {
 			libDatabox.Info("Stoping Databox SDK")
@@ -302,9 +291,6 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 		},
 	}
 
-	certsPath, _ := filepath.Abs("./certs")
-	slaStorePath, _ := filepath.Abs("./sdk")
-
 	//create options secret
 	optionsJSON, err := json.Marshal(options)
 	libDatabox.ChkErrFatal(err)
@@ -344,14 +330,9 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 						Target: "/var/run/docker.sock",
 					},
 					mount.Mount{
-						Type:   mount.TypeBind,
-						Source: options.HostPath + certsPath,
+						Source: "container-manager-certs",
 						Target: "/certs",
-					},
-					mount.Mount{
-						Type:   mount.TypeBind,
-						Source: options.HostPath + slaStorePath,
-						Target: "/sdk",
+						Type:   "volume",
 					},
 				},
 				Secrets: []*swarm.SecretReference{&cmOptionsSecret},
