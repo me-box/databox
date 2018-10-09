@@ -332,7 +332,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 					mount.Mount{
 						Source: "container-manager-certs",
 						Target: "/certs",
-						Type:   "volume",
+						Type:   mount.TypeVolume,
 					},
 				},
 				Secrets: []*swarm.SecretReference{&cmOptionsSecret},
