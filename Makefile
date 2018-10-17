@@ -50,19 +50,12 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-#all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch
-all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+#all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
 
-.PHONY: deps
-deps:
-	go get -u github.com/pebbe/zmq4
-	go get -u github.com/me-box/goZestClient
-	go get -u golang.org/x/net/proxy
-	go get -u github.com/docker/go-connections/nat
-	go get -u github.com/pkg/errors
-	go get -u github.com/docker/docker/api/types
-	go get -u github.com/docker/docker/client
-	go get -u github.com/me-box/lib-go-databox
+.PHONY: all-local
+#all-local: build-linux-amd64 get-core-containers-src build-core-containers
+all-local: build-linux-amd64 build-core-containers
 
 .PHONY: build
 build:
@@ -153,15 +146,17 @@ endif
 #$1=manifestName
 define build-and-publish-manifest
 	docker push $(1)-amd64:$(DATABOX_VERSION)
-	docker manifest create --amend $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION)
+	docker push $(1)-arm64v8:$(DATABOX_VERSION)
+	docker manifest create --amend $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) $(1)-arm64v8:$(DATABOX_VERSION)
 	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) --os linux --arch amd64
-	#TODO re-enable this when core-store, export-servive and core network build for arm64v8
-	#docker manifest annotate $(1) $(3) --os linux --arch arm64 --variant v8
+	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-arm64v8:$(DATABOX_VERSION) --os linux --arch arm64
 	docker manifest push --purge $(1):$(DATABOX_VERSION)
 endef
 
 define publish-core
-	#Build and tag the images
+	$(ifeq($(2),amd64), docker push $(DEFAULT_REG)/zestdb-$(2):$(1))
+
+
 	docker push $(DEFAULT_REG)/container-manager-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-relay-$(2):$(1)
@@ -181,19 +176,19 @@ define publish-core
 	docker push $(DEFAULT_REG)/app-light-graph-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-twitter-$(2):$(1)
 
-	docker push $(DEFAULT_REG)/zestdb-$(2):$(1)
+
 endef
 .PHONY: publish-core
 publish-core:
 ifndef ARCH
-	$(call publish-core,$(DATABOX_VERSION),amd64)
-	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+	@$(call publish-core,$(DATABOX_VERSION),amd64)
+	@$(call publish-core,$(DATABOX_VERSION),arm64v8)
 endif
 ifeq ($(ARCH),amd64)
-	$(call publish-core,$(DATABOX_VERSION),amd64)
+	@$(call publish-core,$(DATABOX_VERSION),amd64)
 endif
 ifeq ($(ARCH),arm64v8)
-	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+	@$(call publish-core,$(DATABOX_VERSION),arm64v8)
 endif
 
 .PHONY: publish-core-multiarch

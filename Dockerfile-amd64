@@ -5,14 +5,13 @@ ENV GOPATH /
 
 RUN mkdir -p /src/github.com/docker && git -C /src/github.com/docker clone --depth 1 https://github.com/docker/docker
 COPY *.go /
-COPY Makefile Makefile
-COPY *.go /
 
 RUN go get -d -v ./...
 RUN rm -r /src/github.com/docker/docker/vendor/github.com/docker/go-connections
 RUN go get -d github.com/pkg/errors
 RUN go get -d golang.org/x/net/proxy
 
+COPY Makefile Makefile
 RUN make build
 
 FROM amd64/alpine:3.8
