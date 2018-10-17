@@ -315,7 +315,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 
 	service := swarm.ServiceSpec{
 		TaskTemplate: swarm.TaskSpec{
-			ContainerSpec: swarm.ContainerSpec{
+			ContainerSpec: &swarm.ContainerSpec{
 				Image:    options.ContainerManagerImage + "-" + options.Arch + ":" + options.Version,
 				Hostname: "container-manager",
 				Labels:   map[string]string{"databox.type": "container-manager"},

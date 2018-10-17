@@ -1,5 +1,5 @@
 #The version of databox used in publish-core-containers-version
-DATABOX_VERSION=0.5.0
+DATABOX_VERSION=latest
 
 #Change where images a pulled from and pushed to when using this script.
 DEFAULT_REG=databoxsystems
@@ -51,14 +51,22 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 
 .PHONY: all
 #all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch
-all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
 
-.PHONY: all-local
-all-local: build-linux-amd64 get-core-containers-src build-core-containers
-
+.PHONY: deps
+deps:
+	go get -u github.com/pebbe/zmq4
+	go get -u github.com/me-box/goZestClient
+	go get -u golang.org/x/net/proxy
+	go get -u github.com/docker/go-connections/nat
+	go get -u github.com/pkg/errors
+	go get -u github.com/docker/docker/api/types
+	go get -u github.com/docker/docker/client
+	go get -u github.com/me-box/lib-go-databox
 
 .PHONY: build
 build:
+	rm -rf ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
 	go build -ldflags="-s -w" -o bin/databox *.go
 
 .PHONY: build-linux-amd64
@@ -122,7 +130,6 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
-	#$(call gitPullorClone, https://github.com/ktg/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/me-box/app-light-graph.git,app-light-graph,master)
@@ -150,7 +157,7 @@ define build-and-publish-manifest
 	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) --os linux --arch amd64
 	#TODO re-enable this when core-store, export-servive and core network build for arm64v8
 	#docker manifest annotate $(1) $(3) --os linux --arch arm64 --variant v8
-	docker manifest push $(1):$(DATABOX_VERSION)
+	docker manifest push --purge $(1):$(DATABOX_VERSION)
 endef
 
 define publish-core
