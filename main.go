@@ -28,7 +28,7 @@ var path string
 var dockerCli *client.Client
 
 const certsBasePath = "./certs"
-const CURRENT_RELEASE = "0.5.0"
+const CURRENT_RELEASE = "0.5.1"
 const DEFAULT_REGISTRY = "databoxsystems"
 
 func main() {
