@@ -114,14 +114,14 @@ func main() {
 		opts := &libDatabox.ContainerManagerOptions{
 			Version:               *startCmdRelease,
 			SwarmAdvertiseAddress: *startCmdIP,
-			ContainerManagerImage: *cmImage,
-			CoreUIImage:           *uiImage,
-			ArbiterImage:          *arbiterImage,
-			CoreNetworkImage:      *coreNetworkImage,
-			CoreNetworkRelayImage: *coreNetworkRelay,
-			AppServerImage:        *appServerImage,
-			ExportServiceImage:    *exportServerImage,
-			DefaultStoreImage:     *storeImage,
+			ContainerManagerImage: *cmImage + "-" + cpuArch + ":" + *startCmdRelease,
+			CoreUIImage:           *uiImage + "-" + cpuArch + ":" + *startCmdRelease,
+			ArbiterImage:          *arbiterImage + "-" + cpuArch + ":" + *startCmdRelease,
+			CoreNetworkImage:      *coreNetworkImage + "-" + cpuArch + ":" + *startCmdRelease,
+			CoreNetworkRelayImage: *coreNetworkRelay + "-" + cpuArch + ":" + *startCmdRelease,
+			AppServerImage:        *appServerImage + "-" + cpuArch + ":" + *startCmdRelease,
+			ExportServiceImage:    *exportServerImage + "-" + cpuArch + ":" + *startCmdRelease,
+			DefaultStoreImage:     *storeImage + "-" + cpuArch + ":" + *startCmdRelease,
 			ClearSLAs:             *clearSLAdb,
 			DefaultRegistryHost:   *startCmdRegistryHosts,
 			DefaultRegistry:       *startCmdRegistry,
@@ -316,7 +316,7 @@ func createContainerManager(options *libDatabox.ContainerManagerOptions) {
 	service := swarm.ServiceSpec{
 		TaskTemplate: swarm.TaskSpec{
 			ContainerSpec: &swarm.ContainerSpec{
-				Image:    options.ContainerManagerImage + "-" + options.Arch + ":" + options.Version,
+				Image:    options.ContainerManagerImage,
 				Hostname: "container-manager",
 				Labels:   map[string]string{"databox.type": "container-manager"},
 				Env: []string{
