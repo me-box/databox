@@ -20,7 +20,7 @@ This document specifies the databox system
 
 ## System architecture diagram
 
-![architecture diagram](./images/platform-overview.png)
+![architecture diagram](./figures/platform-overview.png)
 
 ## Data Sources
 Inputs to the databox, e.g.
