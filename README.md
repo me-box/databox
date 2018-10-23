@@ -14,11 +14,15 @@ These instructions will get a copy of the Databox up and running on your local m
 ### Get started
 Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
 running.
+
 ```
 mkdir databox
 cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
 ```
+
+> Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
+
 The above start Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
 
 Once it's started, point a web browser at <http://127.0.0.1> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <https://127.0.0.1>, or the iOS and Android app).
@@ -51,7 +55,9 @@ It is possible to develop Databox apps and driver without the SDK. Currently, [P
 
 To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make your app available to install locally on your databox you will need to upload the app-store driver and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built then you should be up to install the app on your local Databox.
 
->>Images ust be post fixed with -amd64 or -arm64v8 respectively.
+A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/testenv/) which has all you need to develop apps and drivers and a small tutorial.
+
+>>Images must be post fixed with -amd64 or -arm64v8 respectively.
 >>The image must have the version tag that matches your running version of databox :0.5.0 or :latest for example.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:

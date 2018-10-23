@@ -1,29 +1,27 @@
 # Manifest and SLA
 
-2016-07-21, based on initial discussion at Nottingham with Chris, Tom, Tosh, Kevin and James.
+Updated: 32rd oct 2018 databox version 0.5.1
 
 Strategy: the SLA is a refinement of the Manifest, i.e. essentially the same file format but with extra information filled in, and sometimes irrelevant/sensitive parts elided.
 
 
-## Overview of SLA Creation 
+## Overview of SLA Creation
 
-The [container manager](https://github.com/me-box/databox-container-manager) UI will download the Manifest from the [databox app server](https://github.com/me-box/databox-app-server). It will take the user through the process of selecting packages to enable (and marking these), selecting (abstraint) datasources to enable, and mapping these to specific datasources. 
+The [core-ui](https://github.com/me-box/core-ui) will download the Manifest from the [app store driver](https://github.com/me-box/driver-app-store). It will take the user through the process of mapping local data  sources to those requested in the manifest.
 
-The container manager will then push the completed SLA to the [arbiter](https://github.com/me-box/databox-arbiter). This will be via a new parameter, 'sla', to [`/update`](https://github.com/me-box/databox-arbiter#update).
+The container-manager will then post the manifest and an array od seated data sources to the [container-manager](https://github.com/me-box/core-container-manager). The container-manager will process the manifest and data  source array into an SLA.
 
-The container manager can then (download the application image if required and) start the app container.
-
-The app's first action should normally be to contact the [arbiter](https://github.com/me-box/databox-arbiter) and get its SLA. Logically this should be a new version of the [`/register`](https://github.com/me-box/databox-arbiter#register) call, returning a JSON-encoded object with keys `sla` (the SLA) and `secret` (the current return value - base64-encoded secret for verifying container macaroons)
-
-## Types
-
+The SLA is then used to install the App or driver (download the application image if required) and start the  container. The container-manager grants the required permissions by calling on the /cm/grant-container-permissions endpoint of the [arbiter](https://github.com/me-box/core-arbiter). The container-manager also informs the [core-network](https://github.com/me-box/core-network) of the required network configuration via the /connect endpoint. The container-manager is also responsible for starting any required data stores. Finally, the SlA is stored in the container-manager core store for reinstalling Apps and drivers at restart.
 
 ### Manifest
 
-Manifest general metadata, following [databox-app-server /app/list](https://github.com/me-box/databox-app-server#applist):
+Manifest general metadata:
 
 - manifest-version: [Number]
 - name: [String] \(one unique word)
+ - docker-image (Optional: docker image name  e.g my-cool-app (-amd64 or -amd64v8 will be added depending on the platform) defaults to Name from above)
+- docker-registry (Optional: docker registry e.g myDockerRegistry defaults to datboxsystems)
+- docker-image-tag (Optional: docker image tag e.g latest or v0.5.1 etc defaults to the running version of databox)
 - version: [String] \([semver](http://semver.org/))
 - databox-type: [String] \(top-level type field to distinguish apps from drivers)
 - description: [String] \(single line description)
@@ -32,83 +30,78 @@ Manifest general metadata, following [databox-app-server /app/list](https://gith
 - tags: [Array of strings]
 - homepage: [String]
 - repository: [[Repository](https://docs.npmjs.com/files/package.json#repository)]
-
-- packages: [Array of [Package](#package)]
-- allowed-combinations: [Array of [package-id, package-id]] indicating pair-wise combinations of packages that can be enabled at the same time.
-
 - datasources: [Array of [Datasource](#datasource)]
 - export-whitelist: [Array of [Export Destinations](#export-destination)]
+- external-whitelist: [Array of [White listed hosts](#external-whitelist)]
 
 Notes:
 
-- allowed-combinations are enforced at Manifest -> SLA conversion and do not need to be checked later.
-- what markup should be allowed/assumed/required for human-readable UI strings, e.g. [Manifest](#manifest) description, [Package](#package) purpose, risks, benefits?
-- At some point it should allow different copies of the same app to be run.
+- what markup should be allowed/assumed/required for human-readable UI strings, e.g. [Manifest](#manifest) description
 
-### Package
+### Data source
 
-A selectable 'package' of functionality within an app. E.g. see [SLA v2](https://github.com/me-box/docs/blob/master/prototypes/ui/sla-v2.docx): 'basic' vs 'standard' vs 'enhanced' operation, each with different datasource requirements, risks and benefits.
- 
-Based on the initial [node RED author](https://github.com/me-box/iot.red/blob/09795e81bbbe3be4235f58e99e6ca0154f727152/red-server/routes/github.js), with 'driver-permissions' factored out to the top level.
-
-Object with:
-
-- id: [Integer(Tom ?)] \(unique within application)
-- name: [String]
-- purpose: [String]
-- required: [Boolean], i.e. package is compulsory
-- risks: [String]
-- benefits: [String]
-
-- datasources: [Array of [Datasource](#datasource) ids]
-
-Plus in SLA, not present in Manifest:
-
-- enabled: [Boolean] \(default false)
-
-
-### Datasource
-
-An array of datasources to be accessed by an application.
+An array of data sources to be accessed by an application.
 
 Manifest Object with:
 
-- type: [String] \(basis for compatibility test, like current data store / node type names) 
-- clientid: [String] used by the app to distinguish datasources of the same type (e.g. 'main-bulb')
+- type: [String] \(basis for compatibility test, like current data store / node type names)
+- clientid: [String] used by the app to distinguish data sources of the same type (e.g. 'main-bulb')
 - granularities: [Array of [Granularity](#granularity)]
 - required: [Boolean]
+- clientid [string] The Id used to identify this data source in the client code (from the manifest).
+- hypercat [Object] The full hypercat description of the data source.
+- min [int] the minimum number of this type to request from the user default 1
+- max [int] the maximum number of this type to request from the user default 1
+- allow-notification-of-new-sources [Boolean] should the cm notify and grant permissions to the app when new data sources of this type are available
 
 Available in SLA to the app after install:
 
-- type [string] the databox datasource type
-- name [string] datasource name
+- type [string] the databox data source type
+- name [string] data source name
 - required [bool]
-- clientid [string] the id provided by the app to assign this datasource to
-- granularities [array] not used yet 
-- endpoint [string] href pointing to the datasource endpoint,
-- datasource [string] the datasource name,
-- description [string] human readable description
-- location [string] human readable location ed "living room"
-- hypercat [json/text] the full hypercat item provided by the driver for this datasource
+- clientid [string] the id provided by the app to assign this data source to
+- granularities [array] not used yet
+- hypercat [json/text] the full hypercat item provided by the driver for this data source
+- allow-notification-of-new-sources
 
-Notes:
-
-- Should datasource types be based on (reverse?) domain names for uniqueness / namespace management?
-
-### Export Destination
+### White listed hosts (Drivers only)
 
 An JSON object formatted as follows.
 
+'''json
+"external-whitelist": [
+		{
+			"urls": [
+				"https://api.twitter.com/",
+				"https://stream.twitter.com/1.1/",
+				"https://userstream.twitter.com/1.1/",
+				"https://sitestream.twitter.com/1.1/",
+				"https://upload.twitter.com/1.1/"
+			],
+			"description": "Used by node package `twit` to access Twitter API"
+		}
+	],
+'''
+
+Allows the container-manager to grant access to external hosts for drivers.
+
+
+### Export Destination (Apps only)
+
+An JSON object formatted as follows.
+
+```json
     {
         'url': SOME_HTTPS_URL,
         'description': "Human readable description"
     }
+```
 
-Here, the URL is an HTTPs URL to an external server that an app may export data to. This must be full URL that is matched exactly. Once approved by a user, an app can query the `\export` enpoint on the Databox export service (documented [here](https://github.com/me-box/databox-export-service#api)) to emit results to a remote host.
+Here, the URL is an HTTPs URL to an external server that an app may export data to. This must be full URL that is matched exactly. Once approved by a user, an app can query the `\export` endpoint on the Databox export service (documented [here](https://github.com/me-box/databox-export-service#api)) to emit results to a remote host.
 
 ### Granularity
 
-"Granularity" of allowed access to the data source. 
+"Granularity" of allowed access to the data source.
 May have different facets, but initially considering only time. See also HotNets 2016 submission.
 The presumption is that at courser granularity the app is being provided with statistics of the underlying data. For time-series numerical data this would normally be minimum, maximum, average and count (of samples).
 
