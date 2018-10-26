@@ -14,7 +14,7 @@ This version contains a number of bug fixes and some new features including:
   -  Changes to the manifest format to enable core-ui to install dependencies at install time
   -  Fixed nodejs builds
   -  Containers running as root (all apps and drivers now run as an un-privileged user)
-  -  first version of the quickstart guide https://github.com/me-box/databox-quickstart/tree/master/drive
+  -  first version of the quickstart guide https://github.com/me-box/databox-quickstart
   -  make databox recover from host and docker demon restarts
   -  App and Driver crashes are detected and restarted cleanly
   -  removed the need for the CM and SDK to bind mount directories on the host
