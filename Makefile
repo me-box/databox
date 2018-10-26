@@ -32,7 +32,7 @@ endif
 ifdef ARCH
 ARCH_TMP=-$(ARCH)
 endif
-databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/certs:/certs -v $(shell pwd)/sdk:/sdk -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
+databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
 
@@ -50,12 +50,17 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers publish-core publish-core-multiarch
 #all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
 
 .PHONY: all-local
 #all-local: build-linux-amd64 get-core-containers-src build-core-containers
-all-local: build-linux-amd64 build-core-containers
+all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app-drivers build-core-containers
+
+.PHONY: all-local-core-only
+#all-local: build-linux-amd64 get-core-containers-src build-core-containers
+#all-local-core-only: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers
+all-local-core-only: build-linux-amd64 get-core-containers-src build-core-containers
 
 .PHONY: build
 build:
@@ -84,20 +89,36 @@ stop:
 define build-core
 	#Build and tag the images
 	make -C ./build/core-container-manager build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-network build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-arbiter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-export-service build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-ui build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
-	make -C ./build/driver-app-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
-	make -C ./build/driver-sensingkit build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-app-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+endef
 
+#$1==version $2==Architecture
+define build-app-drivers
+	make -C ./build/driver-sensingkit build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-phillips-hue build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-tplink-smart-plug build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-twitter-sentiment build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-twitter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
@@ -141,6 +162,19 @@ ifeq ($(ARCH),amd64)
 endif
 ifeq ($(ARCH),arm64v8)
 	$(call build-core,$(DATABOX_VERSION),arm64v8,-arm64v8)
+endif
+
+.PHONY: build-app-drivers
+build-app-drivers:
+ifndef ARCH
+	$(call build-app-drivers,$(DATABOX_VERSION),amd64,)
+	$(call build-app-drivers,$(DATABOX_VERSION),arm64v8,-arm64v8)
+endif
+ifeq ($(ARCH),amd64)
+	$(call build-app-drivers,$(DATABOX_VERSION),amd64,)
+endif
+ifeq ($(ARCH),arm64v8)
+	$(call build-app-drivers,$(DATABOX_VERSION),arm64v8,-arm64v8)
 endif
 
 #$1=manifestName
