@@ -31,7 +31,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:latest /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox stop
 ```
 
 # Development
@@ -40,13 +40,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystem
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
@@ -58,7 +58,7 @@ To get started all you need is a Dockerfile and a databox-manifest.json examples
 A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
 
 >>Images must be post fixed with -amd64 or -arm64v8 respectively.
->>The image must have the version tag that matches your running version of databox :0.5.0 or :latest for example.
+>>The image must have the version tag that matches your running version of databox :0.5.1 or :latest for example.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:
 ```
@@ -118,10 +118,13 @@ Databox System Design document can be find [here](./documents/system_overview.md
 
 >> Multi arch builds only work on Docker for Mac experimental
 >> enable docker cli experimental features "experimental": "enabled" ~/.docker/config.json
->> some arm builds are broken use ARCH=amd64 to only build x86 containers.
 ```
     make all ARCH=amd64 DEFAULT_REG=[your docker hub reg tag]
 ```
+Or for amd64v8 platforms
+'''
+    make all ARCH=amd64v8 DEFAULT_REG=[your docker hub reg tag]
+'''
 
 ## Running the tests
 
