@@ -90,7 +90,7 @@ Databox has a number of platform components, divided into two parts:  Core and O
 * [databox-export-service](https://github.com/me-box/core-export-service) This service controls the data to be exported to external URLs.
 * [core-store](https://github.com/me-box/core-store)  This is a data store used by apps and drivers to store and retrieve JSON data or JPEG images.
 * [core-ui](https://github.com/me-box/core-ui)  This is the databox default user interface.
-* [driver-app-server](https://github.com/me-box/driver-app-server) This is a driver for retrieving manifests and making them available to your databox.
+* [driver-app-store](https://github.com/me-box/driver-app-store) This is a driver for retrieving manifests and making them available to your databox.
 
 ## Other
 
