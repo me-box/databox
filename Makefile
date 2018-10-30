@@ -1,5 +1,5 @@
 #The version of databox used in publish-core-containers-version
-DATABOX_VERSION=0.5.0
+DATABOX_VERSION=latest
 
 #Change where images a pulled from and pushed to when using this script.
 DEFAULT_REG=databoxsystems
@@ -32,7 +32,7 @@ endif
 ifdef ARCH
 ARCH_TMP=-$(ARCH)
 endif
-databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/certs:/certs -v $(shell pwd)/sdk:/sdk -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
+databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
 
@@ -50,15 +50,21 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-#all: build build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers publish-core-amd64 publish-core-arm64v8 publish-core-multiarch
-all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers publish-core publish-core-multiarch
+#all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
 
 .PHONY: all-local
-all-local: build-linux-amd64 get-core-containers-src build-core-containers
+#all-local: build-linux-amd64 get-core-containers-src build-core-containers
+all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app-drivers build-core-containers
 
+.PHONY: all-local-core-only
+#all-local: build-linux-amd64 get-core-containers-src build-core-containers
+#all-local-core-only: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers
+all-local-core-only: build-linux-amd64 get-core-containers-src build-core-containers
 
 .PHONY: build
 build:
+	rm -rf ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
 	go build -ldflags="-s -w" -o bin/databox *.go
 
 .PHONY: build-linux-amd64
@@ -83,20 +89,36 @@ stop:
 define build-core
 	#Build and tag the images
 	make -C ./build/core-container-manager build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-network build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-arbiter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-export-service build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/core-ui build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
-	make -C ./build/driver-app-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
-	make -C ./build/driver-sensingkit build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-os-monitor build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-app-store build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+endef
 
+#$1==version $2==Architecture
+define build-app-drivers
+	make -C ./build/driver-sensingkit build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-phillips-hue build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-tplink-smart-plug build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-twitter-sentiment build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-twitter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
@@ -122,7 +144,6 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
-	#$(call gitPullorClone, https://github.com/ktg/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/me-box/app-light-graph.git,app-light-graph,master)
@@ -143,18 +164,33 @@ ifeq ($(ARCH),arm64v8)
 	$(call build-core,$(DATABOX_VERSION),arm64v8,-arm64v8)
 endif
 
+.PHONY: build-app-drivers
+build-app-drivers:
+ifndef ARCH
+	$(call build-app-drivers,$(DATABOX_VERSION),amd64,)
+	$(call build-app-drivers,$(DATABOX_VERSION),arm64v8,-arm64v8)
+endif
+ifeq ($(ARCH),amd64)
+	$(call build-app-drivers,$(DATABOX_VERSION),amd64,)
+endif
+ifeq ($(ARCH),arm64v8)
+	$(call build-app-drivers,$(DATABOX_VERSION),arm64v8,-arm64v8)
+endif
+
 #$1=manifestName
 define build-and-publish-manifest
 	docker push $(1)-amd64:$(DATABOX_VERSION)
-	docker manifest create --amend $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION)
+	docker push $(1)-arm64v8:$(DATABOX_VERSION)
+	docker manifest create --amend $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) $(1)-arm64v8:$(DATABOX_VERSION)
 	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-amd64:$(DATABOX_VERSION) --os linux --arch amd64
-	#TODO re-enable this when core-store, export-servive and core network build for arm64v8
-	#docker manifest annotate $(1) $(3) --os linux --arch arm64 --variant v8
-	docker manifest push $(1):$(DATABOX_VERSION)
+	docker manifest annotate $(1):$(DATABOX_VERSION) $(1)-arm64v8:$(DATABOX_VERSION) --os linux --arch arm64
+	docker manifest push --purge $(1):$(DATABOX_VERSION)
 endef
 
 define publish-core
-	#Build and tag the images
+	$(ifeq($(2),amd64), docker push $(DEFAULT_REG)/zestdb-$(2):$(1))
+
+
 	docker push $(DEFAULT_REG)/container-manager-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-$(2):$(1)
 	docker push $(DEFAULT_REG)/core-network-relay-$(2):$(1)
@@ -174,19 +210,19 @@ define publish-core
 	docker push $(DEFAULT_REG)/app-light-graph-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-twitter-$(2):$(1)
 
-	docker push $(DEFAULT_REG)/zestdb-$(2):$(1)
+
 endef
 .PHONY: publish-core
 publish-core:
 ifndef ARCH
-	$(call publish-core,$(DATABOX_VERSION),amd64)
-	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+	@$(call publish-core,$(DATABOX_VERSION),amd64)
+	@$(call publish-core,$(DATABOX_VERSION),arm64v8)
 endif
 ifeq ($(ARCH),amd64)
-	$(call publish-core,$(DATABOX_VERSION),amd64)
+	@$(call publish-core,$(DATABOX_VERSION),amd64)
 endif
 ifeq ($(ARCH),arm64v8)
-	$(call publish-core,$(DATABOX_VERSION),arm64v8)
+	@$(call publish-core,$(DATABOX_VERSION),arm64v8)
 endif
 
 .PHONY: publish-core-multiarch

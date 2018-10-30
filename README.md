@@ -14,12 +14,16 @@ These instructions will get a copy of the Databox up and running on your local m
 ### Get started
 Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
 running.
+
 ```
 mkdir databox
 cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox start --host-path $(pwd) -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
 ```
-The above start Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
+
+> Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
+
+The above starts Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
 
 Once it's started, point a web browser at <http://127.0.0.1> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <https://127.0.0.1>, or the iOS and Android app).
 
@@ -27,7 +31,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox stop
 ```
 
 # Development
@@ -36,13 +40,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/ce
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/certs:/certs -v $(pwd)/sdk:/sdk -v -t databoxsystems/databox:latest /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
@@ -51,8 +55,10 @@ It is possible to develop Databox apps and driver without the SDK. Currently, [P
 
 To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make your app available to install locally on your databox you will need to upload the app-store driver and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built then you should be up to install the app on your local Databox.
 
->>Images ust be post fixed with -amd64 or -arm64v8 respectively.
->>The image must have the version tag that matches your running version of databox :0.5.0 or :latest for example.
+A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
+
+>>Images must be post fixed with -amd64 or -arm64v8 respectively.
+>>The image must have the version tag that matches your running version of databox :0.5.1 or :latest for example.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:
 ```
@@ -70,7 +76,7 @@ To develop on the platform and core components the databox start command allows 
 
 ```
 docker build databoxdev/arbiter .                                     # build your updated arbiter image
-make start OPTS=--release 0.4.0 --arbiter databoxdev/arbiter      # start databox using the new code
+make start OPTS=--release 0.5.1 --arbiter databoxdev/arbiter      # start databox using the new code
 ```
 
 # Databox Components
@@ -84,7 +90,7 @@ Databox has a number of platform components, divided into two parts:  Core and O
 * [databox-export-service](https://github.com/me-box/core-export-service) This service controls the data to be exported to external URLs.
 * [core-store](https://github.com/me-box/core-store)  This is a data store used by apps and drivers to store and retrieve JSON data or JPEG images.
 * [core-ui](https://github.com/me-box/core-ui)  This is the databox default user interface.
-* [driver-app-server](https://github.com/me-box/driver-app-server) This is a driver for retrieving manifests and making them available to your databox.
+* [driver-app-store](https://github.com/me-box/driver-app-store) This is a driver for retrieving manifests and making them available to your databox.
 
 ## Other
 
@@ -112,10 +118,13 @@ Databox System Design document can be find [here](./documents/system_overview.md
 
 >> Multi arch builds only work on Docker for Mac experimental
 >> enable docker cli experimental features "experimental": "enabled" ~/.docker/config.json
->> some arm builds are broken use ARCH=amd64 to only build x86 containers.
 ```
     make all ARCH=amd64 DEFAULT_REG=[your docker hub reg tag]
 ```
+Or for amd64v8 platforms
+'''
+    make all ARCH=amd64v8 DEFAULT_REG=[your docker hub reg tag]
+'''
 
 ## Running the tests
 

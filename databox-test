@@ -5,7 +5,7 @@ UI_AUTH_TOKEN="Some_bad_default_password_for_testing"
 
 #Default test command from first argument HOST_ARCH form second
 HOST_ARCH=${3}
-DATABOX_COMMAND="${1} start ${2} --password ${UI_AUTH_TOKEN} --host-path $(pwd)"
+DATABOX_COMMAND="${1} start ${2} --password ${UI_AUTH_TOKEN}"
 DATABOX_STOP_COMMAND="${1} stop"
 
 DATABOX_SLA_REG=${4}
@@ -107,7 +107,7 @@ $DATABOX_COMMAND --flushSLAs &>/dev/null &
 rm -rf ./databox-jar > /dev/null
 
 echo "Sleeping...."
-sleep 180
+sleep 80
 docker ps
 
 #setup the auth cookie
@@ -116,6 +116,8 @@ setup_auth_cookie
 #can we see the CM UI
 STATUS=$(d_curl -sL --cookie /data/databox-jar  --insecure --http1.1 -w "%{http_code}\\n" "https://127.0.0.1/" -o /dev/null)
 test_assert $STATUS 200 "Is core-ui available?"
+
+#TODO are the core-ui data endpoints working
 
 #first install of the app and driver
 install_osmon_app_and_driver
@@ -175,7 +177,7 @@ sleep 180
 #restarting databox clears session token get a new one
 setup_auth_cookie
 
-#third test of the app
+#fourth test of the app
 test_app_os_monitor "fourth"
 
 

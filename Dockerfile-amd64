@@ -1,14 +1,17 @@
 FROM amd64/alpine:3.8 as build
-RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
 RUN apk update && apk add build-base go git libzmq zeromq-dev alpine-sdk libsodium-dev
-RUN apk add 'go>=1.11-r0' --update-cache --repository http://nl.alpinelinux.org/alpine/edge/community
 
-COPY *.mod /
-#COPY *.sum /
-RUN go mod download
-COPY Makefile Makefile
+ENV GOPATH /
+
+RUN mkdir -p /src/github.com/docker && git -C /src/github.com/docker clone --depth 1 https://github.com/docker/docker
 COPY *.go /
 
+RUN go get -d -v ./...
+RUN rm -r /src/github.com/docker/docker/vendor/github.com/docker/go-connections
+RUN go get -d github.com/pkg/errors
+RUN go get -d golang.org/x/net/proxy
+
+COPY Makefile Makefile
 RUN make build
 
 FROM amd64/alpine:3.8
