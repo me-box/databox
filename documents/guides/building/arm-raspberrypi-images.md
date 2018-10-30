@@ -5,8 +5,8 @@ If the repo has a Dockerfile-arm file and you are building it on an arm cpu then
 
  1. docker build -t local/databox-arbiter-arm -f Dockerfile-arm .
  2. docker tag local/databox-arbiter-arm [your-repo-url]/databox-arbiter-arm && docker push [your-repo-url]/databox-arbiter-arm
- 
-The "-arm" on the end of the tagName is essential for the container manger to find the arm version of the contain
+
+The "-arm" on the end of the tagName is essential for the container manager to find the arm version of the contain
 
 ##Building on x86
 

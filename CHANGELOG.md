@@ -25,9 +25,9 @@ This version contains a number of bug fixes and some new features including:
 
 ## [0.5.0]
 
-This version contains a rewritten core-arbiter, core-container-manger and a new set of build tools. There is now no javascript in the code of databox. Most of the core databox components now communicate over the zest protocol, the language-specific libraries have been updated to reflect this change.
+This version contains a rewritten core-arbiter, core-container-manager and a new set of build tools. There is now no javascript in the code of databox. Most of the core databox components now communicate over the zest protocol, the language-specific libraries have been updated to reflect this change.
 
-The databox user interface has been moved for the core-container-manger into its own component core-ui. This uses a new experimental store based API to access data and API endpoints within the container-manager. This enhances security and enables audit logging by default. It also has the benefit that new user interfaces can be developed in the same way as databox apps.
+The databox user interface has been moved for the core-container-manager into its own component core-ui. This uses a new experimental store based API to access data and API endpoints within the container-manager. This enhances security and enables audit logging by default. It also has the benefit that new user interfaces can be developed in the same way as databox apps.
 
 The platform-app server has also been removed in favour of a databox driver that read manifest from a git hub repository (driver-app-store).
 
@@ -57,7 +57,7 @@ The Databox Team
 
 ## [0.1.1] 2017-04-05
 ### Changed
-    * Moved databox container manger to node:alpine to save bandwidth. #14
+    * Moved databox container manager to node:alpine to save bandwidth. #14
     * Removed the need to run update updateLocalRegistry.sh #13
     * code cleanup in container-manager.js
     * Update to local registry Env Vars
