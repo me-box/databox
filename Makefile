@@ -132,7 +132,7 @@ endef
 get-core-containers-src:
 	mkdir -p build
 	#get the code
-	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,master)
+	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,0.5.2-dev)
 	$(call gitPullorClone, https://github.com/me-box/core-network.git,core-network,master)
 	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-arbiter.git,core-arbiter,master)
