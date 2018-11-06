@@ -32,7 +32,7 @@ endif
 ifdef ARCH
 ARCH_TMP=-$(ARCH)
 endif
-databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
+databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
 

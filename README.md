@@ -16,9 +16,7 @@ Make sure Docker is installed and running before starting Databox.  Run the foll
 running.
 
 ```
-mkdir databox
-cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
 ```
 
 > Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
@@ -31,7 +29,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -t databoxsystems/databox:0.5.1 /databox stop
 ```
 
 # Development
@@ -40,13 +38,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystem
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.1 /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.1 /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
