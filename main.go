@@ -54,7 +54,7 @@ func main() {
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
 	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	sslHostName := startCmd.String("sslHostName", "", "Used to override the detected HostName for use in ssl cert.")
-	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
+	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Force databox to regenerate the databox root and certificate")
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
 
@@ -67,6 +67,10 @@ func main() {
 
 	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
 	testCmdNetwork := testCmd.Bool("network", false, "Perform a network test")
+
+	wipeCmd := flag.NewFlagSet("wipe", flag.ExitOnError)
+	wipeCmdRemoveCerts := wipeCmd.Bool("removeCerts", false, "Force databox to remove the databox certificate")
+	wipeCmdYes := wipeCmd.Bool("y", false, "Yes I'm sure")
 
 	flag.Parse()
 
@@ -145,12 +149,8 @@ func main() {
 
 		if *ReGenerateDataboxCertificates == true {
 			libDatabox.Info("Forcing regoration of Databox certificates")
-			os.RemoveAll(certsBasePath)
-		}
-
-		//This dir must exist! if its not here the cm wont start as its used as the service attempts to bind mount it!
-		if _, err := os.Stat(certsBasePath); err != nil {
-			os.Mkdir(certsBasePath, 0700)
+			volume := listDockerVolumesMatching("container-manager-certs")
+			removeVolumes(volume)
 		}
 
 		Start(opts)
@@ -176,6 +176,36 @@ func main() {
 		} else {
 			sdkCmd.Usage()
 		}
+	case "wipe":
+		wipeCmd.Parse(os.Args[2:])
+
+		if *wipeCmdYes == false {
+			fmt.Println("No changes made you did not add the -y flag")
+			return
+		}
+
+		fmt.Println("This will wipe all databox data. Are you sure?")
+		fmt.Println("you have 10 seconds to change your mind (ctrl+c to exit)")
+		fmt.Println("\n If you do not exit I will delete: \n")
+		volumes := listDockerVolumesMatching("-core-store")
+		for _, v := range volumes {
+			fmt.Println(v.Name)
+		}
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("Stoping Databox ...")
+		Stop()
+
+		fmt.Println("Removing all app and driver data ....")
+
+		removeVolumes(volumes)
+
+		if *wipeCmdRemoveCerts {
+			fmt.Println("Removing certificates ....")
+			volume := listDockerVolumesMatching("container-manager-certs")
+			removeVolumes(volume)
+		}
+
 	case "test":
 
 		testCmd.Parse(os.Args[2:])
@@ -217,6 +247,7 @@ func displayUsage() {
 			stop - stop databox
 			logs - view databox logs
 			sdk  - manage the databox sdk
+			wipe  - remove databox data
 
 		Use databox [cmd] help to see more options
 		`)
@@ -274,6 +305,24 @@ func Stop() {
 		}
 	}
 
+}
+
+func listDockerVolumesMatching(filterString string) []*types.Volume {
+	f := filters.NewArgs()
+	f.Add("name", filterString)
+	volumes, err := dockerCli.VolumeList(context.Background(), f)
+	libDatabox.ChkErrFatal(err)
+
+	return volumes.Volumes
+}
+
+func removeVolumes(volumes []*types.Volume) {
+	for _, v := range volumes {
+		fmt.Print("Removing ", v.Name, "....")
+		err := dockerCli.VolumeRemove(context.Background(), v.Name, true)
+		libDatabox.ChkErrFatal(err)
+		fmt.Println("   Done! ")
+	}
 }
 
 func createContainerManager(options *libDatabox.ContainerManagerOptions) {
