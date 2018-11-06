@@ -1,5 +1,5 @@
 #The version of databox used in publish-core-containers-version
-DATABOX_VERSION=latest
+DATABOX_VERSION=0.5.2
 
 #Change where images a pulled from and pushed to when using this script.
 DEFAULT_REG=toshdatabox
