@@ -2,7 +2,7 @@
 DATABOX_VERSION=latest
 
 #Change where images a pulled from and pushed to when using this script.
-DEFAULT_REG=databoxsystems
+DEFAULT_REG=toshdatabox
 
 # Pass options to the build comands overide OPTS=--no-cache or --flushslas to build without caching or flush the SLA on cmgr startup
 #OPTS=
@@ -60,7 +60,7 @@ all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app
 .PHONY: all-local-core-only
 #all-local: build-linux-amd64 get-core-containers-src build-core-containers
 #all-local-core-only: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers
-all-local-core-only: build-linux-amd64 get-core-containers-src build-core-containers
+all-local-core-only: build-linux-amd64 build-core-containers
 
 .PHONY: build
 build:
@@ -78,7 +78,7 @@ build-linux-arm64:
 
 .PHONY: start
 start:
-	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) $(OPTS)
+	$(databoxCMD) start $(defaultDataboxOptions) $(OPTS)
 
 
 .PHONY: stop
@@ -142,7 +142,7 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/me-box/driver-os-monitor.git,driver-os-monitor,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
-	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,0.5.2-dev)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 

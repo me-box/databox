@@ -41,7 +41,7 @@ func main() {
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
-	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
+	appStore := startCmd.String("manifestStore", "https://github.com/me-box/databox-manifest-store", "Override the default manifest store where manifests are loaded form (must be a repo on github)")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
 	uiImage := startCmd.String("core-ui", "databoxsystems/core-ui", "Override core ui image")
 	arbiterImage := startCmd.String("arbiter", "databoxsystems/arbiter", "Override arbiter image")
