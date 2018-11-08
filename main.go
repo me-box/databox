@@ -71,6 +71,7 @@ func main() {
 	wipeCmd := flag.NewFlagSet("wipe", flag.ExitOnError)
 	wipeCmdRemoveCerts := wipeCmd.Bool("removeCerts", false, "Force databox to remove the databox certificate")
 	wipeCmdYes := wipeCmd.Bool("y", false, "Yes I'm sure")
+	wipeCmdLeaveApps := wipeCmd.Bool("LeaveCmgrStore", false, "use this flag to if you will to wipe the data but leave the installed apps and driver the password will also remain unchanged")
 
 	flag.Parse()
 
@@ -188,7 +189,12 @@ func main() {
 		fmt.Println("you have 10 seconds to change your mind (ctrl+c to exit)")
 		fmt.Println("\n If you do not exit I will delete: \n")
 		volumes := listDockerVolumesMatching("-core-store")
+		var volumesToDelete []*types.Volume
 		for _, v := range volumes {
+			if *wipeCmdLeaveApps == true && v.Name == "container-manager-core-store" {
+				continue
+			}
+			volumesToDelete = append(volumesToDelete, v)
 			fmt.Println(v.Name)
 		}
 		time.Sleep(10 * time.Second)
@@ -198,7 +204,7 @@ func main() {
 
 		fmt.Println("Removing all app and driver data ....")
 
-		removeVolumes(volumes)
+		removeVolumes(volumesToDelete)
 
 		if *wipeCmdRemoveCerts {
 			fmt.Println("Removing certificates ....")
