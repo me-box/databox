@@ -16,9 +16,7 @@ Make sure Docker is installed and running before starting Databox.  Run the foll
 running.
 
 ```
-mkdir databox
-cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox start -sslHostName $(hostname)
 ```
 
 > Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
@@ -31,7 +29,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -t databoxsystems/databox:0.5.2 /databox stop
 ```
 
 # Development
@@ -40,13 +38,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystem
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
@@ -58,7 +56,7 @@ To get started all you need is a Dockerfile and a databox-manifest.json examples
 A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
 
 >>Images must be post fixed with -amd64 or -arm64v8 respectively.
->>The image must have the version tag that matches your running version of databox :0.5.1 or :latest for example.
+>>The image must have the version tag that matches your running version of databox :0.5.2 or :latest for example.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:
 ```
@@ -76,7 +74,7 @@ To develop on the platform and core components the databox start command allows 
 
 ```
 docker build databoxdev/arbiter .                                     # build your updated arbiter image
-make start OPTS=--release 0.5.1 --arbiter databoxdev/arbiter      # start databox using the new code
+make start OPTS=--release 0.5.2 --arbiter databoxdev/arbiter      # start databox using the new code
 ```
 
 # Databox Components
