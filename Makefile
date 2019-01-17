@@ -35,7 +35,7 @@ endif
 databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
-
+IPS := $(shell ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')
 
 defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-arbiter $(DEFAULT_REG)/arbiter \
@@ -47,7 +47,10 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-core-network-relay $(DEFAULT_REG)/core-network-relay \
 									-registry $(DEFAULT_REG) \
 									-release $(DATABOX_VERSION) \
-									-sslHostName $(shell hostname)
+									-sslHostName $(shell hostname) \
+									-ips '$(IPS)'
+
+
 
 .PHONY: all
 all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers publish-core publish-core-multiarch

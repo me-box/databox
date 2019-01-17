@@ -21,7 +21,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
-	libDatabox "github.com/me-box/lib-go-databox"
+	"github.com/me-box/lib-go-databox"
 )
 
 var path string
@@ -55,14 +55,16 @@ func main() {
 	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	sslHostName := startCmd.String("sslHostName", "", "Used to override the detected HostName for use in ssl cert.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Force databox to regenerate the databox root and certificate")
+	IPList := startCmd.String("ips", "", "A list of IP Addresses")
+
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
+
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
 
 	sdkCmd := flag.NewFlagSet("sdk", flag.ExitOnError)
 	startSDK := sdkCmd.Bool("start", false, "Use this to start the databox sdk")
 	sdkCmdRelease := sdkCmd.String("release", CURRENT_RELEASE, "Databox version to start, can uses tagged versions or latest")
 	sdkCmdRegistry := sdkCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
-
 	stopSDK := sdkCmd.Bool("stop", false, "Use this to stop the databox sdk")
 
 	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
@@ -103,7 +105,6 @@ func main() {
 		if *sslHostName != "" {
 			hostname = *sslHostName
 		}
-		ipv4s := removeIPv6addresses(getLocalInterfaceIps())
 
 		cpuArch := ""
 		if *arch != "" {
@@ -133,7 +134,7 @@ func main() {
 			DefaultAppStore:       *appStore,
 			EnableDebugLogging:    *enableLogging,
 			OverridePasword:       *startCmdPassword,
-			InternalIPs:           ipv4s,
+			InternalIPs:           strings.Fields(*IPList),
 			Hostname:              hostname,
 			Arch:                  cpuArch,
 		}
@@ -143,13 +144,13 @@ func main() {
 			libDatabox.Warn("Could not get external IP address, do you have network connectivity? ")
 			libDatabox.Warn("Try here for help https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/")
 			libDatabox.Warn("Continuing as external connectivity is not always needed ;-)")
-			opts.ExternalIP = ipv4s[0]
+			opts.ExternalIP = opts.InternalIPs[0]
 		} else {
 			opts.ExternalIP = externalIP
 		}
 
 		if *ReGenerateDataboxCertificates == true {
-			libDatabox.Info("Forcing regoration of Databox certificates")
+			libDatabox.Info("Forcing regeneration of Databox certificates")
 			volume := listDockerVolumesMatching("container-manager-certs")
 			removeVolumes(volume)
 		}
@@ -172,7 +173,7 @@ func main() {
 			StartSDK(*sdkCmdRegistry, *sdkCmdRelease)
 
 		} else if *stopSDK == true {
-			libDatabox.Info("Stoping Databox SDK")
+			libDatabox.Info("Stopping Databox SDK")
 			StopSDK()
 		} else {
 			sdkCmd.Usage()
@@ -218,8 +219,6 @@ func main() {
 
 		if *testCmdNetwork {
 
-			fmt.Println("Listing addresses")
-			fmt.Println(removeIPv6addresses(getLocalInterfaceIps()))
 			fmt.Println("Testing DNS")
 
 			adr, err := net.LookupHost("google.com")
@@ -272,7 +271,6 @@ func Start(opt *libDatabox.ContainerManagerOptions) {
 	libDatabox.ChkErrFatal(err)
 
 	createContainerManager(opt)
-
 }
 
 func Stop() {
@@ -437,10 +435,14 @@ func pullImage(image string, options *libDatabox.ContainerManagerOptions) {
 	if needToPull == true {
 		libDatabox.Info("Pulling Image " + image)
 		reader, err := dockerCli.ImagePull(context.Background(), image, types.ImagePullOptions{})
-		libDatabox.ChkErr(err)
-		io.Copy(ioutil.Discard, reader)
-		libDatabox.Info("Done pulling Image " + image)
-		reader.Close()
+		if err == nil {
+			io.Copy(ioutil.Discard, reader)
+			libDatabox.Info("Done pulling Image " + image)
+			reader.Close()
+		} else {
+			libDatabox.Info("Failed to pull " + image)
+			libDatabox.ChkErr(err)
+		}
 	}
 }
 
@@ -457,34 +459,6 @@ func removeContainer(name string) {
 		rerr := dockerCli.ContainerRemove(context.Background(), containers[0].ID, types.ContainerRemoveOptions{Force: true})
 		libDatabox.ChkErr(rerr)
 	}
-}
-
-func getLocalInterfaceIps() []string {
-	IPs := []string{}
-	ifaces, _ := net.Interfaces()
-	for _, i := range ifaces {
-		addrs, _ := i.Addrs()
-		for _, addr := range addrs {
-			switch v := addr.(type) {
-			case *net.IPNet:
-				IPs = append(IPs, v.IP.String())
-			case *net.IPAddr:
-				IPs = append(IPs, v.IP.String())
-			}
-		}
-	}
-	return IPs
-}
-
-func removeIPv6addresses(addresses []string) []string {
-	var filteredIPs []string
-	for _, ip := range addresses {
-		parsedIP := net.ParseIP(ip)
-		if parsedIP.To4() != nil {
-			filteredIPs = append(filteredIPs, ip)
-		}
-	}
-	return filteredIPs
 }
 
 func getExternalIP() (string, error) {
