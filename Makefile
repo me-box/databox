@@ -56,7 +56,6 @@ all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-cont
 publish: publish-core publish-core-multiarch
 
 .PHONY: all-local
-#all-local: build-linux-amd64 get-core-containers-src build-core-containers
 all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app-drivers build-core-containers
 
 .PHONY: all-local-core-only
@@ -122,6 +121,10 @@ define build-app-drivers
 	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-twitter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-spotify build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-bbc-iplayer build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
 
@@ -206,6 +209,8 @@ define publish-core
 	docker push $(DEFAULT_REG)/driver-os-monitor-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-spotify-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-bbc-iplayer-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-sensingkit-$(2):$(1)
 
 	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
@@ -251,6 +256,8 @@ update-manifest-store:
 	cp ./build/app-twitter-sentiment/databox-manifest.json ./build/databox-manifest-store/app-twitter-sentiment-manifest.json
 	cp ./build/app-light-graph/databox-manifest.json ./build/databox-manifest-store/app-light-graph-manifest.json
 	cp ./build/driver-twitter/databox-manifest.json ./build/databox-manifest-store/driver-twitter-manifest.json
+	cp ./build/driver-bbc-iplayer/databox-manifest.json ./build/databox-manifest-store/driver-bbc-iplayer-manifest.json
+	cp ./build/driver-spotify/databox-manifest.json ./build/databox-manifest-store/driver-driver-spotify-manifest.json
 	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
 	git -C ./build/databox-manifest-store push origin master
 
