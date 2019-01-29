@@ -50,8 +50,10 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers publish-core publish-core-multiarch
-#all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers
+
+.PHONY: publish
+publish: publish-core publish-core-multiarch
 
 .PHONY: all-local
 #all-local: build-linux-amd64 get-core-containers-src build-core-containers
