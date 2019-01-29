@@ -2,7 +2,7 @@
 DATABOX_VERSION=0.5.2
 
 #Change where images a pulled from and pushed to when using this script.
-DEFAULT_REG=toshdatabox
+DEFAULT_REG=databoxsystems
 
 # Pass options to the build comands overide OPTS=--no-cache or --flushslas to build without caching or flush the SLA on cmgr startup
 #OPTS=
