@@ -55,6 +55,7 @@ func main() {
 	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	sslHostName := startCmd.String("sslHostName", "", "Used to override the detected HostName for use in ssl cert.")
 	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Force databox to regenerate the databox root and certificate")
+	DevMounts := startCmd.String("devmount", "", `Mount a App or driver ContSrcPath to a HostSrcPath for easier development. Format [{ContName:"some-container-name","ContSrcPath":"/src","HostSrcPath":"/some/path/on/host"},{ContName:"some-container-name","ContSrcPath":"/src","HostSrcPath":"/some/path/on/host"}]`)
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
 
@@ -136,6 +137,7 @@ func main() {
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
 			Arch:                  cpuArch,
+			DevMounts:             []libDatabox.DevMount{},
 		}
 
 		externalIP, err := getExternalIP()
@@ -152,6 +154,29 @@ func main() {
 			libDatabox.Info("Forcing regoration of Databox certificates")
 			volume := listDockerVolumesMatching("container-manager-certs")
 			removeVolumes(volume)
+		}
+
+		if *DevMounts != "" {
+			//unmarshal and check DevMounts
+			err := json.Unmarshal([]byte(*DevMounts), &opts.DevMounts)
+			if err != nil {
+				libDatabox.Err("Incorrectly formated devmount JSON object. " + err.Error())
+				return
+			}
+			//do we have all the info
+			for _, m := range opts.DevMounts {
+				if m.HostSrcPath == "" || m.ContSrcPath == "" || m.ContName == "" {
+					libDatabox.Err("Incorrectly formated devmount JSON object. ContName, HostSrcPath and ContSrcPath must be provided")
+					return
+				}
+			}
+			//does the HostSrcPath exist?
+			for _, m := range opts.DevMounts {
+				if stat, err := os.Stat(m.HostSrcPath); err == nil && stat.IsDir() {
+					libDatabox.Err("HostSrcPath must exist. " + err.Error())
+					return
+				}
+			}
 		}
 
 		Start(opts)
