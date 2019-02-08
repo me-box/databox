@@ -10,6 +10,7 @@ These instructions will get a copy of the Databox up and running on your local m
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
 
 > Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking. Also note that more than one CPU core must be allocated to the VM.
+> Note: requires ports 80 and 443 are not being used by other processes such as local web servers.
 
 ### Get started
 Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
