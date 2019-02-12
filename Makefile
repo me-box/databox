@@ -50,18 +50,16 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers
+all: build-linux-amd64 build-linux-arm64 get-containers-src build-core-containers build-app-drivers
 
 .PHONY: publish
 publish: publish-core publish-core-multiarch
 
 .PHONY: all-local
-all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app-drivers build-core-containers
+all-local: build-linux-amd64 build-linux-arm64 get-containers-src build-app-drivers build-core-containers
 
 .PHONY: all-local-core-only
-#all-local: build-linux-amd64 get-core-containers-src build-core-containers
-#all-local-core-only: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers
-all-local-core-only: build-linux-amd64 build-core-containers
+all-local-core-only: build-linux-amd64 build-linux-arm64 get-containers-src build-core-containers
 
 .PHONY: build
 build:
@@ -135,8 +133,8 @@ define gitPullorClone
 	git -C ./build/$(2) pull || git clone -b $(3) $(1) ./build/$(2)
 endef
 
-.PHONY: get-core-containers-src
-get-core-containers-src:
+.PHONY: get-containers-src
+get-containers-src:
 	mkdir -p build
 	#get the code
 	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,0.5.2-dev)
@@ -303,7 +301,7 @@ help:
 	$(info      all                       - Builds a local databox binary and an amd64 and arm6v8 docker image)
 	$(info |                            Options can be passed to the build command using OPTS=--no-cache)
 	$(info )
-	$(info      get-core-containers-src   - Clones or updates the lates datbox source code to the ./build directory)
+	$(info      get-containers-src   - Clones or updates the lates datbox source code to the ./build directory)
 	$(info )
 	$(info      build-core-containers     - Builds local x86 and arm64v8 containers for all the core-components)
 	$(info |                            This command also create the multiarch Docker mainfests)
