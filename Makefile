@@ -125,6 +125,8 @@ define build-app-drivers
 	make -C ./build/driver-spotify build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-bbc-iplayer build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-instagram build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
 
@@ -151,6 +153,7 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-bbc-iplayer.git,driver-bbc-iplayer,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-spotify.git,driver-spotify,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-instagram.git,driver-instagram,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/me-box/app-light-graph.git,app-light-graph,master)
@@ -213,6 +216,7 @@ define publish-core
 	docker push $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-spotify-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-bbc-iplayer-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-instagram-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-sensingkit-$(2):$(1)
 
 	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
@@ -260,6 +264,7 @@ update-manifest-store:
 	cp ./build/driver-twitter/databox-manifest.json ./build/databox-manifest-store/driver-twitter-manifest.json
 	cp ./build/driver-bbc-iplayer/databox-manifest.json ./build/databox-manifest-store/driver-bbc-iplayer-manifest.json
 	cp ./build/driver-spotify/databox-manifest.json ./build/databox-manifest-store/driver-driver-spotify-manifest.json
+	cp ./build/driver-instagram/databox-manifest.json ./build/databox-manifest-store/driver-driver-instagram-manifest.json
 	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
 	git -C ./build/databox-manifest-store push origin master
 
