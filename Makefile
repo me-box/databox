@@ -137,17 +137,17 @@ endef
 get-containers-src:
 	mkdir -p build
 	#get the code
-	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,0.5.2-dev)
+	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,master)
 	$(call gitPullorClone, https://github.com/me-box/core-network.git,core-network,master)
 	$(call gitPullorClone, https://github.com/me-box/core-store.git,core-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-arbiter.git,core-arbiter,master)
 	$(call gitPullorClone, https://github.com/me-box/core-export-service.git,core-export-service,master)
 
 	$(call gitPullorClone, https://github.com/me-box/app-os-monitor.git,app-os-monitor,master)
-	$(call gitPullorClone, https://github.com/me-box/driver-os-monitor.git,driver-os-monitor,0.5.2-dev)
-	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,0.5.2-dev)
+	$(call gitPullorClone, https://github.com/me-box/driver-os-monitor.git,driver-os-monitor,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-phillips-hue.git,driver-phillips-hue,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
-	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,0.5.2-dev)
+	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-bbc-iplayer.git,driver-bbc-iplayer,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-spotify.git,driver-spotify,master)
