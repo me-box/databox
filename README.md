@@ -10,15 +10,14 @@ These instructions will get a copy of the Databox up and running on your local m
 1) Requires Docker. Read [here](https://docs.docker.com/engine/installation/) for docker installation.
 
 > Note: currently supported platforms are Linux and MacOS. Running on other platforms is possible using a virtual machine running Linux with bridge mode networking. Also note that more than one CPU core must be allocated to the VM.
+> Note: requires ports 80 and 443 are not being used by other processes such as local web servers.
 
 ### Get started
 Make sure Docker is installed and running before starting Databox.  Run the following to get your databox up and
 running.
 
 ```
-mkdir databox
-cd databox
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox start -sslHostName $(hostname)
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox start -sslHostName $(hostname)
 ```
 
 > Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
@@ -31,7 +30,7 @@ Once it's started, point a web browser at <http://127.0.0.1> and follow the inst
 
 To stop databox and clean up,
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -t databoxsystems/databox:0.5.2 /databox stop
 ```
 
 # Development
@@ -40,13 +39,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystem
 
 The graphical SDK will allow you to quickly build and test simple databox apps. To start the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -start
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox sdk -start
 ```
 The SDK web UI is available at http://127.0.0.1:8086
 
 To stop the SDK run:
 ```
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t databoxsystems/databox:0.5.1 /databox sdk -stop
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox sdk -stop
 ```
 
 ## Developing apps and drivers without the SDK
@@ -57,26 +56,63 @@ To get started all you need is a Dockerfile and a databox-manifest.json examples
 
 A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
 
->>Images must be post fixed with -amd64 or -arm64v8 respectively.
->>The image must have the version tag that matches your running version of databox :0.5.1 or :latest for example.
+> Note: Images must be post fixed with -amd64 or -arm64v8 respectively.
+
+> Note: The image must have the version tag that matches your running version of databox :0.5.2 or :latest for example.
 
 If you would like to modify one of the currently available actual drivers you can do so by doing the following:
 ```
+git clone https://github.com/me-box/databox.git
+cd databox
 ./databox-install-component driver-os-monitor
 ```
+This will download and build the code on your machine and upload the Databox manifest to your local app store.
 
-This will download and build the code on your machine and upload the Databox manifest to your local app store. You can also use this with your repositories and forks using:
+You can also use this with your repositories and forks using:
 ```
 ./databox-install-component [GITHUB_USERNAME]/[GITHUB_REPONAME]
 ```
 
-## Developing core components
+## Setting up a full development clone of databox
 
-To develop on the platform and core components the databox start command allows you to replace the databoxsystems core images with your owen. For example to replace the arbiter.
+To build the full platform form source clone this repo:
 
 ```
-docker build databoxdev/arbiter .                                     # build your updated arbiter image
-make start OPTS=--release 0.5.1 --arbiter databoxdev/arbiter      # start databox using the new code
+git clone https://github.com/me-box/databox.git
+cd databox
+```
+
+To build the full platform for both amd64 and arm64v8:
+
+> Note: Multi arch builds only work on Docker for Mac experimental
+
+> Note: enable docker cli experimental features "experimental": "enabled" ~/.docker/config.json
+
+```
+make all
+```
+
+If your using docker on linux then you can build for a your architecture an using:
+
+```
+make all ARCH=[amd64 or arm64v8]
+```
+
+This will only build the specified architecture make sure it matches your cpu architecture. To run from your build artefacts
+
+```
+make start ARCH=[amd64 or arm64v8]
+```
+
+It is advised to also set **DEFAULT_REG=** to a registry that is not databoxsystems so you cam more easily identify and manage your build artefacts
+
+## Developing core components
+
+To develop on the platform and core components the databox start command allows you to replace the databoxsystems core images with your own. For example to replace the arbiter.
+
+```
+docker build -t databoxdev/arbiter:0.5.2 .                              # in your Arbiter source directory build your updated arbiter image
+make start OPTS=--release 0.5.2 --arbiter databoxdev/arbiter            # From the databox directory on the same host start databox using the new code
 ```
 
 # Databox Components
@@ -113,18 +149,6 @@ For writing a new driver or app for Databox, one needs [Databox APIs](./document
 * [lib-go-databox](https://github.com/me-box/lib-go-databox): Databox Go API library for building databox apps and drivers.
 #### API and System specifications
 Databox System Design document can be find [here](./documents/system_overview.md) and general API specifications are [here](./documents/api_specification.md).
-
-## Setting up a full development clone of databox
-
->> Multi arch builds only work on Docker for Mac experimental
->> enable docker cli experimental features "experimental": "enabled" ~/.docker/config.json
-```
-    make all ARCH=amd64 DEFAULT_REG=[your docker hub reg tag]
-```
-Or for amd64v8 platforms
-'''
-    make all ARCH=amd64v8 DEFAULT_REG=[your docker hub reg tag]
-'''
 
 ## Running the tests
 

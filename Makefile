@@ -1,5 +1,5 @@
 #The version of databox used in publish-core-containers-version
-DATABOX_VERSION=latest
+DATABOX_VERSION=0.5.2
 
 #Change where images a pulled from and pushed to when using this script.
 DEFAULT_REG=databoxsystems
@@ -32,7 +32,7 @@ endif
 ifdef ARCH
 ARCH_TMP=-$(ARCH)
 endif
-databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
+databoxCMD=docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t $(DEFAULT_REG)/databox$(ARCH_TMP):$(DATABOX_VERSION) /databox
 #databoxCMD=./bin/databox
 
 
@@ -50,17 +50,16 @@ defaultDataboxOptions=  -app-server $(DEFAULT_REG)/driver-app-store \
 									-sslHostName $(shell hostname)
 
 .PHONY: all
-all: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers build-app-drivers publish-core publish-core-multiarch
-#all: build build-linux-amd64 get-core-containers-src build-core-containers publish-core publish-core-multiarch
+all: build-linux-amd64 build-linux-arm64 get-containers-src build-core-containers build-app-drivers
+
+.PHONY: publish
+publish: publish-core publish-core-multiarch
 
 .PHONY: all-local
-#all-local: build-linux-amd64 get-core-containers-src build-core-containers
-all-local: build-linux-amd64 build-linux-arm64 get-core-containers-src build-app-drivers build-core-containers
+all-local: build-linux-amd64 build-linux-arm64 get-containers-src build-app-drivers build-core-containers
 
 .PHONY: all-local-core-only
-#all-local: build-linux-amd64 get-core-containers-src build-core-containers
-#all-local-core-only: build-linux-amd64 build-linux-arm64 get-core-containers-src build-core-containers
-all-local-core-only: build-linux-amd64 get-core-containers-src build-core-containers
+all-local-core-only: build-linux-amd64 build-linux-arm64 get-containers-src build-core-containers
 
 .PHONY: build
 build:
@@ -78,7 +77,7 @@ build-linux-arm64:
 
 .PHONY: start
 start:
-	$(databoxCMD) start --host-path $(shell pwd) $(defaultDataboxOptions) $(OPTS)
+	$(databoxCMD) start $(defaultDataboxOptions) $(OPTS)
 
 
 .PHONY: stop
@@ -120,6 +119,12 @@ define build-app-drivers
 	make -C ./build/app-light-graph build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 	$(ifeq($(2),arm64v8), sleep 2)
 	make -C ./build/driver-twitter build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-spotify build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-bbc-iplayer build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
+	$(ifeq($(2),arm64v8), sleep 2)
+	make -C ./build/driver-instagram build-$(2) VERSION=$(1) DEFAULT_REG=$(DEFAULT_REG)
 
 endef
 
@@ -128,8 +133,8 @@ define gitPullorClone
 	git -C ./build/$(2) pull || git clone -b $(3) $(1) ./build/$(2)
 endef
 
-.PHONY: get-core-containers-src
-get-core-containers-src:
+.PHONY: get-containers-src
+get-containers-src:
 	mkdir -p build
 	#get the code
 	$(call gitPullorClone, https://github.com/me-box/core-container-manager.git,core-container-manager,master)
@@ -144,6 +149,9 @@ get-core-containers-src:
 	$(call gitPullorClone, https://github.com/me-box/driver-tplink-smart-plug.git,driver-tplink-smart-plug,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-app-store.git,driver-app-store,master)
 	$(call gitPullorClone, https://github.com/me-box/core-ui.git,core-ui,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-bbc-iplayer.git,driver-bbc-iplayer,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-spotify.git,driver-spotify,master)
+	$(call gitPullorClone, https://github.com/me-box/driver-instagram.git,driver-instagram,master)
 	$(call gitPullorClone, https://github.com/me-box/driver-sensingkit.git,driver-sensingkit,master)
 
 	$(call gitPullorClone, https://github.com/me-box/app-light-graph.git,app-light-graph,master)
@@ -204,6 +212,9 @@ define publish-core
 	docker push $(DEFAULT_REG)/driver-os-monitor-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-phillips-hue-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-tplink-smart-plug-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-spotify-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-bbc-iplayer-$(2):$(1)
+	docker push $(DEFAULT_REG)/driver-instagram-$(2):$(1)
 	docker push $(DEFAULT_REG)/driver-sensingkit-$(2):$(1)
 
 	docker push $(DEFAULT_REG)/app-twitter-sentiment-$(2):$(1)
@@ -249,6 +260,9 @@ update-manifest-store:
 	cp ./build/app-twitter-sentiment/databox-manifest.json ./build/databox-manifest-store/app-twitter-sentiment-manifest.json
 	cp ./build/app-light-graph/databox-manifest.json ./build/databox-manifest-store/app-light-graph-manifest.json
 	cp ./build/driver-twitter/databox-manifest.json ./build/databox-manifest-store/driver-twitter-manifest.json
+	cp ./build/driver-bbc-iplayer/databox-manifest.json ./build/databox-manifest-store/driver-bbc-iplayer-manifest.json
+	cp ./build/driver-spotify/databox-manifest.json ./build/databox-manifest-store/driver-driver-spotify-manifest.json
+	cp ./build/driver-instagram/databox-manifest.json ./build/databox-manifest-store/driver-driver-instagram-manifest.json
 	git -C ./build/databox-manifest-store add -A  && git -C ./build/databox-manifest-store commit -m "Manifests updated $(shell data)"
 	git -C ./build/databox-manifest-store push origin master
 
@@ -287,7 +301,7 @@ help:
 	$(info      all                       - Builds a local databox binary and an amd64 and arm6v8 docker image)
 	$(info |                            Options can be passed to the build command using OPTS=--no-cache)
 	$(info )
-	$(info      get-core-containers-src   - Clones or updates the lates datbox source code to the ./build directory)
+	$(info      get-containers-src   - Clones or updates the lates datbox source code to the ./build directory)
 	$(info )
 	$(info      build-core-containers     - Builds local x86 and arm64v8 containers for all the core-components)
 	$(info |                            This command also create the multiarch Docker mainfests)

@@ -41,7 +41,7 @@ func main() {
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
 	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
-	appStore := startCmd.String("appstore", "https://store.iotdatabox.com", "Override the default appstore where manifests are loaded form")
+	appStore := startCmd.String("manifestStore", "https://github.com/me-box/databox-manifest-store", "Override the default manifest store where manifests are loaded form (must be a repo on github)")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
 	uiImage := startCmd.String("core-ui", "databoxsystems/core-ui", "Override core ui image")
 	arbiterImage := startCmd.String("arbiter", "databoxsystems/arbiter", "Override arbiter image")
@@ -54,7 +54,8 @@ func main() {
 	enableLogging := startCmd.Bool("v", false, "Enables verbose logging of the container-manager")
 	arch := startCmd.String("arch", "", "Used to override the detected cpu architecture only useful for testing arm64v8 support using docker for mac.")
 	sslHostName := startCmd.String("sslHostName", "", "Used to override the detected HostName for use in ssl cert.")
-	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Fore databox to regenerate the databox root and certificate")
+	ReGenerateDataboxCertificates := startCmd.Bool("regenerateCerts", false, "Force databox to regenerate the databox root and certificate")
+	DevMounts := startCmd.String("devmount", "", `Mount a App or driver ContSrcPath to a HostSrcPath for easier development. Format [{ContName:"some-container-name","ContSrcPath":"/src","HostSrcPath":"/some/path/on/host"},{ContName:"some-container-name","ContSrcPath":"/src","HostSrcPath":"/some/path/on/host"}]`)
 	stopCmd := flag.NewFlagSet("stop", flag.ExitOnError)
 	logsCmd := flag.NewFlagSet("logs", flag.ExitOnError)
 
@@ -67,6 +68,11 @@ func main() {
 
 	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
 	testCmdNetwork := testCmd.Bool("network", false, "Perform a network test")
+
+	wipeCmd := flag.NewFlagSet("wipe", flag.ExitOnError)
+	wipeCmdRemoveCerts := wipeCmd.Bool("removeCerts", false, "Force databox to remove the databox certificate")
+	wipeCmdYes := wipeCmd.Bool("y", false, "Yes I'm sure")
+	wipeCmdLeaveApps := wipeCmd.Bool("LeaveCmgrStore", false, "use this flag to if you will to wipe the data but leave the installed apps and driver the password will also remain unchanged")
 
 	flag.Parse()
 
@@ -131,6 +137,7 @@ func main() {
 			InternalIPs:           ipv4s,
 			Hostname:              hostname,
 			Arch:                  cpuArch,
+			DevMounts:             []libDatabox.DevMount{},
 		}
 
 		externalIP, err := getExternalIP()
@@ -145,12 +152,31 @@ func main() {
 
 		if *ReGenerateDataboxCertificates == true {
 			libDatabox.Info("Forcing regoration of Databox certificates")
-			os.RemoveAll(certsBasePath)
+			volume := listDockerVolumesMatching("container-manager-certs")
+			removeVolumes(volume)
 		}
 
-		//This dir must exist! if its not here the cm wont start as its used as the service attempts to bind mount it!
-		if _, err := os.Stat(certsBasePath); err != nil {
-			os.Mkdir(certsBasePath, 0700)
+		if *DevMounts != "" {
+			//unmarshal and check DevMounts
+			err := json.Unmarshal([]byte(*DevMounts), &opts.DevMounts)
+			if err != nil {
+				libDatabox.Err("Incorrectly formated devmount JSON object. " + err.Error())
+				return
+			}
+			//do we have all the info
+			for _, m := range opts.DevMounts {
+				if m.HostSrcPath == "" || m.ContSrcPath == "" || m.ContName == "" {
+					libDatabox.Err("Incorrectly formated devmount JSON object. ContName, HostSrcPath and ContSrcPath must be provided")
+					return
+				}
+			}
+			//does the HostSrcPath exist?
+			for _, m := range opts.DevMounts {
+				if stat, err := os.Stat(m.HostSrcPath); err == nil && stat.IsDir() {
+					libDatabox.Err("HostSrcPath must exist. " + err.Error())
+					return
+				}
+			}
 		}
 
 		Start(opts)
@@ -176,6 +202,41 @@ func main() {
 		} else {
 			sdkCmd.Usage()
 		}
+	case "wipe":
+		wipeCmd.Parse(os.Args[2:])
+
+		if *wipeCmdYes == false {
+			fmt.Println("No changes made you did not add the -y flag")
+			return
+		}
+
+		fmt.Println("This will wipe all databox data. Are you sure?")
+		fmt.Println("you have 10 seconds to change your mind (ctrl+c to exit)")
+		fmt.Println("\n If you do not exit I will delete: \n")
+		volumes := listDockerVolumesMatching("-core-store")
+		var volumesToDelete []*types.Volume
+		for _, v := range volumes {
+			if *wipeCmdLeaveApps == true && v.Name == "container-manager-core-store" {
+				continue
+			}
+			volumesToDelete = append(volumesToDelete, v)
+			fmt.Println(v.Name)
+		}
+		time.Sleep(10 * time.Second)
+
+		fmt.Println("Stoping Databox ...")
+		Stop()
+
+		fmt.Println("Removing all app and driver data ....")
+
+		removeVolumes(volumesToDelete)
+
+		if *wipeCmdRemoveCerts {
+			fmt.Println("Removing certificates ....")
+			volume := listDockerVolumesMatching("container-manager-certs")
+			removeVolumes(volume)
+		}
+
 	case "test":
 
 		testCmd.Parse(os.Args[2:])
@@ -217,6 +278,7 @@ func displayUsage() {
 			stop - stop databox
 			logs - view databox logs
 			sdk  - manage the databox sdk
+			wipe  - remove databox data
 
 		Use databox [cmd] help to see more options
 		`)
@@ -274,6 +336,24 @@ func Stop() {
 		}
 	}
 
+}
+
+func listDockerVolumesMatching(filterString string) []*types.Volume {
+	f := filters.NewArgs()
+	f.Add("name", filterString)
+	volumes, err := dockerCli.VolumeList(context.Background(), f)
+	libDatabox.ChkErrFatal(err)
+
+	return volumes.Volumes
+}
+
+func removeVolumes(volumes []*types.Volume) {
+	for _, v := range volumes {
+		fmt.Print("Removing ", v.Name, "....")
+		err := dockerCli.VolumeRemove(context.Background(), v.Name, true)
+		libDatabox.ChkErrFatal(err)
+		fmt.Println("   Done! ")
+	}
 }
 
 func createContainerManager(options *libDatabox.ContainerManagerOptions) {
