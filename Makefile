@@ -23,12 +23,12 @@ ifndef HOST_ARCH
 endif
 
 ifeq ($(uname_S),Linux)
-	HOST_PATFORM = Linux
+	HOST_PLATFORM = Linux
 endif
 ifeq ($(uname_S),Darwin)
-	HOST_PATFORM = Darwin
+	HOST_PLATFORM = Darwin
 endif
-ifndef HOST_PATFORM
+ifndef HOST_PLATFORM
 	$(error Host platform not supported)
 endif
 
@@ -62,7 +62,7 @@ DEFAULT_OPTS= \
 ## run targets
 ##
 .PHONY: all
-all: fetch-all build-all # fetch all source and build Databox
+all: fetch-all build-all cli # fetch all source and build Databox
 
 .PHONY: start
 start: # start Databox
@@ -82,6 +82,8 @@ test: # run Databox tests
 
 .PHONY: clean
 clean: stop # stop and remove Databox containers and images
+	go clean -x
+	$(RM) bin/databox
 	docker ps -a | grep $(DATABOX_REG) | cut -f 1 -d" " | xargs docker rm
 	docker images --filter=reference='$(DATABOX_REG)/*' | xargs docker rmi -f
 
@@ -125,7 +127,8 @@ fetch-drivers: $(patsubst %,%.fetch,$(DATABOX_DRIVERS))
 %.fetch:
 	@echo "=== $*"
 	mkdir -p build
-	git -C ./build/$* pull || git clone https://github.com/me-box/$*.git ./build/$*
+	git -C ./build/$* pull \
+	  || git clone https://github.com/me-box/$*.git ./build/$*
 
 ##
 ## build targets
@@ -140,23 +143,29 @@ build-apps: $(patsubst %,%.build,$(DATABOX_APPS))
 build-drivers: $(patsubst %,%.build,$(DATABOX_DRIVERS))
 .PHONY: %.build
 %.build:
-	make -C ./build/$* build$(TARGET_ARCH) VERSION=$(DATABOX_VERSION) DATABOX_REG=$(DATABOX_REG)
+	make -C ./build/$* build$(TARGET_ARCH) \
+	  VERSION=$(DATABOX_VERSION) DATABOX_REG=$(DATABOX_REG)
 
-# .PHONY: build-app
-# build-app: bin/databox
-# bin/databox: $(wildcard *.go)
-#	$(RM) -r ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
-#	go build -ldflags="-s -w" -o bin/databox *.go
+##
+## cli
+##
+cli: bin/databox # cli-linux-amd64 cli-linux-arm64v8
+bin/databox: $(wildcard *.go)
+ifeq ($(HOST_PLATFORM),Darwin)
+	brew install zmq
+endif
+	mkdir -p ${GOPATH}/src/github.com/docker
+	git -C ${GOPATH}/src/github.com/docker clone --depth 1 https://github.com/docker/docker
+	go get -d -v github.com/pkg/errors
+	go get -d -v golang.org/x/net/proxy
+	go get -d -v ./...
+	$(RM) -r ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
+	go build -ldflags="-s -w" -o bin/databox *.go
 
-
-# .PHONY: build-linux-amd64
-# build-linux-amd64:
-#	docker build -t $(DATABOX_REG)/databox-amd64:$(DATABOX_VERSION) -f ./Dockerfile-amd64 . $(OPTS)
-
-
-# .PHONY: build-linux-arm64
-# build-linux-arm64:
-#	docker build -t $(DATABOX_REG)/databox-arm64v8:$(DATABOX_VERSION) -f ./Dockerfile-arm64v8 . $(OPTS)
+.PHONY: cli-linux-%
+cli-linux-%:
+	docker build -t $(DATABOX_REG)/databox-$*:$(DATABOX_VERSION) \
+	  -f ./Dockerfile-$* . $(OPTS)
 
 ##
 ## publish targets
@@ -174,9 +183,12 @@ publish-drivers: $(patsubst %,%.publish,$(DATABOX_DRIVERS))
 	make -C ./build/$* publish-images
 %.manifest:
 	[ -d ./build/databox-manifest-store ] || make databox-manifest-store.fetch
-	docker manifest create --amend $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-amd64:$(DATABOX_VERSION) $*-arm64v8:$(DATABOX_VERSION)
-	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-amd64:$(DATABOX_VERSION) --os linux --arch amd64 || true
-	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-arm64v8:$(DATABOX_VERSION) --os linux --arch arm64 || true
+	docker manifest create --amend $(DATABOX_REG)/$*:$(DATABOX_VERSION) \
+	  $*-amd64:$(DATABOX_VERSION) $*-arm64v8:$(DATABOX_VERSION)
+	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) \
+	  $*-amd64:$(DATABOX_VERSION) --os linux --arch amd64 || true
+	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) \
+	  $*-arm64v8:$(DATABOX_VERSION) --os linux --arch arm64 || true
 	docker manifest push --purge $(DATABOX_REG)/$*:$(DATABOX_VERSION)
 %.publish: %.push %.manifest
 	cp ./build/$*/databox-manifest.json ./build/databox-manifest-store/$*-manifest.json
