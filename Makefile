@@ -84,8 +84,11 @@ test: # run Databox tests
 clean: stop # stop and remove Databox containers and images
 	go clean -x
 	$(RM) bin/databox
+
+.PHONY: distclean
+distclean: clean
 	docker ps -a | grep $(DATABOX_REG) | cut -f 1 -d" " | xargs docker rm
-	docker images --filter=reference='$(DATABOX_REG)/*' | xargs docker rmi -f
+	docker images -q --filter=reference='$(DATABOX_REG)/*' | xargs docker rmi -f
 
 ##
 ## components
