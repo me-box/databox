@@ -113,13 +113,6 @@ DATABOX_DRIVERS = \
 ##
 ## fetch source targets
 ##
-define fetch-target # $1==name
-	@echo "=== $(1)"
-	mkdir -p build
-	git -C ./build/$(1) pull || git clone https://github.com/me-box/$(1).git ./build/$(1)
-
-endef
-
 .PHONY: fetch-all
 fetch-all: fetch-core fetch-apps fetch-drivers
 .PHONY: fetch-core
@@ -130,16 +123,13 @@ fetch-apps: $(patsubst %,%.fetch,$(DATABOX_APPS))
 fetch-drivers: $(patsubst %,%.fetch,$(DATABOX_DRIVERS))
 .PHONY: %.fetch
 %.fetch:
-	$(call fetch-target,$*)
+	@echo "=== $*"
+	mkdir -p build
+	git -C ./build/$* pull || git clone https://github.com/me-box/$*.git ./build/$*
 
 ##
 ## build targets
 ##
-define build-target # $1==target
-	make -C ./build/$(1) build$(TARGET_ARCH) VERSION=$(DATABOX_VERSION) DATABOX_REG=$(DATABOX_REG)
-
-endef
-
 .PHONY: build-all
 build-all: build-core build-apps build-drivers
 .PHONY: build-core
@@ -150,8 +140,7 @@ build-apps: $(patsubst %,%.build,$(DATABOX_APPS))
 build-drivers: $(patsubst %,%.build,$(DATABOX_DRIVERS))
 .PHONY: %.build
 %.build:
-	$(call build-target,$*)
-
+	make -C ./build/$* build$(TARGET_ARCH) VERSION=$(DATABOX_VERSION) DATABOX_REG=$(DATABOX_REG)
 
 # .PHONY: build-app
 # build-app: bin/databox
@@ -182,10 +171,9 @@ publish-apps: $(patsubst %,%.publish,$(DATABOX_APPS))
 publish-drivers: $(patsubst %,%.publish,$(DATABOX_DRIVERS))
 .PHONY: %.push
 %.push:
-	docker push $(DATABOX_REG)/$*-amd64:$(DATABOX_VERSION) || true
-	docker push $(DATABOX_REG)/$*-arm64v8:$(DATABOX_VERSION) || true
+	make -C ./build/$* publish-images
 %.manifest:
-	$(call fetch-target,databox-manifest-store)
+	[ -d ./build/databox-manifest-store ] || make databox-manifest-store.fetch
 	docker manifest create --amend $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-amd64:$(DATABOX_VERSION) $*-arm64v8:$(DATABOX_VERSION)
 	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-amd64:$(DATABOX_VERSION) --os linux --arch amd64 || true
 	docker manifest annotate $(DATABOX_REG)/$*:$(DATABOX_VERSION) $*-arm64v8:$(DATABOX_VERSION) --os linux --arch arm64 || true
