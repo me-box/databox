@@ -20,7 +20,7 @@ running.
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host -t databoxsystems/databox:0.5.2 /databox start -sslHostName $(hostname)
 ```
 
-> Note: arm64v8 Platforms must be running a 64 bit version of linux (Alpine 3.8 aarch64)[https://alpinelinux.org/downloads/] or (HypriotOS/arm64)[https://github.com/DieterReuter/image-builder-rpi64/releases]
+> Note: arm64v8 Platforms must be running a 64 bit version of linux [Alpine 3.8 aarch64](https://alpinelinux.org/downloads/) or [HypriotOS/arm64](https://github.com/DieterReuter/image-builder-rpi64/releases)
 
 The above starts Databox using pre-build images published on [Docker hub](<https://hub.docker.com/r/databoxsystems>) and runs Databox on your local machine.
 
@@ -54,7 +54,7 @@ It is possible to develop Databox apps and driver without the SDK. Currently, [P
 
 To get started all you need is a Dockerfile and a databox-manifest.json examples can be found in the libraries '/samples' directories. To make your app available to install locally on your databox you will need to upload the app-store driver and use `docker build -t [your-app-name] .`. Once the manifest is uploaded and the image has built then you should be up to install the app on your local Databox.
 
-A good place to get started is the [databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
+A good place to get started is the [Databox quickstart repo](https://github.com/me-box/databox-quickstart/) which has all you need to develop apps and drivers and a small tutorial.
 
 > Note: Images must be post fixed with -amd64 or -arm64v8 respectively.
 
@@ -154,7 +154,6 @@ Databox System Design document can be find [here](./documents/system_overview.md
 
 ```
 make test
-
 ```
 For more details, have a look [here](./TESTING.md).
 
@@ -181,13 +180,8 @@ The Databox project welcomes contributions via pull requests see [CONTRIBUTING.m
 
 ```
 EP/N028260/1, Databox: Privacy-Aware Infrastructure for Managing Personal Data
-
 EP/N028260/2, Databox: Privacy-Aware Infrastructure for Managing Personal Data
-
 EP/N014243/1, Future Everyday Interaction with the Autonomous Internet of Things
-
 EP/M001636/1, Privacy-by-Design: Building Accountability into the Internet of Things (IoTDatabox)
-
 EP/M02315X/1, From Human Data to Personal Experience
-
 ```
