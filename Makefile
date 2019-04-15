@@ -99,7 +99,9 @@ DATABOX_CORE = \
   core-export-service \
   core-network \
   core-store \
-  core-ui
+  core-ui \
+	core-logger
+	
 DATABOX_APPS = \
   app-light-graph \
   app-os-monitor \
