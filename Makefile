@@ -101,7 +101,7 @@ DATABOX_CORE = \
   core-store \
   core-ui \
 	core-logger
-	
+
 DATABOX_APPS = \
   app-light-graph \
   app-os-monitor \
@@ -115,7 +115,8 @@ DATABOX_DRIVERS = \
   driver-sensingkit \
   driver-spotify \
   driver-tplink-smart-plug \
-  driver-twitter
+  driver-twitter \
+	driver-truelayer
 
 ##
 ## fetch source targets
