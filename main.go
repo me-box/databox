@@ -28,7 +28,7 @@ var path string
 var dockerCli *client.Client
 
 const certsBasePath = "./certs"
-const CURRENT_RELEASE = "0.5.2"
+const CURRENT_RELEASE = "0.5.3"
 const DEFAULT_REGISTRY = "databoxsystems"
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 	startCmdRelease := startCmd.String("release", CURRENT_RELEASE, "Databox version to start, can uses tagged versions or latest")
 	startCmdRegistryHosts := startCmd.String("registryHost", "docker.io", "Override the default registry host, server where images are pulled form")
 	startCmdRegistry := startCmd.String("registry", DEFAULT_REGISTRY, "Override the default registry path, where images are pulled form")
-	startCmdPassword := startCmd.String("password", "", "Override the password if you dont want an auto generated one. Mainly for testing")
+	startCmdPassword := startCmd.String("password", "", "Override the password if you don't want an auto generated one. Mainly for testing")
 	appStore := startCmd.String("manifestStore", "https://github.com/me-box/databox-manifest-store", "Override the default manifest store where manifests are loaded form (must be a repo on github)")
 	cmImage := startCmd.String("cm", "databoxsystems/container-manager", "Override container-manager image")
 	uiImage := startCmd.String("core-ui", "databoxsystems/core-ui", "Override core ui image")
