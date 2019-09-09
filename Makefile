@@ -100,7 +100,7 @@ DATABOX_CORE = \
   core-network \
   core-store \
   core-ui \
-	core-logger
+  core-logger
 
 DATABOX_APPS = \
   app-light-graph \
@@ -164,6 +164,11 @@ endif
 	git -C ${GOPATH}/src/github.com/docker clone --depth 1 https://github.com/docker/docker
 	go get -d -v github.com/pkg/errors
 	go get -d -v golang.org/x/net/proxy
+	go get -d -v github.com/pborman/uuid
+	go get -d -v golang.org/x/tools/go/buildutil
+	go get -d -v golang.org/x/tools/go/loader
+	go get -d -v golang.org/x/tools/go/ssa
+	go get -d -v golang.org/x/tools/go/ssa/ssautil
 	go get -d -v ./...
 	$(RM) -r ${GOPATH}/src/github.com/docker/docker/vendor/github.com/docker/go-connections > /dev/null
 	go build -ldflags="-s -w" -o bin/databox *.go

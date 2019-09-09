@@ -12,9 +12,6 @@ RUN apk --no-cache add --update \
 
 ENV GOPATH /
 
-# RUN mkdir -p /src/github.com/docker \
-#     && git -C /src/github.com/docker clone --depth 1 https://github.com/docker/docker
-
 COPY *.go /
 COPY Makefile Makefile
 RUN make bin/databox
