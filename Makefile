@@ -155,10 +155,11 @@ build-drivers: $(patsubst %,%.build,$(DATABOX_DRIVERS))
 ##
 ## cli
 ##
-cli: bin/databox # cli-linux-amd64 cli-linux-arm64v8
+cli: cli-linux-amd64 cli-linux-arm64v8
+
 bin/databox: $(wildcard *.go)
 ifeq ($(HOST_PLATFORM),Darwin)
-	brew install zmq
+	#brew install zmq
 endif
 	mkdir -p ${GOPATH}/src/github.com/docker
 	git -C ${GOPATH}/src/github.com/docker clone --depth 1 https://github.com/docker/docker
