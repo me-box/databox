@@ -161,6 +161,135 @@ For more details, have a look [here](./TESTING.md).
 
 The databox project welcomes contributions via pull requests see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information. A good start is to look at the current [issues](https://github.com/me-box/databox/issues) and [forking](https://github.com/me-box/databox#fork-destination-box) the databox repo and fixing bugs/issues and submitting a pull request. Read more on Fork and Pull [here](https://help.github.com/articles/fork-a-repo/).
 
+
+## Published work
+--------------
+
+*   Fan Mo, Ali Shahin Shamsabadi, Kleomenis Katevas, Soteris Demetriou, Ilias Leontiadis, Andrea Cavallaro, Hamed Haddadi, “DarkneTZ: Towards Model Privacy at the Edge using Trusted Execution Environments”, 18th ACM International Conference on Mobile Systems, Applications, and Services ( [MobiSys 2020](https://www.sigmobile.org/mobisys/2020/) ) June 2020, Toronto, Canada. (Paper available on [ArXiv](https://arxiv.org/abs/2004.05703) , [Code](https://github.com/mofanv/darknetz) )
+
+*   Ali Shahin Shamsabadi, Adria Gascon, Hamed Haddadi and Andrea Cavallaro, “PrivEdge: From Local to Distributed Private Training and Prediction”, IEEE Transactions on Information Forensics & Security, 2020, DOI:10.1109/TIFS.2020.2988132. (Paper available on [ArXiv](https://arxiv.org/abs/2004.05574) , [Code](https://github.com/smartcameras/PrivEdge) )
+
+*   Yuchen Zhao, Hamed Haddadi, Severin Skillman, Shirin Enshaeifar, Payam Barnaghi, “Privacy-preserving Activity and Health Monitoring on Databox”, the 3rd International Workshop on Edge Systems, Analytics and Networking ( [EdgeSys 2020](https://edge-sys.github.io/2020/index.html) ), in conjunction with ACM EuroSys 2020, April 2020, Heraklion, Greece.
+
+*   Anna Maria Mandalari, Roman Kolcun, Hamed Haddadi, Daniel J. Dubois, David Choffnes, “Towards Automatic Identification and Blocking of Non-Critical IoT Traffic Destinations”, Workshop on Technology and Consumer Protection ( [ConPro ’20](https://www.ieee-security.org/TC/SPW2020/ConPro/) ), Co-located with the 41th IEEE Symposium on Security and Privacy, May 21, 2020, San Francisco, CA. (Paper available on ArXiv )
+
+*   Seyed Ali Osia, Ali Shahin Shamsabadi, Sina Sajadmanesh, Ali Taheri, Kleomenis Katevas, Hamid R. Rabiee, Nicholas D. Lane, Hamed Haddadi, “A Hybrid Deep Learning Architecture for Privacy-Preserving Mobile Analytics”, IEEE Internet of Things Journal, 2020. ( [paper](https://arxiv.org/abs/1703.02952) , [Code](https://github.com/aliosia/DeepPrivInf2017) )
+
+*   Mohammad Malekzadeh, Richard G. Clegg, Andrea Cavallaro, Hamed Haddadi, “Privacy and Utility Preserving Sensor-Data Transformations”, Pervasive and Mobile Computing (PMC), 2020. (Paper Available on [ArXiv](https://arxiv.org/abs/1911.05996) ).
+
+*   Poonam Yadav, Vadim Safronov, and Richard Mortier. 2019. Enforcing accountability in Smart built-in IoT environment using MUD. In _Proceedings of the 6th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation_ ( _BuildSys ’19_ ). Association for Computing Machinery, New York, NY, USA, 368–369. DOI:https://doi.org/10.1145/3360322.3361004
+
+*   Ranya Aloufi, Hamed Haddadi, David Boyle, “Emotionless: Privacy-Preserving Speech Analysis for Voice Assistants”, in [Privacy Preserving Machine Learning](https://ppml-workshop.github.io/ppml/) , ACM CCS 2019 Workshop, November 2019, London, UK. (Available on [ArXiv](https://arxiv.org/abs/1908.03632) , Articles on [Vice](https://www.vice.com/en_us/article/ne8bxd/ai-that-hides-your-emotions-from-other-ai-alexa-siri-google) , [Medium](https://medium.com/syncedreview/how-to-hide-your-feelings-from-ai-voice-assistants-2db516d9e2d7) )
+
+*   Ranya Aloufi, Hamed Haddadi, David Boyle, “Emotion Filtering at the Edge”, 1st Workshop on Machine Learning on Edge in Sensor Systems (Sensys-ML), In conjunction with ACM SenSys 2019, November 10, 2019, New York, NY, USA.
+
+*   Jingjing Ren, Daniel J. Dubois, David Choffnes, Anna Maria Mandalari, Roman Kolcun, Hamed Haddadi, “Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach”, in ACM Internet Measurement Conference 2019, ( [IMC 2019](https://conferences.sigcomm.org/imc/2019/) ), October, 2019, Amsterdam, Netherlands.
+
+*   Tom Lodge & Andy Crabtree (2019) Privacy Engineering for Domestic IoT: Enabling Due Diligence, Sensors vol.19 (20), article 4380. [https://www.mdpi.com/1424-8220/19/20/4380/htm](https://www.mdpi.com/1424-8220/19/20/4380/htm) 
+
+*   Neelima Sailaja, James Colley, Andy Crabtree, Adrian Gradinar, Paul Coulton, Ian Forrester, Lianne Kerlin and Phil Stenton (2019) The Living Room of the Future, Proceedings of the ACM International Conference on Interactive Experiences for Television and Online Video, pp. 95-107, ACM Press. [https://nottingham-repository.worktribe.com/output/2329205](https://nottingham-repository.worktribe.com/output/2329205)
+
+*   Seyed Ali Osia, Ali Taheri, Ali Shahin Shamsabadi, Kleomenis Katevas, Hamed Haddadi, Hamid R. Rabiee, “Deep Private-Feature Extraction”, IEEE Transactions on Knowledge and Data Engineering, 2019, DOI: 10.1109/TKDE.2018.2878698. (Available on [ArXiv](https://arxiv.org/abs/1802.03151) , [Code](https://github.com/aliosia/DPFE) )
+
+*   Poonam Yadav, Qi Li, Anthony Brown, Richard Mortier, “Network Service Dependencies in Commodity Internet-of-Things Devices”, ACM/IEEE International Conference on Internet of Things Design and Implementation ( [IoTDI 2019](http://conferences.computer.org/iotDI/2019/) ), Available on [ArXiv](https://arxiv.org/abs/1902.09647)
+
+*   Seyed Ali Osia, Ali Taheri, Ali Shahin Shamsabadi, Kleomenis Katevas, Hamed Haddadi, Hamid R. Rabiee, “Deep Private-Feature Extraction”, IEEE Transactions on Knowledge and Data Engineering, 2019. (Available on [ArXiv](https://arxiv.org/abs/1802.03151) , [Code](https://github.com/aliosia/DPFE) )
+
+*   Mohammad Malekzadeh, Richard G. Clegg, Andrea Cavallaro, Hamed Haddadi, “Mobile Sensor Data Anonymization”, ACM/IEEE International Conference on Internet of Things Design and Implementation ( [IoTDI 2019](http://conferences.computer.org/iotDI/2019/) ), Available on [ArXiv](https://arxiv.org/abs/1810.11546) , [Code and Dataset](https://github.com/mmalekzadeh/motion-sense)
+
+*   John Moore, Andres Arcia-Moret, Poonam Yadav, Richard Mortier, Anthony Brown, Derek McAuley, Andy Crabtree, Chris Greenhalgh, Hamed Haddadi, Yousef Amar, “Zest: REST over ZeroMQ”, The Third Workshop on Security, Privacy and Trust in the Internet of Things, In conjunction with IEEE PERCOM 2019, March 11 -15, 2019, Kyoto, Japan. ( [Paper](https://haddadi.github.io/papers/zest2019.pdf) )
+
+*   Poonam Yadav, John Moore, Qi Li, Richard Mortier, Anthony Brown, Andy Crabtree, Chris Greenhalgh, Derek McAuley, Yousef Amar, Ali Shahin Shamsabadi, Hamed Haddadi, “Providing Occupancy as a Service with Databox”, in The 1st ACM International Workshop on Smart Cities and Fog Computing (CitiFog’18), November 4, 2018, Shenzhen, China.  https:// doi.org/ 10.1145/ 3277893.3277894  ( [Paper](https://haddadi.github.io/papers/citifog18-final7.pdf) )
+
+*   Urquhart, L., Lodge, T. and Crabtree, A. (2018) “Demonstrably doing accountability in the Internet of Things”, International Journal of Law and Technology, vol. 27 (1), pp. 1-27.
+
+*   Lodge, T., Crabtree, A. and Brown, A. (2018) “IoT app development: supporting data protection by design and default”, Proceedings of UbiComp ‘18, pp. 901-910, Singapore, ACM Press. [https://nottingham-repository.worktribe.com/output/1234975/iot-app-development-supporting-data-protection-by-design-and-default](https://nottingham-repository.worktribe.com/output/1234975/iot-app-development-supporting-data-protection-by-design-and-default)
+
+*   Ali Shahin Shamsabadi, Hamed Haddadi, Andrea Cavallaro, “Distributed One-class Learning”,  [IEEE International Conference on Image Processing](https://2018.ieeeicip.org/) , October 7-10, 2018, Athens, Greece. Available on  [ArXiv](https://arxiv.org/abs/1802.03583)
+
+*   Mohammad Malekzadeh, Richard G. Clegg, Andrea Cavallaro, Hamed Haddadi, “Protecting Sensory Data against Sensitive Inferences”, in proceedings of the [1st Workshop on Privacy by Design in Distributed Systems](http://www.gsd.inesc-id.pt/~p2ds/) , co-located with [Eurosys 2018](http://eurosys2018.org/) , Porto, Portugal, April 2018. (Available on [ArXiv](https://arxiv.org/abs/1802.07802) , February 2018. ( [Dataset](https://github.com/mmalekzadeh/motion-sense) ))
+
+*   Yousef Amar, Hamed Haddadi, Richard Mortier, “An Information-Theoretic Approach to Time-Series Data Privacy”, in proceedings of the [1st Workshop on Privacy by Design in Distributed Systems](http://www.gsd.inesc-id.pt/~p2ds/) , co-located with [Eurosys 2018](http://eurosys2018.org/) , Porto, Portugal, April 2018.
+
+*   Seyed Ali Osia, Ali Shahin Shamsabadi, Ali Taheri, Hamid R. Rabiee, Hamed Haddadi, “Private and Scalable Personal Data Analytics using Hybrid Edge-Cloud Deep Learning”, [IEEE Computer Magazine](https://publications.computer.org/computer-magazine/) Special Issue on Mobile and Embedded Deep Learning, April 2018. ( [Paper](https://haddadi.github.io/papers/ieeeComputer2018hybrid.pdf) )
+
+*   Hamed Haddadi, Vassilis Christophides, Renata Teixeira, Kenjiro Cho, Shigeya Suzuki and Adrian Perrig, “SIOTOME: An Edge-ISP Collaborative Architecture for IoT Security”, in proceedings of the 1st International Workshop on Security and Privacy for the Internet-of-Things ( [IoTSec](https://synercys.github.io/iotsec/) ), co-located with the 3rd ACM/IEEE International Conference on Internet of Things Design & Implementation ( [IoTDI](http://conferences.computer.org/IoTDI/) ), April 2018, Orlando, Florida, USA. ( [Paper](https://haddadi.github.io/papers/SIOTOME_2018iot.pdf) , [Talk](https://haddadi.github.io/talks/IotDI18_SIOTOME.pdf) )
+
+*   Sandra Servia-Rodriguez, Liang Wang, Jianxin R. Zhao, Richard Mortier, Hamed Haddadi, “Personal Model Training under Privacy Constraints”, The 3rd [ACM/IEEE International Conference on Internet-of-Things Design and Implementation](http://conferences.computer.org/IoTDI/) , April 2018, Orlando, Florida. ( [paper](https://arxiv.org/abs/1703.00380) , [Talk](https://haddadi.github.io/talks/IotDI18_PrivModels.pdf) )
+
+*   Mohammad Malekzadeh, Richard G. Clegg, Hamed Haddadi, “Replacement AutoEncoder: A Privacy-Preserving Algorithm for Sensory Data Analysis”, The 3rd [ACM/IEEE International Conference on Internet-of-Things Design and Implementation](http://conferences.computer.org/IoTDI/) , April 2018, Orlando, Florida. ( [paper](https://haddadi.github.io/papers/RAE2018IoTDI.pdf) , [Code](https://github.com/mmalekzadeh/replacement-autoencoder) , [Talk](https://haddadi.github.io/talks/IotDI18_RAE.pdf) )
+
+*   Andy Crabtree, Tom Lodge, James Colley, Chris Greenhalgh, Kevin Glover, Hamed Haddadi, Yousef Amar, Richard Mortier, Qi Li, John Moore, Liang Wang, Poonam Yadav, Jianxin Zhao, Anthony Brown, Lachlan Urquhart, Derek McAuley, “ [Building Accountability into the Internet of Things: The IoT Databox Model](https://link.springer.com/article/10.1007%2Fs40860-018-0054-5) ”, Journal of Reliable Intelligent Environments, Springer, 2018, DOI 10.1007/s40860-018-0054-5. ( [paper](https://haddadi.github.io/papers/JREI_IoTDatabox2018.pdf) )
+
+*   Alan Chamberlain, Andy Crabtree, Hamed Haddadi, Richard Mortier, “ [Special theme on privacy and the Internet of things](https://link.springer.com/article/10.1007%2Fs00779-017-1066-5) ”, Personal and Ubiquitous Computing, August 2017 ( [DOI](https://doi.org/10.1007/s0077) ).
+
+*   Peter Tolmie and Andy Crabtree (2017) “The practical politics of sharing”, Personal and Ubiquitous Computing, Online First.
+DOI: 10.1007/s00779-017-1071-8
+Open access: [https://link.springer.com/article/10.1007/s00779-017-1071-8](https://link.springer.com/article/10.1007/s00779-017-1071-8)
+    
+*   Andy Crabtree, Peter Tolmie and Will Knight, W. (2017) “Repacking privacy for a networked world”, Computer Supported Cooperative Work: The Journal of Collaborative Computing and Work Practices, vol. 26 (1), pp. 453-488.
+DOI: 10.1007/s10606-017-9276-y
+Open access: [https://link.springer.com/article/10.1007/s10606-017-9276-y](https://link.springer.com/article/10.1007/s10606-017-9276-y)
+    
+*   Yousef Amar, Hamed Haddadi and Richard Mortier (2017) “ Route-based authorization and discovery for personal data” (Poster),  Proceedings of the 12 th EuroSys Conference, April 23-26, Belgrade, ACM.
+Open access: [https://eurodw17.kaust.edu.sa/abstracts/eurodw17-final3.pdf](https://eurodw17.kaust.edu.sa/abstracts/eurodw17-final3.pdf)
+    
+*   Jianxin Zhao, Richard Mortier, Hamed Haddadi and Jon Crowcroft (2017) “Towards Security in Distributed Home System”  (Poster), Proceedings of the 12 th EuroSys Conference (Poster),  April 23-26,  Belgrade, ACM.
+Open access: [https://eurodw17.kaust.edu.sa/abstracts/eurodw17-final9.pdf](https://eurodw17.kaust.edu.sa/abstracts/eurodw17-final9.pdf)
+    
+*   Mohammad Malekzadeh, Hamed Haddadi,   [Towards Privacy-Preserving IoT Data Publishing ](https://eurodw17.kaust.edu.sa/abstracts/eurodw17-final15.pdf) (Poster), Proceedings of the 12 th EuroSys Conference (Poster),  April 23-26,  Belgrade, ACM.
+
+*   Andy Crabtree, Tom Lodge, James Colley, Chris Greenghalgh and Richard Mortier (2017) “Accountable IoT? Outline of the Databox model”, International Symposium on a World of Wireless, Mobile, and Multimedia Networks, pp. 1-6, Macau, IEEE
+**DOI:** 10.1109/WoWMoM.2017.7974335
+Open access: [https://eprints.nottingham.ac.uk/42233/1/IoT\_SoS.pdf](https://eprints.nottingham.ac.uk/42233/1/IoT_SoS.pdf)
+    
+*   Richard Mortier, Jianxin Zhao, Jon Crowcroft, Liang Wang, Qi Li, Hamed Haddadi, Yousef Amar, Andy Crabtree, James Colley, Tom Lodge, Tosh Brown, Derek McAuley, Chris Greenhalgh, “Personal Data Management with the Databox: What’s Inside the Box?”, ACM CoNEXT Cloud-Assisted Networking workshop ( [CAN 2016](http://conferences2.sigcomm.org/co-next/2016/#%21/canworkshop) ), December 12, 2016, Irvine, California. ( [paper](http://www.eecs.qmul.ac.uk/%7Ehamed/papers/CAN2016Databox.pdf) )
+
+*   Andy Crabtree, Tom Lodge, James Colley, Chris Greenhalgh, Richard Mortier, Hamed Haddadi “ [Enabling the New Economic Actor: Data Protection, the Digital Economy, and the Databox](http://link.springer.com/article/10.1007/s00779-016-0939-3) “, [Springer Personal and Ubiquitous Computing (PUC)](http://www.springer.com/computer/hci/journal/779) , 2016. ( [paper](http://www.eecs.qmul.ac.uk/%7Ehamed/papers/databox2016.pdf) )
+
+*   Charith Perera, Susan Wakenshaw, Tim Baarslag, Hamed Haddadi, Arosha Bandara, Richard Mortier, Andy Crabtree, Irene Ng, Derek McAuley and Jon Crowcroft (2016) “Valorising the IoT Databox: creating value for everyone”, Transactions on Emerging Technologies, vol. 28 (1), article 38.  DOI: 10.1002/ett.3125 Open access: [http://onlinelibrary.wiley.com/doi/10.1002/ett.3125/full](http://onlinelibrary.wiley.com/doi/10.1002/ett.3125/full)
+    
+*   Richard Mortier, Hamed Haddadi, Tristan Henderson, Derek McAuley, Jon Crowcroft, Andy Crabtree, “ [Human-Data Interaction](https://www.interaction-design.org/literature/book/the-encyclopedia-of-human-computer-interaction-2nd-ed/human-data-interaction) “,  [Encyclopedia of Human Computer Interaction, 2nd Ed](https://www.interaction-design.org/literature/book/the-encyclopedia-of-human-computer-interaction-2nd-ed) , October 2016. ( [paper](http://www.eecs.qmul.ac.uk/%7Ehamed/papers/Human-Data-Interaction.pdf) )
+
+*   Andy Crabtree, Tom Lodge, James Colley, Chris Greenhalgh, Richard Mortier and Hamed Haddadi (2016) “Enabling the new economic actor: data protection, the digital economy, and the Databox”, Personal and Ubiquitous Computing, vol. 20 (6), pp. 947-957.  DOI: 10.1007/s00779-016-0939-3
+Open access: [https://link.springer.com/article/10.1007/s00779-016-0939-3](https://link.springer.com/article/10.1007/s00779-016-0939-3)
+    
+*   Yousef Amar, Hamed Haddadi, Richard Mortier, “Privacy-Aware Infrastructure for Managing Personal Data”, Demo and extended abstract,   [ACM SIGCOMM 2016](http://conferences.sigcomm.org/sigcomm/2016/) , August 2016, Florianopolis, Brazil. ( [abstract](http://www.databoxproject.uk/wp-content/uploads/2016/03/sigcomm16posters-paper50.pdf) , poster)
+
+*   Hamed Haddadi, Heidi Howard, Amir Chaudhry, Jon Crowcroft, Anil Madhavapeddy, Derek McAuley, Richard Mortier, “Personal Data: Thinking Inside the Box”, The 5th decennial Aarhus conference ( [Aarhus 2015](http://aarhus2015.org/) ), August 2015, available on [arXiv](http://arxiv.org/abs/1501.04737) \[ [paper](http://www.eecs.qmul.ac.uk/%7Ehamed/papers/aarhus15-camera.pdf) , [MIT Technology Review](http://www.technologyreview.com/view/534526/how-a-box-could-solve-the-personal-data-conundrum/) , [Guardian](http://www.theguardian.com/technology/2015/feb/01/control-personal-data-databox-end-user-agreement) \]
+
+## Working documents
+-----------------
+
+*   Andy Crabtree, Tom Lodge, James Colley, Chris Greenhalgh and Richard Mortier (2016) “Building accountability into the Internet of Things”, Social Science Research Network,  DOI 10.13140/RG.2.2.27512.44803        Open access:  [https://www.researchgate.net/publication/311456200\_Building\_Accountability\_into\_the\_Internet\_of\_Things?channel=doi&linkId=5847e61408aeda696825a79f&showFulltext=true](https://www.researchgate.net/publication/311456200_Building_Accountability_into_the_Internet_of_Things?channel=doi&linkId=5847e61408aeda696825a79f&showFulltext=true)
+
+*   Andy Crabtree and Richard Mortier (2016) “Personal data, privacy and the Internet of Things: the shifting locus of agency and control”, Social Science Research Network,  DOI 10.13140/RG.2.2.34496.12809             Open access:  [https://www.researchgate.net/publication/311311186\_Personal\_Data\_Privacy\_and\_the\_Internet\_of\_Things\_The\_Shifting\_Locus\_of\_Agency\_and\_Control?channel=doi&linkId=584162dc08aeda6968137200&showFulltext=true](https://www.researchgate.net/publication/311311186_Personal_Data_Privacy_and_the_Internet_of_Things_The_Shifting_Locus_of_Agency_and_Control?channel=doi&linkId=584162dc08aeda6968137200&showFulltext=true)
+
+## Public Engagement
+-----------------
+
+*   “ [The Living Room of the Future](https://www.bbc.co.uk/rd/projects/living-room-of-the-future) at the V&A Museum”, part of the  [London Design Festival](https://www.londondesignfestival.com/) , September 2019.
+
+*   Market engagement in the Databox project,  [Report](http://www.horizon.ac.uk/wp-content/uploads/2017/01/Market-engagement-in-the-Databox-project.pdf) commissioned by: Horizon Digital Research Institute
+
+*   “ [Living Room of the Future](https://www.britishcouncil.mk/the-living-room-of-the-future) “, British Council and the Foundation for Art and Creative Technology (FACT), February 2018, Macedonia.  [https://youtu.be/yneprnGCRm0](https://youtu.be/yneprnGCRm0)
+
+*   [Mozilla Festival 2017 Hackathon](https://www.eventbrite.com/e/databox-hackday-at-mozfest-2017-tickets-37382940381) , October 2017
+
+*   BT Innovation Showcase, “Smart World”,  Adastral Park,  June 2017  [http://connect2.globalservices.bt.com/innovationweek2017](http://connect2.globalservices.bt.com/innovationweek2017)  
+    
+*   UK / Japan “Socio-Cyber Physical Systems Workshop”, Japanese Embassy, Toyko, Foreign and Commonwealth Office, September 2017.
+    
+*   “ [Databox: re-balancing power](https://pdtn.org/databox-personal-networked-device/) “, Personal Data & Trust Network 2016.
+
+*   Science Fair, Mozilla Festival, October 2016     
+    [https://app.mozillafestival.org/#\_session-950](https://app.mozillafestival.org/#_session-950)
+    
+*   Databox: Hack an App, Mozilla Festival, October 2016    
+    [https://app.mozillafestival.org/#\_session-172](https://app.mozillafestival.org/#_session-172)  / [https://app.mozillafestival.org/#\_session-1172](https://app.mozillafestival.org/#_session-1172)  / [https://app.mozillafestival.org/#\_session-1173](https://app.mozillafestival.org/#_session-1173)
+    
+*   The Kitchen Demo Databox in collaboration with BBC R&D, Mozilla Festival, October 2016,  [https://app.mozillafestival.org/#\_session-171](https://app.mozillafestival.org/#_session-171)
+
 ## Versioning
 
 This documentation is up-to-date till this [commit](https://github.com/me-box/databox/tree/45bb7b2f47f595d12a952d9902ffd99061dae6eb). The master branches on all components point to the current release and are tagged in git using [semver](http://semver.org/).
