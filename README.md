@@ -26,6 +26,12 @@ The above starts Databox using pre-build images published on [Docker hub](<https
 
 Once it's started, point a web browser at <http://127.0.0.1> and follow the instructions to configure your HTTPS certificates to access Databox UI securely (using a web browser <https://127.0.0.1>, or the iOS and Android app).
 
+You should be presented with a log-in box. The default username is *docker* and this should be filled in for you. The password is created during the container set-up process so check the console where the container was started from and look for a line (amongst the 50 or so lines output) containing the generated password such as this:
+```
+container-manager        : [INFO]2020/11/12 14:00:21 Password=LH9zb4UDJ3ctkaHC1sbuwxBWWlJrZzh3
+```
+
+
 > Note: Using the databox iOS and Android apps with MacOS may require you to modify your firewall to enable external access to port 80 and 443.
 
 To stop databox and clean up,
